@@ -377,22 +377,22 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const isDemo = loaded?.source === "demo";
   const tag = playing ? (isDemo ? t.rec : t.onAir) : t.idle;
   const toggleBtn = (on: boolean) =>
-    `min-h-14 rounded-xl border-4 px-5 py-3 text-lg font-bold ${on ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#4b7a62] bg-[#1b3b2b] text-[#ffffff]"}`;
+    `min-h-12 rounded-xl border-2 px-5 py-3 text-base font-bold ${on ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#4b7a62] bg-[#1b3b2b] text-[#ffffff]"}`;
 
   return (
-    <div dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#0b1d15] text-lg leading-relaxed text-[#f7f1e1]">
+    <div dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1]">
       <div className="mx-auto max-w-4xl px-4 py-5">
         <h1 className="sr-only">{t.title}</h1>
 
         {/* plateau : le présentateur et les sous-titres */}
-        <div dir="ltr" className="overflow-hidden rounded-2xl border-4 border-[#3b6350] bg-black shadow-2xl">
+        <div dir="ltr" className="overflow-hidden rounded-2xl border-2 border-[#3b6350] bg-black shadow-2xl">
           <div className="relative aspect-[5/6] w-full overflow-hidden bg-gradient-to-b from-[#1f5340] via-[#173d2d] to-[#10291e] sm:aspect-video">
             <div className="absolute inset-x-0 bottom-[26%] top-16 flex justify-center sm:bottom-[26%] sm:top-3">
               <Presenter svgRef={svgRef} />
             </div>
-            <div className="absolute start-3 top-3 rounded bg-black/70 px-2.5 py-1 text-base font-bold tracking-wider text-[#f0c75e]">SAKIA · BULLETIN</div>
+            <div className="absolute start-3 top-3 rounded bg-black/70 px-2.5 py-1 text-sm font-bold tracking-wider text-[#f0c75e]">SAKIA · BULLETIN</div>
             <div
-              className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2.5 py-1 text-base font-bold tracking-wider ${
+              className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2.5 py-1 text-sm font-bold tracking-wider ${
                 playing ? (isDemo ? "bg-[#f0c75e] text-[#0b1d15]" : "bg-[#c4281f] text-white") : "bg-black/70 text-[#f7f1e1]"
               }`}
             >
@@ -405,8 +405,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                 dir={rtlOf(subLang) ? "rtl" : "ltr"}
                 lang={htmlLangOf(subLang)}
                 aria-live="polite"
-                className={`max-w-[96%] rounded-lg px-4 py-2 text-center text-[clamp(1.1rem,3.6vw,1.75rem)] font-semibold leading-snug ${
-                  current?.id === "unsure" ? "border-4 border-[#ffb454] bg-[#5a2d08] text-[#fff1d6]" : "bg-black/80 text-white"
+                className={`max-w-[96%] rounded-lg px-4 py-2 text-center text-[clamp(1rem,3.2vw,1.5rem)] font-semibold leading-snug ${
+                  current?.id === "unsure" ? "border-2 border-[#ffb454] bg-[#5a2d08] text-[#fff1d6]" : "bg-black/80 text-white"
                 }`}
               >
                 {current?.id === "unsure" && "⚠ "}
@@ -438,28 +438,28 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           type="button"
           disabled={busy}
           onClick={() => (playing ? stop() : start("auto"))}
-          className="mt-5 min-h-20 w-full rounded-2xl bg-[#f0c75e] px-6 py-4 text-3xl font-bold text-[#0b1d15] shadow-lg disabled:opacity-60 sm:text-4xl"
+          className="mt-5 min-h-14 w-full rounded-2xl bg-[#f0c75e] px-6 py-4 text-2xl font-bold text-[#0b1d15] shadow-lg disabled:opacity-60"
         >
           {busy ? t.loading : playing ? `■ ${t.stop}` : `▶ ${t.listen}`}
         </button>
 
-        {error && <p role="alert" className="mt-4 rounded-xl border-4 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-lg font-semibold text-[#ffe8dd]">{error}</p>}
+        {error && <p role="alert" className="mt-4 rounded-xl border-2 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-base font-semibold text-[#ffe8dd]">{error}</p>}
 
         {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, pluie signalée, provenance, texte non validé */}
         {loaded && askAPerson && (
-          <aside role="alert" className="mt-5 rounded-2xl border-4 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
-            <p className="flex items-center gap-2 text-2xl font-bold">
+          <aside role="alert" className="mt-5 rounded-2xl border-2 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
+            <p className="flex items-center gap-2 text-xl font-bold">
               <span aria-hidden>⚠</span>
               {t.unsureTitle}
             </p>
             {unsureLine && (
-              <p className="mt-2 text-xl" lang={htmlLangOf(spokenLang)} dir={rtlOf(spokenLang) ? "rtl" : "ltr"}>
+              <p className="mt-2 text-lg" lang={htmlLangOf(spokenLang)} dir={rtlOf(spokenLang) ? "rtl" : "ltr"}>
                 {unsureLine.text}
-                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && <span className="mt-1 block text-lg text-[#ffe3b8]">{unsureLine.en}</span>}
+                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && <span className="mt-1 block text-base text-[#ffe3b8]">{unsureLine.en}</span>}
               </p>
             )}
             {reasons.length > 0 && (
-              <ul className="mt-3 list-disc space-y-1 ps-6 text-lg">
+              <ul className="mt-3 list-disc space-y-1 ps-6 text-base">
                 {reasons.map((r) => (
                   <li key={r}>{t.reasons[r]}</li>
                 ))}
@@ -469,8 +469,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         )}
 
         {loaded && band?.localReports && band.localReports.length > 0 && (
-          <aside className="mt-5 rounded-2xl border-4 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-lg text-[#f2fcff]">
-            <p className="flex items-center gap-2 text-xl font-bold">
+          <aside className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-base text-[#f2fcff]">
+            <p className="flex items-center gap-2 text-lg font-bold">
               <span aria-hidden>🌧</span>
               {t.reportsTitle}
             </p>
@@ -501,7 +501,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             {notes.map((n, i) => (
               <p
                 key={i}
-                className={`rounded-xl border-4 px-4 py-3 text-lg ${
+                className={`rounded-xl border-2 px-4 py-3 text-base ${
                   n.kind === "demo"
                     ? "border-[#f0c75e] bg-[#4a3a08] font-bold text-[#fff3c4]"
                     : n.kind === "warn"
@@ -513,7 +513,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               </p>
             ))}
             {unvalidated && (
-              <p className="rounded-xl border-4 border-[#f0c75e] bg-[#4a3a08] px-4 py-3 text-lg font-semibold text-[#fff3c4]">
+              <p className="rounded-xl border-2 border-[#f0c75e] bg-[#4a3a08] px-4 py-3 text-base font-semibold text-[#fff3c4]">
                 {unvalidated.code === "aeb" ? t.darijaNote : unvalidated.code === "ar" ? t.arabicNote : t.koreanNote}
               </p>
             )}
@@ -524,21 +524,21 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         {loaded && <RainReportButton regionId={region} regionName={nameOf(regions.find((r) => r.id === region) ?? regions[0])} voiceLang={lang} muted={muted} t={t} />}
 
         {/* OPTIONS : tout le reste, replié */}
-        <details className="group mt-6 rounded-2xl border-4 border-[#4b7a62] bg-[#12281d]">
-          <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between px-5 py-3 text-2xl font-bold text-[#ffffff]">
+        <details className="group mt-6 rounded-2xl border-2 border-[#4b7a62] bg-[#12281d]">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-5 py-3 text-xl font-bold text-[#ffffff]">
             <span>⚙ {t.options}</span>
-            <span aria-hidden className="text-3xl transition-transform group-open:rotate-180">
+            <span aria-hidden className="text-2xl transition-transform group-open:rotate-180">
               ▾
             </span>
           </summary>
           <div className="space-y-6 border-t-4 border-[#4b7a62] px-5 py-5">
             <fieldset>
-              <legend className="mb-2 text-xl font-bold">{t.voice}</legend>
+              <legend className="mb-2 text-lg font-bold">{t.voice}</legend>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {VOICE_LANGS.map((v) => (
                   <button key={v.code} type="button" onClick={() => chooseVoice(v.code)} aria-pressed={lang === v.code} lang={v.htmlLang} className={`${toggleBtn(lang === v.code)} flex flex-col items-center px-2`}>
                     <span>{v.native}</span>
-                    <span lang="en" className="text-base font-semibold">
+                    <span lang="en" className="text-sm font-semibold">
                       {v.english}
                     </span>
                   </button>
@@ -547,9 +547,9 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             </fieldset>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-xl font-bold">
+              <label className="block text-lg font-bold">
                 <span className="mb-2 block">{t.region}</span>
-                <select value={region} onChange={(e) => setRegion(e.target.value)} className="min-h-14 w-full rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-3 text-lg font-semibold text-[#ffffff]">
+                <select value={region} onChange={(e) => setRegion(e.target.value)} className="min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]">
                   {regions.map((r) => (
                     <option key={r.id} value={r.id}>
                       {nameOf(r)}
@@ -557,9 +557,9 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                   ))}
                 </select>
               </label>
-              <label className="block text-xl font-bold">
+              <label className="block text-lg font-bold">
                 <span className="mb-2 block">{t.crop}</span>
-                <select value={crop} onChange={(e) => setCrop(e.target.value)} className="min-h-14 w-full rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-3 text-lg font-semibold text-[#ffffff]">
+                <select value={crop} onChange={(e) => setCrop(e.target.value)} className="min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]">
                   {crops.map((c) => (
                     <option key={c.id} value={c.id}>
                       {nameOf(c)}
@@ -584,7 +584,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               >
                 {music ? `🎵 ${t.musicOn}` : `🎵 ${t.musicOff}`}
               </button>
-              <span className="text-lg font-bold">{t.subtitles}</span>
+              <span className="text-base font-bold">{t.subtitles}</span>
               {(["en", "spoken"] as const).map((m) => (
                 <button key={m} type="button" onClick={() => setSubMode(m)} aria-pressed={subMode === m} className={toggleBtn(subMode === m)}>
                   {m === "en" ? t.subEn : t.subSpoken}
@@ -594,10 +594,10 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
             {loaded && (
               <div>
-                <h2 className="mb-2 text-xl font-bold">{t.fullText}</h2>
+                <h2 className="mb-2 text-lg font-bold">{t.fullText}</h2>
                 <ol ref={listRef} className="max-h-72 space-y-1 overflow-y-auto rounded-xl bg-[#173d2d] p-2" dir={rtlOf(subLang) ? "rtl" : "ltr"}>
                   {loaded.lines.map((l, i) => (
-                    <li key={l.id} lang={htmlLangOf(subLang)} className={`rounded-lg px-3 py-2 text-lg ${i === idx ? "bg-[#f0c75e] font-bold text-[#0b1d15]" : "text-[#f7f1e1]"}`}>
+                    <li key={l.id} lang={htmlLangOf(subLang)} className={`rounded-lg px-3 py-2 text-base ${i === idx ? "bg-[#f0c75e] font-bold text-[#0b1d15]" : "text-[#f7f1e1]"}`}>
                       {subText(l)}
                     </li>
                   ))}
@@ -608,11 +608,11 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
             {demos.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold">{t.demosTitle}</h2>
-                <p className="mb-3 text-lg text-[#e3dcc6]">{t.demosHint}</p>
+                <h2 className="text-lg font-bold">{t.demosTitle}</h2>
+                <p className="mb-3 text-base text-[#e3dcc6]">{t.demosHint}</p>
                 <div className="flex flex-wrap gap-3">
                   {demos.map((d) => (
-                    <button key={d.id} type="button" disabled={busy} onClick={() => start(d.id)} className="min-h-14 rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-4 py-3 text-start text-lg font-semibold text-[#ffffff] disabled:opacity-60">
+                    <button key={d.id} type="button" disabled={busy} onClick={() => start(d.id)} className="min-h-12 rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-4 py-3 text-start text-base font-semibold text-[#ffffff] disabled:opacity-60">
                       ▶ {d.title}
                     </button>
                   ))}
@@ -621,12 +621,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             )}
 
             {showJust && (
-              <aside className="flex items-start gap-3 rounded-xl border-4 border-[#f0c75e] bg-[#2a3a22] px-4 py-3 text-lg text-[#f7f1e1]">
-                <span className="text-4xl leading-none" aria-hidden>
+              <aside className="flex items-start gap-3 rounded-xl border-2 border-[#f0c75e] bg-[#2a3a22] px-4 py-3 text-base text-[#f7f1e1]">
+                <span className="text-3xl leading-none" aria-hidden>
                   😊
                 </span>
                 <div>
-                  <p className="text-xl font-bold text-[#fff3c4]">{t.justTitle}</p>
+                  <p className="text-lg font-bold text-[#fff3c4]">{t.justTitle}</p>
                   <p lang="ko" className="mt-1">
                     {t.justBody}
                   </p>
@@ -635,10 +635,10 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               </aside>
             )}
 
-            <div className="space-y-3 text-lg">
-              <h2 className="text-xl font-bold">{t.inclusionTitle}</h2>
+            <div className="space-y-3 text-base">
+              <h2 className="text-lg font-bold">{t.inclusionTitle}</h2>
               <p className="text-[#e9e2cd]">{t.inclusion}</p>
-              <h2 className="pt-2 text-xl font-bold">{t.whyTitle}</h2>
+              <h2 className="pt-2 text-lg font-bold">{t.whyTitle}</h2>
               <p className="text-[#e9e2cd]">{t.why}</p>
               {loaded?.voiceName && (
                 <p className="text-[#e9e2cd]">{loaded.voiceValidated ? `${t.voiceOf}: ${loaded.voiceName}` : t.voiceNote.replace("{name}", loaded.voiceName)}</p>
@@ -675,8 +675,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 function Cell({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
   return (
     <div className="bg-[#12281d] px-4 py-3">
-      <div className="text-base font-bold uppercase tracking-wide text-[#e3dcc6]">{label}</div>
-      <div className={`text-lg font-bold ${alert ? "text-[#ffb454]" : "text-[#fff3c4]"}`}>
+      <div className="text-sm font-bold uppercase tracking-wide text-[#e3dcc6]">{label}</div>
+      <div className={`text-base font-bold ${alert ? "text-[#ffb454]" : "text-[#fff3c4]"}`}>
         {alert && "⚠ "}
         {value}
       </div>

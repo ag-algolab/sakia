@@ -193,7 +193,7 @@ export default function RainReportButton({
   const thanked = status === "sent" || status === "queued";
 
   return (
-    <section className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] p-4 text-lg text-[#f2fcff] sm:p-5" aria-label={t.rainBtn}>
+    <section className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] p-4 text-base text-[#f2fcff] sm:p-5" aria-label={t.rainBtn}>
       <style>{`
         @keyframes bl-fall { 0% { transform: translateY(-30px); opacity: 0 } 15% { opacity: 1 } 100% { transform: translateY(220px); opacity: 0 } }
         @media (prefers-reduced-motion: reduce) { .bl-drop { animation: none !important; opacity: 0 !important } }
@@ -202,7 +202,7 @@ export default function RainReportButton({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex min-h-16 w-full items-center justify-center gap-3 rounded-xl bg-[#7fd0e0] px-4 py-3 text-2xl font-bold text-[#04161a]"
+        className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#7fd0e0] px-4 py-3 text-xl font-bold text-[#04161a]"
       >
         <span aria-hidden>🌧️</span>
         {t.rainBtn}
@@ -216,7 +216,7 @@ export default function RainReportButton({
               {Array.from({ length: 12 }, (_, i) => (
                 <span
                   key={i}
-                  className="bl-drop absolute text-2xl"
+                  className="bl-drop absolute text-xl"
                   style={{ left: `${4 + i * 8}%`, animation: `bl-fall ${1.3 + (i % 4) * 0.25}s ease-in ${(i % 5) * 0.12}s both` }}
                 >
                   {i % 3 === 0 ? "💧" : i % 3 === 1 ? "🌱" : "✨"}
@@ -226,9 +226,9 @@ export default function RainReportButton({
           )}
 
           {REPORTS_ARE_FICTIONAL && (
-            <p className="rounded-lg bg-[#4a3a08] px-3 py-3 text-center text-lg font-bold text-[#fff3c4]">{t.reportsFictional}</p>
+            <p className="rounded-lg bg-[#4a3a08] px-3 py-3 text-center text-base font-bold text-[#fff3c4]">{t.reportsFictional}</p>
           )}
-          <p className="text-xl font-bold">
+          <p className="text-lg font-bold">
             {t.rainAsk} <span className="font-semibold text-[#cfeef5]">({regionName})</span>
           </p>
 
@@ -245,15 +245,15 @@ export default function RainReportButton({
                     setLevel(l);
                     setStatus("idle");
                   }}
-                  className={`flex min-h-32 flex-col items-center justify-center gap-1 rounded-xl border-4 px-2 py-3 text-center ${
+                  className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 text-center ${
                     on ? "border-[#f0c75e] bg-[#7fd0e0] text-[#04161a]" : "border-[#3d7f8f] bg-[#0f4b57] text-[#ffffff] hover:border-[#7fd0e0]"
                   }`}
                 >
-                  <span className="text-4xl leading-none" aria-hidden>
+                  <span className="text-3xl leading-none" aria-hidden>
                     {ICON[l]}
                   </span>
                   <span className="text-base font-bold leading-tight">{t.rainLevels[l]}</span>
-                  <span className="text-base font-semibold" dir="ltr">
+                  <span className="text-sm font-semibold" dir="ltr">
                     {RANGE[l]} mm
                   </span>
                 </button>
@@ -268,7 +268,7 @@ export default function RainReportButton({
                 type="button"
                 onClick={() => setOffset(o)}
                 aria-pressed={offset === o}
-                className={`min-h-12 rounded-full border-4 px-6 text-lg font-bold ${
+                className={`min-h-12 rounded-full border-2 px-6 text-base font-bold ${
                   offset === o ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#3d7f8f] bg-[#0f4b57] text-[#ffffff]"
                 }`}
               >
@@ -281,43 +281,43 @@ export default function RainReportButton({
             type="button"
             onClick={send}
             disabled={!level || status === "sending"}
-            className="min-h-16 w-full rounded-xl bg-[#f0c75e] px-4 text-2xl font-bold text-[#0b1d15] disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-14 w-full rounded-xl bg-[#f0c75e] px-4 text-xl font-bold text-[#0b1d15] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status === "sending" ? t.loading : thanked ? t.rainSendAgain : t.rainSend}
           </button>
 
           {status === "queued" && (
-            <p role="status" className="rounded-lg bg-[#4a3a08] p-4 text-lg font-bold text-[#fff3c4]">
+            <p role="status" className="rounded-lg bg-[#4a3a08] p-4 text-base font-bold text-[#fff3c4]">
               {t.rainQueued}
             </p>
           )}
           {(status === "rate" || status === "down" || status === "invalid") && (
-            <p role="alert" className="rounded-lg bg-[#5a1f10] p-4 text-lg font-bold text-[#ffe8dd]">
+            <p role="alert" className="rounded-lg bg-[#5a1f10] p-4 text-base font-bold text-[#ffe8dd]">
               {status === "rate" ? t.rainErrRate : status === "down" ? t.rainErrDown : t.rainErrInvalid}
             </p>
           )}
 
           {/* la récompense : remerciement, titre, et l'effet du geste */}
           {thanked && (
-            <div role="status" className="space-y-3 rounded-xl border-4 border-[#8fe3a1] bg-[#12401f] p-4 text-[#f2fff5]">
-              <p className="flex items-center gap-3 text-2xl font-bold">
-                <span aria-hidden className="text-4xl">
+            <div role="status" className="space-y-3 rounded-xl border-2 border-[#8fe3a1] bg-[#12401f] p-4 text-[#f2fff5]">
+              <p className="flex items-center gap-3 text-xl font-bold">
+                <span aria-hidden className="text-3xl">
                   {tier >= 0 ? TIER_ICON[tier] : "🌱"}
                 </span>
                 {t.rewardThanks}
               </p>
-              {status === "sent" && <p className="text-lg">{t.rainSent}</p>}
-              <p className="text-lg font-semibold">{days === 1 ? t.rewardCountOne : t.rewardCount.replace("{n}", String(days))}</p>
+              {status === "sent" && <p className="text-base">{t.rainSent}</p>}
+              <p className="text-base font-semibold">{days === 1 ? t.rewardCountOne : t.rewardCount.replace("{n}", String(days))}</p>
               {tier >= 0 && (
-                <p className="inline-block rounded-full bg-[#f0c75e] px-4 py-2 text-lg font-bold text-[#0b1d15]">
+                <p className="inline-block rounded-full bg-[#f0c75e] px-4 py-2 text-base font-bold text-[#0b1d15]">
                   {TIER_ICON[tier]} {t.rewardTiers[tier]}
                 </p>
               )}
-              <p className="text-lg">
+              <p className="text-base">
                 {next === null ? t.rewardTop : t.rewardNext.replace("{k}", String(next - days)).replace("{name}", t.rewardTiers[tier + 1])}
               </p>
               {impact && (
-                <p className="rounded-lg bg-[#0b2a14] p-3 text-lg font-semibold">
+                <p className="rounded-lg bg-[#0b2a14] p-3 text-base font-semibold">
                   {impact.n >= impact.min
                     ? t.rewardImpactUsed.replace("{n}", String(impact.n))
                     : t.rewardImpactWaiting.replace("{n}", String(impact.n)).replace("{need}", String(impact.min - impact.n))}

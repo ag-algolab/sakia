@@ -327,6 +327,24 @@ export function getCrop(id: string): Crop | undefined {
   return CROPS.find((c) => c.id === id);
 }
 
+// Culture à montrer en premier sur l'accueil : la première, parmi les cultures courantes de Kairouan, qui est EN SAISON
+// d'irrigation à cette date (même règle que le moteur : irrigationSeason). Ainsi le premier écran affiche un vrai conseil du
+// moteur et non « culture hors saison » ; rien n'est inventé, c'est seulement le choix de ce qui est montré d'abord.
+// Dattier (irrigué toute l'année) en dernier recours.
+const FIRST_SCREEN_CROPS = ["piment", "tomate", "olivier", "pomme-de-terre", "oignon", "ble", "dattier"];
+
+export function defaultCropForMonth(month: number): string {
+  const inSeason = (c: Crop) => {
+    const { from, to } = c.irrigationSeason;
+    return from <= to ? month >= from && month <= to : month >= from || month <= to;
+  };
+  const found = FIRST_SCREEN_CROPS.find((id) => {
+    const c = getCrop(id);
+    return c != null && inSeason(c);
+  });
+  return found ?? "dattier";
+}
+
 function daysBetween(a: string, b: string): number {
   return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 }
