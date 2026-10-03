@@ -16,6 +16,8 @@ import type { Plan } from "@/lib/plan";
 const BIG_LABEL = "اسمع النصيحة"; // « écoute le conseil » en darija
 const INTRO_MS = 2200; // la musique joue seule un instant avant la voix
 const OUTRO_MS = 1500;
+const FETCH_TIMEOUT_MS = 25000; // au-delà, on renonce : la musique ne doit jamais tourner sans fin en attendant la voix
+const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
 const CACHE_PREFIX = "sakia-voice:";
 const CACHE_MAX_AGE_MS = 12 * 3600 * 1000; // même seuil que le moteur : au-delà de 12 h, plus de rediffusion hors ligne
 const CACHE_KEEP = 3;
@@ -30,9 +32,9 @@ export type VoiceQuery = {
   asOf?: string;
 };
 
-// Tant que la route de voix ne prend que région, culture, dernier arrosage et date de rejeu, la voix calcule avec un sol
-// limoneux et le goutte-à-goutte. À passer à true quand /api/voice/bulletin accepte soil, system et planting.
-const VOICE_SUPPORTS_SOIL_SYSTEM = false;
+// Si un jour la route de voix ne prenait plus soil, system et planting, la voix calculerait avec un sol limoneux et le
+// goutte-à-goutte : passer à false pour que l'écran le dise.
+const VOICE_SUPPORTS_SOIL_SYSTEM = true; // la route lit et valide soil, system et planting comme /api/plan (poste Bulletin)
 
 type State = "idle" | "loading" | "playing" | "error";
 type Cached = { savedAt: number; mime: string; audioBase64: string };
@@ -70,6 +72,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const musicRef = useRef<BedMusic | null>(null);
+  const capRef = useRef<number | null>(null);
   const runRef = useRef(0); // numéro de lecture : une lecture abandonnée ne doit pas relancer le son
   const key = JSON.stringify(query);
 
@@ -81,6 +84,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 
   const stop = useCallback(() => {
     runRef.current++;
+    if (capRef.current != null) window.clearTimeout(capRef.current);
     abortRef.current?.abort();
     audioRef.current?.pause();
     audioRef.current = null;
@@ -124,6 +128,16 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     if (musicOn) musicRef.current = startBedMusic(); // dans le geste de la personne, sinon le navigateur refuse
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      ctrl.abort();
+    }, FETCH_TIMEOUT_MS);
+    // plafond de sécurité sur la musique, quoi qu'il arrive
+    const cap = window.setTimeout(() => {
+      if (runRef.current === run) musicRef.current?.stop(800);
+    }, MUSIC_MAX_MS);
+    capRef.current = cap;
 
     let payload: { audioBase64: string; mime: string } | null = null;
     try {
@@ -141,7 +155,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
       payload = body;
       writeCache(key, { savedAt: Date.now(), mime: body.mime, audioBase64: body.audioBase64 });
     } catch (e) {
-      if ((e as Error).name === "AbortError" || !alive()) return;
+      if (!alive() || ((e as Error).name === "AbortError" && !timedOut)) return;
       // pas de réseau, ou plus de crédits de voix : on rejoue le dernier bulletin de CETTE demande, s'il est récent
       const c = readCache(key);
       if (c && Date.now() - c.savedAt <= CACHE_MAX_AGE_MS) {
@@ -149,6 +163,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         setCachedAgeH((Date.now() - c.savedAt) / 3600000);
       }
     }
+    window.clearTimeout(timeout);
     if (!alive()) return;
     if (!payload) {
       musicRef.current?.stop(300);

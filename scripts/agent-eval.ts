@@ -121,6 +121,7 @@ function runCase(c: Case, url: string): Promise<Outcome> {
     ws.onclose = () => finish();
     ws.onopen = () => send({ type: "conversation_initiation_client_data", conversation_config_override: { conversation: { text_only: true } } });
     ws.onmessage = async (ev) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let m: any;
       try {
         m = JSON.parse(String(ev.data));

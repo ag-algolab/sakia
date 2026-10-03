@@ -14,6 +14,14 @@ const REPLAY_DATE = "2026-07-17";
 const REPLAY_SCENE = { crop: "tomate", ago: "7" };
 const STALE_AFTER_HOURS = 5;
 
+// Vraie date AAAA-MM-JJ (le champ date du navigateur en donne une, mais une valeur mémorisée ou collée peut être fausse).
+// L'écran et la voix reçoivent la même valeur, ou aucune : sinon ils pourraient se contredire.
+function validDate(s: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+  const d = new Date(`${s}T00:00:00Z`);
+  return Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s ? "" : s;
+}
+
 type Form = {
   region: string;
   crop: string;
@@ -43,7 +51,7 @@ export default function Home() {
     cropId: form.crop,
     soil: form.soil as SoilName,
     system: form.system as IrrigationSystem,
-    planting: form.planting || undefined,
+    planting: validDate(form.planting) || undefined,
     lastIrrigationDaysAgo: form.ago === "" ? undefined : Number(form.ago),
   });
   const plan = replay ? replayPlan : local.plan;
@@ -91,7 +99,7 @@ export default function Home() {
     const ctrl = new AbortController();
     const q = new URLSearchParams({ region: form.region, crop: form.crop, soil: form.soil, system: form.system });
     if (form.ago !== "") q.set("ago", form.ago);
-    if (form.planting) q.set("planting", form.planting);
+    if (validDate(form.planting)) q.set("planting", validDate(form.planting));
     q.set("asOf", REPLAY_DATE);
     setReplayLoading(true);
     setReplayFailed(false);
@@ -135,7 +143,7 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-4 py-5">
       <ListenHero
-        query={{ ...form, asOf: replay ? REPLAY_DATE : undefined }}
+        query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }}
         plan={plan}
       />
 

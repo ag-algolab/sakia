@@ -91,10 +91,11 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
     window.addEventListener("online", sync);
     window.addEventListener("offline", sync);
     const urls = blobUrls.current;
+    const token = tokenRef;
     return () => {
       window.removeEventListener("online", sync);
       window.removeEventListener("offline", sync);
-      tokenRef.current++;
+      token.current++;
       cancelRef.current?.();
       window.clearTimeout(silenceRef.current);
       window.clearInterval(timerRef.current);

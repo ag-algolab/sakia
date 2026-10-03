@@ -5,6 +5,7 @@ import CallPhone from "@/components/call/CallPhone";
 import type { Recordings } from "@/components/call/useIvrCall";
 import type { DemoItem, Manifest } from "@/lib/ivr/demo";
 import { allRecordings, textHash } from "@/lib/ivr/prompts";
+import { agentId } from "@/lib/voiceagent/api";
 
 export const metadata: Metadata = {
   title: "Sakia · Voice line",
@@ -37,6 +38,7 @@ export default async function CallPage() {
     <CallPhone
       recordings={recordings}
       demos={demos}
+      agentReady={agentId() !== null}
       stats={{ promptCount: Object.keys(recordings).length, promptKb: Math.round(promptBytes / 1024), planKb, voiceName: manifest?.voiceName ?? "Rima M" }}
     />
   );

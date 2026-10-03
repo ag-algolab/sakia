@@ -1,6 +1,7 @@
 # Sakia — a daily irrigation decision by voice, SMS and chat, for smallholders in Tunisia
 
 **Challenge:** World Bank × Hack-Nation 7 — *Small AI for Development*, **Agriculture** track.
+**Live demo:** https://sakia-opal.vercel.app — **Telegram bot:** https://t.me/sakia_tn_bot
 **Referral code:** `WBGSmallAIGADS`
 **Team:** AG Algo Lab — Anthony Gocmen (solo, based in Tunisia).
 

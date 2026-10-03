@@ -3,6 +3,7 @@
 // Page /call : faux téléphone à touches. Sous-titres dans la langue parlée (français ou arabe) et en anglais,
 // transcription, source de la voix (en direct / enregistrement) dite en toutes lettres, garde-fou « pas sûr » en évidence.
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useLang } from "@/components/ui/LangProvider";
 import { getCrop } from "@/lib/crops";
@@ -130,7 +131,7 @@ function Reasons({ reasons, ui }: { reasons: string[]; ui: UiLang }) {
   );
 }
 
-export default function CallPhone({ recordings, demos, stats }: { recordings: Recordings; demos: DemoItem[]; stats: CallStats }) {
+export default function CallPhone({ recordings, demos, stats, agentReady }: { recordings: Recordings; demos: DemoItem[]; stats: CallStats; agentReady: boolean }) {
   const { lang: siteLang } = useLang();
   const ui = uiLangOf(siteLang);
   const t = (k: string, v?: Record<string, string | number>) => tr(ui, k, v);
@@ -153,7 +154,7 @@ export default function CallPhone({ recordings, demos, stats }: { recordings: Re
   }, [press]);
 
   const active = c.phase === "active";
-  const hints = useMemo(() => hintsFor(c.call, ui), [c.call, ui]);
+  const hints = hintsFor(c.call, ui);
   const status =
     c.phase === "ringing" ? t("ringing") : c.phase === "active" ? t("active") : c.phase === "ended" ? t("ended") : t("idleHint");
   const lastPlan = c.planView;
@@ -265,6 +266,13 @@ export default function CallPhone({ recordings, demos, stats }: { recordings: Re
           <p className="mt-2 text-center text-sm text-sakia-brown" dir={ui === "ar" ? "rtl" : "ltr"}>
             {t("maxCall")} {t("alwaysKeys")}
           </p>
+          {agentReady && (
+            <p className="mt-3 text-center">
+              <Link href="/call/talk" className="inline-flex min-h-11 items-center rounded-lg border border-sakia-green px-4 text-base font-semibold text-sakia-green hover:bg-sakia-green-light">
+                🎙 {t("talkLink")}
+              </Link>
+            </p>
+          )}
         </section>
 
         {/* ---------- à droite : aide, source, conseil, garde-fou, transcription ---------- */}
