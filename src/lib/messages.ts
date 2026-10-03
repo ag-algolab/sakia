@@ -172,7 +172,14 @@ export function planMessage(plan: Plan, lang: Lang = "fr"): string {
   const rainNote = plan.confidence.notes?.includes("uncertain_rain")
     ? [lang === "ar" ? "قد تسقط أمطار خلال 3 أيام: أعيدوا التحقق غدا." : lang === "en" ? "Rain is possible within 3 days: check again tomorrow." : "Pluie possible dans les 3 jours : revérifiez demain."]
     : [];
-  return [head, ...lines, rainLine, ...rainNote, ...unsure, foot].join("\n");
+  const neighbours = (plan.localReports ?? []).map((r) =>
+    lang === "ar"
+      ? `أمطار أبلغ عنها ${r.n} فلاحين يوم ${shortDay(r.date, lang)}: ${r.medianMm} مم (أُخذت بعين الاعتبار).`
+      : lang === "en"
+        ? `Rain reported by ${r.n} farmers on ${shortDay(r.date, lang)}: ${r.medianMm} mm (taken into account).`
+        : `Pluie signalée par ${r.n} agriculteurs le ${shortDay(r.date, lang)} : ${r.medianMm} mm (prise en compte).`,
+  );
+  return [head, ...lines, rainLine, ...rainNote, ...neighbours, ...unsure, foot].join("\n");
 }
 
 export type BulletinLine = { id: string; text: string };

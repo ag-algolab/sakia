@@ -152,15 +152,19 @@ export default function Home() {
     <>
       {/* ---------- héros : l'aube sur Kairouan ---------- */}
       <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
-        <div className="relative z-10 mx-auto max-w-3xl px-4 pb-44 pt-6 sm:pb-60 sm:pt-10">
-          <h1 className="font-display max-w-xl text-[2.4rem] font-bold leading-[1.02] sm:text-6xl">{t("heroTitle")}</h1>
-          <p className="mt-3 max-w-md text-base leading-snug text-white/90 sm:text-lg">{t("heroSub")}</p>
+        <div className="relative mx-auto max-w-3xl px-4 pt-6 sm:grid sm:grid-cols-2 sm:items-end sm:gap-6 sm:pt-10">
+          <div className="relative z-10 sm:pb-20">
+            <h1 className="font-display text-[2.2rem] font-bold leading-[1.04] sm:text-5xl">{t("heroTitle")}</h1>
+            <p className="mt-3 max-w-md text-base leading-snug text-white/90 sm:text-lg">{t("heroSub")}</p>
+          </div>
+          <div className="relative mt-3 sm:mt-0">
+            <HeroScene className={`pointer-events-none block h-auto w-full overflow-visible ${hot ? "sk-haze" : ""}`} />
+          </div>
         </div>
-        <HeroScene className={`pointer-events-none absolute inset-x-0 bottom-0 h-[215px] w-full sm:h-[290px] ${hot ? "sk-haze" : ""}`} />
       </section>
 
       {/* ---------- bouton d'écoute : la première chose à toucher ---------- */}
-      <div className="relative z-20 mx-auto -mt-24 w-full max-w-3xl px-4">
+      <div className="relative z-20 mx-auto -mt-12 w-full max-w-3xl px-4">
         <ListenHero query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }} plan={plan} />
       </div>
 

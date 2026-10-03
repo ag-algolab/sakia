@@ -29,7 +29,7 @@ export function Chips({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(o.value)}
-            className={`sk-press min-h-11 rounded-full border-2 px-4 text-base font-bold ${
+            className={`sk-press min-h-11 rounded-full border-2 px-4 text-base font-bold first-letter:uppercase ${
               active ? on : "border-sakia-sand-dark bg-white text-sakia-ink hover:border-sakia-green"
             } ${o.wide ? "grow" : ""}`}
           >

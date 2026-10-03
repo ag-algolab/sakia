@@ -228,12 +228,12 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         aria-busy={busy}
         className="sk-press group flex w-full flex-col items-center gap-3 rounded-2xl px-2 py-2"
       >
-        <span aria-hidden className="relative grid h-32 w-32 place-items-center">
+        <span aria-hidden className="relative grid h-28 w-28 place-items-center sm:h-32 sm:w-32">
           {/* ondes : elles invitent à appuyer, et pulsent plus vite quand la voix parle */}
           <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" />
           <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" style={{ animationDelay: "1.3s" }} />
           <span
-            className={`relative grid h-28 w-28 place-items-center rounded-full bg-gradient-to-br from-[#4aa263] via-sakia-green to-sakia-green-deep text-white shadow-[0_10px_24px_-6px_rgba(18,53,36,0.7)] ring-4 ring-white ${
+            className={`relative grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br sm:h-28 sm:w-28 from-[#4aa263] via-sakia-green to-sakia-green-deep text-white shadow-[0_10px_24px_-6px_rgba(18,53,36,0.7)] ring-4 ring-white ${
               busy ? "motion-safe:animate-pulse" : ""
             }`}
           >
@@ -248,11 +248,11 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
             ) : busy ? (
               <span className="sk-spin-fast block h-10 w-10 rounded-full border-4 border-white/40 border-t-white" />
             ) : (
-              <SpeakerIcon className="h-14 w-14" />
+              <SpeakerIcon className="h-12 w-12 sm:h-14 sm:w-14" />
             )}
           </span>
         </span>
-        <span dir="rtl" lang="ar-TN" className="font-display text-4xl font-extrabold leading-tight text-sakia-green-deep">
+        <span dir="rtl" lang="ar-TN" className="font-display text-3xl font-extrabold leading-tight text-sakia-green-deep sm:text-4xl">
           {BIG_LABEL}
         </span>
         <span className="max-w-xs text-center text-sm font-semibold leading-snug text-sakia-brown">{t("listenCaption")}</span>

@@ -16,3 +16,20 @@ create table if not exists subscribers (
 );
 
 alter table subscribers enable row level security;
+
+-- ------------------------------------------------------------------------------
+-- Rapports de pluie des agriculteurs (solidarité locale). À coller UNE FOIS dans le même éditeur SQL.
+-- Aucun nom, aucune adresse IP : seulement une empreinte anonyme par appareil ou canal.
+-- Aucune politique d'accès : lisible et modifiable seulement avec la clé secrète (côté serveur).
+
+create table if not exists rain_reports (
+  id bigint generated always as identity primary key,
+  region_id text not null,
+  day date not null,
+  mm numeric(5,1) not null check (mm >= 0 and mm <= 150),
+  reporter_hash text not null,
+  created_at timestamptz not null default now(),
+  unique (region_id, day, reporter_hash)
+);
+
+alter table rain_reports enable row level security;

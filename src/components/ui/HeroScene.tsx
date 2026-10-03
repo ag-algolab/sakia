@@ -1,6 +1,7 @@
 // Scène du haut de page : l'aube sur la plaine de Kairouan. Le minaret de la Grande Mosquée, des rangées d'oliviers qui
 // bougent dans le vent, un soleil qui se lève et une sakia (roue à godets) qui puise l'eau dans le canal.
 // Dessin vectoriel : quelques Ko, aucune image à télécharger. Tout est décoratif (aria-hidden).
+// Les collines dépassent du cadre (overflow visible) : sur grand écran, la scène reste centrée et le paysage se prolonge jusqu'aux bords.
 
 const spin = (origin: string): React.CSSProperties => ({ transformBox: "fill-box", transformOrigin: origin });
 
@@ -32,7 +33,7 @@ export default function HeroScene({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 400 260"
-      preserveAspectRatio="xMidYMax slice"
+      preserveAspectRatio="xMidYMax meet"
       aria-hidden
       className={className}
       xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +79,7 @@ export default function HeroScene({ className }: { className?: string }) {
       </g>
 
       {/* collines lointaines */}
-      <path d="M0 176 C60 150 110 168 170 160 S300 148 400 170 V260 H0Z" fill="#1d6648" />
+      <path d="M-800 178 C-500 160 -200 180 0 176 C60 150 110 168 170 160 S300 148 400 170 C600 188 900 160 1200 176 V400 H-800Z" fill="#1d6648" />
 
       {/* Grande Mosquée de Kairouan : minaret à trois étages et enceinte */}
       <g fill="#0f3b2c">
@@ -99,10 +100,10 @@ export default function HeroScene({ className }: { className?: string }) {
       </g>
 
       {/* collines proches */}
-      <path d="M0 196 C70 178 140 192 210 184 S340 176 400 192 V260 H0Z" fill="#0f4631" />
+      <path d="M-800 200 C-500 184 -200 200 0 196 C70 178 140 192 210 184 S340 176 400 192 C600 206 900 184 1200 198 V400 H-800Z" fill="#0f4631" />
 
       {/* champ d'oliviers : sol et rangées en perspective */}
-      <path d="M0 206 C100 197 300 197 400 206 V260 H0Z" fill="#0a3023" />
+      <path d="M-800 210 C-400 204 -100 208 0 206 C100 197 300 197 400 206 C700 212 1000 204 1200 210 V400 H-800Z" fill="#0a3023" />
       <g fill="#12402e">
         <path d="M200 204 L-40 260 L10 260Z" />
         <path d="M200 204 L60 260 L120 260Z" />
