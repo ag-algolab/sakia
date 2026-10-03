@@ -83,5 +83,32 @@
   "crop": "tomate",
   "replayOf": "2026-07-17",
   "recordedAt": "2026-10-03T18:31:17.145Z"
+ },
+ {
+  "id": "kairouan-olivier-signalements-aeb",
+  "title": "Kairouan · olive tree · rain corrected by fictional farmers' reports · Tunisian Arabic (Darija) voice",
+  "lang": "aeb",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T19:24:29.162Z",
+  "fictionalReports": true
+ },
+ {
+  "id": "kairouan-olivier-signalements-fr",
+  "title": "Kairouan · olive tree · rain corrected by fictional farmers' reports · French voice",
+  "lang": "fr",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T19:24:39.260Z",
+  "fictionalReports": true
+ },
+ {
+  "id": "kairouan-olivier-signalements-en",
+  "title": "Kairouan · olive tree · rain corrected by fictional farmers' reports · English voice",
+  "lang": "en",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T19:24:47.703Z",
+  "fictionalReports": true
  }
 ]

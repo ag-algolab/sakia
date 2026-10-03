@@ -93,7 +93,8 @@
    "askAPerson": true,
    "reasons": [
     "unknown_last_irrigation"
-   ]
+   ],
+   "notes": []
   }
  },
  "source": "demo",

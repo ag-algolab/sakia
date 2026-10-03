@@ -34,6 +34,14 @@ export type Strings = {
   voiceTooLong: string;
   voiceLimit: string;
   voiceFailed: string;
+  btnRain: string;
+  askRain: string;
+  rainThanks: (level: string, region: string) => string;
+  rainCount: (n: number, region: string, level: string) => string;
+  rainApplied: string;
+  rainRule: string;
+  rainFailed: string;
+  rainLimit: string;
 };
 
 const fr: Strings = {
@@ -60,7 +68,7 @@ const fr: Strings = {
   deleted: "✅ Vos données ont été supprimées. Envoyez /start pour recommencer.",
   help:
     "🌱 Sakia dit quand et combien irriguer pendant 7 jours, à partir de la météo réelle.\n\n" +
-    "/plan : le plan des 7 jours\n/bulletin : le bulletin vocal\n/langue : changer de langue\n/stop : arrêter le bulletin quotidien\n/aide : cette aide\n/start : tout reconfigurer\n\n" +
+    "/plan : le plan des 7 jours\n/bulletin : le bulletin vocal\n/pluie : signaler la pluie chez vous\n/langue : changer de langue\n/stop : arrêter le bulletin quotidien\n/aide : cette aide\n/start : tout reconfigurer\n\n" +
     "🎙 Vous pouvez aussi envoyer un message vocal ou écrire, par exemple « olivier Kairouan » (français, arabe, arabizi). Le vocal est transcrit par un service externe (ElevenLabs) ; nous ne gardons ni l'audio ni le texte.\n\n" +
     "Conseil indicatif, à valider auprès de l'administration agricole régionale.",
   hint: "Utilisez les boutons ci-dessus, ou /aide pour la liste des commandes.",
@@ -71,6 +79,17 @@ const fr: Strings = {
   voiceTooLong: "🎙 Message trop long (30 secondes maximum). Dites seulement la culture et la région.",
   voiceLimit: "🎙 Trop de messages vocaux pour le moment. Utilisez les boutons ou écrivez la culture et la région.",
   voiceFailed: "🎙 Je n'ai pas pu écouter ce message. Écrivez la culture et la région, ou utilisez /start.",
+  btnRain: "☔ Il a plu ici",
+  askRain: "☔ Quelle quantité de pluie est tombée chez vous aujourd'hui ?",
+  rainThanks: (level, region) => `☔ Merci ! Noté à ${region} aujourd'hui : ${level}.`,
+  rainCount: (n, region, level) =>
+    n === 1
+      ? `Vous êtes la première personne à signaler la pluie à ${region} aujourd'hui.`
+      : `${n} agriculteurs ont signalé de la pluie à ${region} aujourd'hui (niveau retenu : ${level}).`,
+  rainApplied: "✅ Pris en compte dans votre plan, avec une valeur prudente : appuyez sur « Mettre à jour ». Signalement d'agriculteurs, pas une mesure.",
+  rainRule: "Pris en compte dans le plan quand au moins 2 personnes différentes signalent la même journée, avec une valeur prudente (le bas de la fourchette). Signalement d'agriculteurs, pas une mesure.",
+  rainFailed: "Je n'ai pas pu enregistrer votre signalement pour le moment. Réessayez plus tard.",
+  rainLimit: "Trop de signalements pour le moment. Réessayez dans une heure.",
 };
 
 const ar: Strings = {
@@ -97,7 +116,7 @@ const ar: Strings = {
   deleted: "✅ تم حذف بياناتكم. أرسلوا /start للبدء من جديد.",
   help:
     "🌱 ساقية تقول لكم متى وكم تسقون خلال 7 أيام، انطلاقا من الطقس الفعلي.\n\n" +
-    "/plan : خطة 7 أيام\n/bulletin : النشرة الصوتية\n/langue : تغيير اللغة\n/stop : إيقاف النشرة اليومية\n/aide : هذه المساعدة\n/start : إعادة الإعداد\n\n" +
+    "/plan : خطة 7 أيام\n/bulletin : النشرة الصوتية\n/pluie : الإبلاغ عن المطر عندكم\n/langue : تغيير اللغة\n/stop : إيقاف النشرة اليومية\n/aide : هذه المساعدة\n/start : إعادة الإعداد\n\n" +
     "🎙 يمكنكم أيضا إرسال رسالة صوتية أو الكتابة، مثلا «زيتون القيروان» (بالعربية أو الفرنسية أو الأرابيزي). تتم كتابة الرسالة الصوتية بواسطة خدمة خارجية (ElevenLabs)، ولا نحتفظ بالصوت ولا بالنص.\n\n" +
     "نصيحة إرشادية: يجب التحقق منها لدى المصالح الفلاحية الجهوية.",
   hint: "استعملوا الأزرار أعلاه، أو /aide لقائمة الأوامر.",
@@ -108,6 +127,17 @@ const ar: Strings = {
   voiceTooLong: "🎙 الرسالة طويلة جدا (30 ثانية على الأكثر). قولوا فقط المحصول والولاية.",
   voiceLimit: "🎙 رسائل صوتية كثيرة حاليا. استعملوا الأزرار أو اكتبوا المحصول والولاية.",
   voiceFailed: "🎙 لم أتمكن من سماع هذه الرسالة. اكتبوا المحصول والولاية، أو استعملوا /start.",
+  btnRain: "☔ أمطرت هنا",
+  askRain: "☔ ما كمية المطر التي سقطت عندكم اليوم؟",
+  rainThanks: (level, region) => `☔ شكرا! تم التسجيل في ${region} اليوم: ${level}.`,
+  rainCount: (n, region, level) =>
+    n === 1
+      ? `أنتم أول من أبلغ عن المطر في ${region} اليوم.`
+      : `أبلغ ${n} فلاحين عن المطر في ${region} اليوم (المستوى المعتمد: ${level}).`,
+  rainApplied: "✅ تم أخذه بعين الاعتبار في خطتكم بقيمة حذرة: اضغطوا على «تحديث». إبلاغ من فلاحين وليس قياسا.",
+  rainRule: "يُؤخذ بعين الاعتبار في الخطة عندما يبلغ شخصان مختلفان على الأقل عن نفس اليوم، بقيمة حذرة (الحد الأدنى للمجال). إبلاغ من فلاحين وليس قياسا.",
+  rainFailed: "تعذّر تسجيل إبلاغكم حاليا. حاولوا لاحقا.",
+  rainLimit: "إبلاغات كثيرة حاليا. حاولوا بعد ساعة.",
 };
 
 const en: Strings = {
@@ -134,7 +164,7 @@ const en: Strings = {
   deleted: "✅ Your data has been deleted. Send /start to begin again.",
   help:
     "🌱 Sakia tells you when and how much to irrigate over 7 days, from real weather data.\n\n" +
-    "/plan: the 7-day plan\n/bulletin: the voice bulletin\n/langue: change language\n/stop: stop the daily bulletin\n/aide: this help\n/start: set everything up again\n\n" +
+    "/plan: the 7-day plan\n/bulletin: the voice bulletin\n/pluie: report rain at your place\n/langue: change language\n/stop: stop the daily bulletin\n/aide: this help\n/start: set everything up again\n\n" +
     "🎙 You can also send a voice message or type, for example “olive Kairouan” (Arabic, French or Arabizi). Voice messages are transcribed by an external service (ElevenLabs); we keep neither the audio nor the text.\n\n" +
     "Indicative advice, to be checked with the regional agriculture office.",
   hint: "Use the buttons above, or /aide for the list of commands.",
@@ -145,6 +175,17 @@ const en: Strings = {
   voiceTooLong: "🎙 Message too long (30 seconds maximum). Just say the crop and the region.",
   voiceLimit: "🎙 Too many voice messages right now. Use the buttons or type the crop and the region.",
   voiceFailed: "🎙 I could not listen to this message. Type the crop and the region, or use /start.",
+  btnRain: "☔ It rained here",
+  askRain: "☔ How much rain fell at your place today?",
+  rainThanks: (level, region) => `☔ Thank you! Noted in ${region} today: ${level}.`,
+  rainCount: (n, region, level) =>
+    n === 1
+      ? `You are the first person to report rain in ${region} today.`
+      : `${n} farmers have reported rain in ${region} today (level kept: ${level}).`,
+  rainApplied: "✅ Taken into account in your plan, with a cautious value: press “Refresh”. Reported by farmers, not a measurement.",
+  rainRule: "Used in the plan once at least 2 different people report the same day, with a cautious value (the low end of the range). Reported by farmers, not a measurement.",
+  rainFailed: "I could not save your report right now. Please try again later.",
+  rainLimit: "Too many reports right now. Please try again in an hour.",
 };
 
 const ALL: Record<Lang, Strings> = { fr, ar, en };

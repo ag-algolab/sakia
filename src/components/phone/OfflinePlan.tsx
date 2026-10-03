@@ -12,6 +12,7 @@ import { smsInfo } from "@/lib/sms/encoding";
 import { STRINGS, formatAge } from "./strings";
 import { useUiLang } from "./useUiLang";
 import { usePlan } from "./usePlan";
+import RainReport from "./RainReport";
 
 const CHOICE = "sakia.phone.choice.v1";
 type Choice = { regionId: string; cropId: string; ago: string }; // ago : "" = inconnu, "0".."7"
@@ -142,6 +143,7 @@ export default function OfflinePlan() {
           </div>
         </div>
       )}
+      <RainReport regionId={choice.regionId} />
     </section>
   );
 }

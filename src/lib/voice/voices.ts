@@ -49,3 +49,6 @@ export const SAMPLE_TEXT: Record<"fr" | "ar" | "aeb" | "en" | "ko", string> = {
   en: "Hello everyone, and welcome to Sakia. Our advice: irrigate tomorrow morning, preferably before the heat. Thank you for the service you give to the country.",
   ko: "안녕하세요, 여러분. 사키아에 오신 것을 환영합니다. 권장 사항입니다. 내일 아침, 더위가 오기 전에 관개하세요. 나라를 위해 애써 주시는 모든 분께 감사드립니다.",
 };
+
+// Drapeau « signalements fictifs » : voir flags.ts (partagé avec le navigateur).
+export { REPORTS_ARE_FICTIONAL } from "./flags";

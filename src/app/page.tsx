@@ -4,9 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Assumptions from "@/components/ui/Assumptions";
 import { CropSelect, Field, regionName, selectClass, useCatalog } from "@/components/ui/catalog";
 import { Chips, Segmented } from "@/components/ui/controls";
+import HeroPanorama from "@/components/ui/HeroPanorama";
 import HeroScene from "@/components/ui/HeroScene";
 import { AlertIcon, DropIcon, HandIcon, RainIcon, SunIcon, ThermoIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
+import RainReport from "@/components/ui/RainReport";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
 import StatBand from "@/components/ui/StatBand";
@@ -14,6 +16,7 @@ import WaterTank from "@/components/ui/WaterTank";
 import { usePlan } from "@/components/phone/usePlan";
 import type { Confidence, Plan, PlanDay } from "@/lib/plan";
 import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
+import type { LocalReport } from "@/lib/weather";
 
 // Les types viennent du moteur (import de type seulement : aucune logique dupliquée).
 const REPLAY_DATE = "2026-07-17";
@@ -152,23 +155,33 @@ export default function Home() {
     <>
       {/* ---------- héros : l'aube sur Kairouan ---------- */}
       <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
-        <div className="relative mx-auto max-w-3xl px-4 pt-6 sm:grid sm:grid-cols-2 sm:items-end sm:gap-6 sm:pt-10">
-          <div className="relative z-10 sm:pb-20">
-            <h1 className="font-display text-[2.2rem] font-bold leading-[1.04] sm:text-5xl">{t("heroTitle")}</h1>
-            <p className="mt-3 max-w-md text-base leading-snug text-white/90 sm:text-lg">{t("heroSub")}</p>
-          </div>
-          <div className="relative mt-3 sm:mt-0">
+        {/* téléphone et tablette : texte, puis scène */}
+        <div className="relative mx-auto max-w-3xl px-4 pt-6 md:hidden">
+          <h1 className="font-display text-[2.2rem] font-bold leading-[1.04]">{t("heroTitle")}</h1>
+          <p className="mt-3 max-w-md text-base leading-snug text-white/90">{t("heroSub")}</p>
+          <div className="relative mt-3">
             <HeroScene className={`pointer-events-none block h-auto w-full overflow-visible ${hot ? "sk-haze" : ""}`} />
+          </div>
+        </div>
+
+        {/* ordinateur : panorama pleine largeur, texte posé sur le ciel */}
+        <div className="relative hidden md:block">
+          <div className="relative z-10 mx-auto max-w-5xl px-6 pt-12" style={{ paddingBottom: "min(19vw, 300px)" }}>
+            <h1 className="font-display max-w-2xl text-6xl font-bold leading-[1.03]">{t("heroTitle")}</h1>
+            <p className="mt-4 max-w-xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-[1500px]">
+            <HeroPanorama className={`block h-auto w-full overflow-visible ${hot ? "sk-haze" : ""}`} />
           </div>
         </div>
       </section>
 
       {/* ---------- bouton d'écoute : la première chose à toucher ---------- */}
-      <div className="relative z-20 mx-auto -mt-12 w-full max-w-3xl px-4">
+      <div className="relative z-20 mx-auto -mt-12 w-full max-w-3xl px-4 md:-mt-6">
         <ListenHero query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }} plan={plan} />
       </div>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 space-y-5 px-4 pt-5">
+      <main className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
         {/* rejeu de la canicule : la scène de la vidéo */}
         <button
           type="button"
@@ -232,7 +245,7 @@ export default function Home() {
         <StatBand crop={form.crop} />
       </div>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
         {/* ---------- votre champ ---------- */}
         <section aria-labelledby="field-title" className="space-y-4">
           <Reveal>
@@ -299,6 +312,9 @@ export default function Home() {
           </Reveal>
         </section>
 
+        {/* ---------- signaler la pluie (solidarité locale) ---------- */}
+        {!replay && <RainReport regionId={form.region} />}
+
         {/* ---------- les 7 prochains jours ---------- */}
         {plan && (
           <section aria-labelledby="plan-title" className={loading ? "space-y-4 opacity-60" : "space-y-4"} aria-busy={loading}>
@@ -316,13 +332,15 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <Summary plan={plan} />
-                <Reveal>
-                  <WaterTank days={plan.days} />
-                </Reveal>
-                <ol className="space-y-3">
+                <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+                  <Summary plan={plan} />
+                  <Reveal>
+                    <WaterTank days={plan.days} />
+                  </Reveal>
+                </div>
+                <ol className="grid gap-3 lg:grid-cols-2">
                   {plan.days.map((d, i) => (
-                    <DayCard key={d.date} day={d} index={i} />
+                    <DayCard key={d.date} day={d} index={i} report={plan.localReports?.find((r) => r.date === d.date)} />
                   ))}
                 </ol>
               </>
@@ -424,7 +442,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function DayCard({ day, index }: { day: PlanDay; index: number }) {
+function DayCard({ day, index, report }: { day: PlanDay; index: number; report?: LocalReport }) {
   const { t, fmtDate, fmtNum } = useLang();
   const irrigate = day.action === "irriguer";
   const rainy = day.rain >= 1;
@@ -477,6 +495,12 @@ function DayCard({ day, index }: { day: PlanDay; index: number }) {
           {day.litersPerTree != null && (
             <span className="ms-2 text-sm font-medium text-sakia-brown">({t("perHa", { n: fmtNum(day.m3PerHa) })})</span>
           )}
+        </p>
+      )}
+      {report && (
+        <p className="flex items-start gap-2 border-t border-sakia-water/20 bg-sakia-water-light/70 px-4 py-3 text-sm font-semibold leading-snug text-sakia-water-deep">
+          <RainIcon className="mt-0.5 h-5 w-5 shrink-0" />
+          {t("rainInPlan", { n: fmtNum(report.n), mm: fmtNum(report.medianMm, 1), model: fmtNum(report.modelMm, 1) })}
         </p>
       )}
       {day.estimated && <p className="px-4 pb-3 text-xs font-semibold text-sakia-alert">{t("estimated")}</p>}

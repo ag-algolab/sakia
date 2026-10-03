@@ -1,0 +1,111 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "Hello everyone, and welcome to Sakia.",
+   "startMs": 0,
+   "endMs": 2560,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "Here is today's irrigation bulletin for Kairouan, crop: Olive.",
+   "startMs": 2640,
+   "endMs": 7000,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Olive."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 7280,
+   "endMs": 9920,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "reports",
+   "text": "Yesterday, 3 farmers in the area reported: light rain. We used their report instead of the forecast. It is a report, not a measurement.",
+   "startMs": 10200,
+   "endMs": 19280,
+   "en": "Yesterday, 3 farmers in the area reported: light rain. We used their report instead of the forecast. It is a report, not a measurement."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 35 degrees.",
+   "startMs": 19360,
+   "endMs": 22080,
+   "en": "Temperatures may reach 35 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: no irrigation is needed in the next seven days.",
+   "startMs": 22160,
+   "endMs": 26320,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "startMs": 26480,
+   "endMs": 28560,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "soil",
+   "text": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app.",
+   "startMs": 28640,
+   "endMs": 35360,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "This advice is indicative: please check it with your agriculture office.",
+   "startMs": 35440,
+   "endMs": 39600,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "Thank you for the service you give to the country. Good luck to all.",
+   "startMs": 39720,
+   "endMs": 43200,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-olivier-signalements-en.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T19:24:47.703Z",
+ "lang": "en",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "olivier",
+  "date": "2026-10-03",
+  "replay": false,
+  "outOfSeason": false,
+  "rainMm": 0.3,
+  "tmaxMax": 34.9,
+  "stressRisk": "faible",
+  "next": null,
+  "confidence": {
+   "level": "ok",
+   "askAPerson": false,
+   "reasons": [],
+   "notes": [
+    "local_reports"
+   ]
+  },
+  "localReports": [
+   {
+    "date": "2026-10-02",
+    "medianMm": 2,
+    "n": 3,
+    "modelMm": 0,
+    "level": "light"
+   }
+  ]
+ },
+ "source": "demo",
+ "reportsFictional": true,
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · olive tree · rain corrected by fictional farmers' reports · English voice"
+}

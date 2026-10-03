@@ -48,7 +48,7 @@ export type ConfidenceReason =
   | "short_horizon"; // la prévision disponible ne couvre pas tout l'horizon demandé
 
 // Remarque utile mais qui ne retire pas la confiance (ex. de la pluie possible : c'est normal, on le dit).
-export type ConfidenceNote = "uncertain_rain" | "local_reports";
+export type ConfidenceNote = "uncertain_rain" | "local_reports" | "extreme_heat";
 
 export type Confidence = {
   level: "ok" | "low" | "none"; // none = aucun conseil donné
@@ -176,6 +176,8 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
   // De la pluie possible n'est pas un manque d'information : on l'indique sans alarme.
   const notes: ConfidenceNote[] = [];
   if (planDays.slice(0, 3).some((d) => d.rainProb != null && d.rainProb >= 30 && d.rainProb <= 70)) notes.push("uncertain_rain");
+  // Le calcul ne modélise pas le stress thermique : on prévient quand une chaleur extrême est prévue.
+  if (planDays.slice(0, 3).some((d) => Number.isFinite(d.tmax) && d.tmax >= 42)) notes.push("extreme_heat");
   const localReports = fc.localReports?.filter((r) => r.date >= startDate && r.date <= until) ?? [];
   if (localReports.length > 0) notes.push("local_reports");
   const covered = planDays.filter((d) => !d.estimated).length;
@@ -202,9 +204,10 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
       irrigationCount: level === "none" ? 0 : irrig.length,
       totalGrossMm: level === "none" ? 0 : sum(irrig.map((d) => d.grossMm)),
       totalM3PerHa: level === "none" ? 0 : sum(irrig.map((d) => d.m3PerHa)),
-      rainExpectedMm: sum(planDays.map((d) => d.rain)),
-      tmaxMax: tmaxs.length ? Math.max(...tmaxs) : NaN,
-      stressRisk,
+      // sans conseil (météo trop ancienne), on n'expose aucune valeur dérivée
+      rainExpectedMm: level === "none" ? 0 : sum(planDays.map((d) => d.rain)),
+      tmaxMax: level === "none" ? NaN : tmaxs.length ? Math.max(...tmaxs) : NaN,
+      stressRisk: level === "none" ? "moyen" : stressRisk,
       daysSinceLastIrrigation: daysSince,
     },
     assumptions: [

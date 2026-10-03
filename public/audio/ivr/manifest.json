@@ -387,6 +387,126 @@
    "bytes": 27708,
    "durationMs": 6880,
    "recordedAt": "2026-10-03T18:41:25.735Z"
+  },
+  {
+   "id": "rain_hint",
+   "lang": "fr",
+   "file": "/audio/ivr/rain_hint.fr.mp3",
+   "text": "Pour signaler de la pluie, tapez 7.",
+   "en": "To report rain, press 7.",
+   "hash": "59756396",
+   "chars": 35,
+   "bytes": 11407,
+   "durationMs": 2800,
+   "recordedAt": "2026-10-03T19:27:00.455Z"
+  },
+  {
+   "id": "rain_hint",
+   "lang": "ar",
+   "file": "/audio/ivr/rain_hint.ar.mp3",
+   "text": "للتبليغ عن مطر، اضغط سبعة.",
+   "en": "To report rain, press 7.",
+   "hash": "6847d314",
+   "chars": 26,
+   "bytes": 11407,
+   "durationMs": 2800,
+   "recordedAt": "2026-10-03T19:27:01.480Z"
+  },
+  {
+   "id": "rain_where",
+   "lang": "fr",
+   "file": "/audio/ivr/rain_where.fr.mp3",
+   "text": "Dans quelle région a-t-il plu ? Pour Kairouan, tapez 1. Pour une autre région, tapez 2.",
+   "en": "In which region did it rain? For Kairouan, press 1. For another region, press 2.",
+   "hash": "022fe0d5",
+   "chars": 87,
+   "bytes": 24469,
+   "durationMs": 6080,
+   "recordedAt": "2026-10-03T19:27:03.157Z"
+  },
+  {
+   "id": "rain_where",
+   "lang": "ar",
+   "file": "/audio/ivr/rain_where.ar.mp3",
+   "text": "في أي ولاية نزل المطر؟ للقيروان، اضغط واحد. لولاية أخرى، اضغط اثنين.",
+   "en": "In which region did it rain? For Kairouan, press 1. For another region, press 2.",
+   "hash": "e747a132",
+   "chars": 68,
+   "bytes": 28962,
+   "durationMs": 7200,
+   "recordedAt": "2026-10-03T19:27:05.013Z"
+  },
+  {
+   "id": "rain_ask",
+   "lang": "fr",
+   "file": "/audio/ivr/rain_ask.fr.mp3",
+   "text": "Combien a-t-il plu aujourd'hui ? Pas de pluie, tapez 1. Quelques gouttes, 2. Pluie légère, 3. Beaucoup de pluie, 4. Énormément, 5.",
+   "en": "How much did it rain today? No rain: press 1. A few drops: 2. Light rain: 3. A lot of rain: 4. A huge amount: 5.",
+   "hash": "a9a0c89e",
+   "chars": 130,
+   "bytes": 43695,
+   "durationMs": 10880,
+   "recordedAt": "2026-10-03T19:27:07.815Z"
+  },
+  {
+   "id": "rain_ask",
+   "lang": "ar",
+   "file": "/audio/ivr/rain_ask.ar.mp3",
+   "text": "كم نزل من المطر اليوم؟ لا مطر: اضغط واحد. قطرات: اثنان. مطر خفيف: ثلاثة. مطر غزير: أربعة. غزير جدا: خمسة.",
+   "en": "How much did it rain today? No rain: press 1. A few drops: 2. Light rain: 3. A lot of rain: 4. A huge amount: 5.",
+   "hash": "17eea365",
+   "chars": 105,
+   "bytes": 54562,
+   "durationMs": 13600,
+   "recordedAt": "2026-10-03T19:27:10.734Z"
+  },
+  {
+   "id": "rain_thanks",
+   "lang": "fr",
+   "file": "/audio/ivr/rain_thanks.fr.mp3",
+   "text": "Merci, votre signalement est enregistré.",
+   "en": "Thank you, your report is saved.",
+   "hash": "748494b8",
+   "chars": 40,
+   "bytes": 11407,
+   "durationMs": 2800,
+   "recordedAt": "2026-10-03T19:27:11.638Z"
+  },
+  {
+   "id": "rain_thanks",
+   "lang": "ar",
+   "file": "/audio/ivr/rain_thanks.ar.mp3",
+   "text": "شكرا، تم تسجيل تبليغكم.",
+   "en": "Thank you, your report is saved.",
+   "hash": "f296c902",
+   "chars": 23,
+   "bytes": 11094,
+   "durationMs": 2720,
+   "recordedAt": "2026-10-03T19:27:12.500Z"
+  },
+  {
+   "id": "rain_fail",
+   "lang": "fr",
+   "file": "/audio/ivr/rain_fail.fr.mp3",
+   "text": "Je n'ai pas pu enregistrer votre signalement pour le moment.",
+   "en": "I could not save your report right now.",
+   "hash": "8db75752",
+   "chars": 60,
+   "bytes": 12348,
+   "durationMs": 3040,
+   "recordedAt": "2026-10-03T19:27:13.509Z"
+  },
+  {
+   "id": "rain_fail",
+   "lang": "ar",
+   "file": "/audio/ivr/rain_fail.ar.mp3",
+   "text": "لم أستطع تسجيل تبليغكم في الوقت الحالي.",
+   "en": "I could not save your report right now.",
+   "hash": "e8e6f76a",
+   "chars": 39,
+   "bytes": 13288,
+   "durationMs": 3280,
+   "recordedAt": "2026-10-03T19:27:14.508Z"
   }
  ]
 }

@@ -3,9 +3,9 @@
 // Dessin vectoriel : quelques Ko, aucune image à télécharger. Tout est décoratif (aria-hidden).
 // Les collines dépassent du cadre (overflow visible) : sur grand écran, la scène reste centrée et le paysage se prolonge jusqu'aux bords.
 
-const spin = (origin: string): React.CSSProperties => ({ transformBox: "fill-box", transformOrigin: origin });
+export const spin = (origin: string): React.CSSProperties => ({ transformBox: "fill-box", transformOrigin: origin });
 
-function Olive({ x, y, s, delay }: { x: number; y: number; s: number; delay: number }) {
+export function Olive({ x, y, s, delay }: { x: number; y: number; s: number; delay: number }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
       <g className="sk-sway" style={{ ...spin("50% 100%"), animationDelay: `${delay}s` }}>
@@ -19,7 +19,7 @@ function Olive({ x, y, s, delay }: { x: number; y: number; s: number; delay: num
   );
 }
 
-function Drop({ x, y, delay }: { x: number; y: number; delay: number }) {
+export function Drop({ x, y, delay }: { x: number; y: number; delay: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <path className="sk-drop" style={{ animationDelay: `${delay}s` }} d="M0 -4 C2.6 0 3.2 2.4 0 4.4 C-3.2 2.4 -2.6 0 0 -4Z" fill="#8fd0f5" />

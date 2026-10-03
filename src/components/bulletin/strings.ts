@@ -70,6 +70,24 @@ export type Strings = {
   agoToday: string;
   agoOne: string;
   agoDays: string; // {n}
+  // pluie signalée par des agriculteurs (corrige le modèle météo ; « signalé », jamais « mesuré »)
+  reportsTitle: string;
+  reportsRow: string; // {rel} {n} {level} {model}
+  reportsNote: string;
+  reportsFictional: string;
+  relDays: [string, string, string, string]; // aujourd'hui, hier, avant-hier, il y a trois jours
+  rainLevels: Record<"none" | "very_light" | "light" | "heavy" | "very_heavy", string>;
+  // bouton « Il a plu » : un agriculteur signale la pluie chez lui
+  rainBtn: string;
+  rainAsk: string;
+  rainSend: string;
+  rainSendAgain: string;
+  rainSent: string;
+  rainQueued: string;
+  rainErrRate: string;
+  rainErrDown: string;
+  rainErrInvalid: string;
+  rainRule: string;
 };
 
 export const STRINGS: Record<UiLang, Strings> = {
@@ -140,6 +158,22 @@ export const STRINGS: Record<UiLang, Strings> = {
     agoToday: "Today",
     agoOne: "1 day ago",
     agoDays: "{n} days ago",
+    reportsTitle: "Rain corrected by farmers' reports",
+    reportsRow: "{rel}: {n} farmers reported “{level}” (the forecast said {model} mm).",
+    reportsNote: "This is a report by farmers, not a measurement. It replaces the forecast for that day.",
+    reportsFictional: "In this demonstration the reports are fictional.",
+    relDays: ["Today", "Yesterday", "The day before yesterday", "Three days ago"],
+    rainLevels: { none: "no rain", very_light: "very light rain, a few drops", light: "light rain", heavy: "a lot of rain", very_heavy: "a huge amount of rain" },
+    rainBtn: "It rained",
+    rainAsk: "How much did it rain at your place?",
+    rainSend: "Send my report",
+    rainSendAgain: "Send another report",
+    rainSent: "Thank you. Your report counts once 2 different people in the region report the same day. Press “Listen” again to hear the bulletin with the reports.",
+    rainQueued: "No network: your report is kept on your phone and will be sent when the network is back.",
+    rainErrRate: "Too many reports from this phone. Try again later.",
+    rainErrDown: "Could not save the report right now. Try again later.",
+    rainErrInvalid: "The report was not accepted (day too old or invalid).",
+    rainRule: "Anonymous: no name, no address. One report per person, per region and per day. When 2 or more different people agree for a day, their middle value replaces the forecast for that day.",
   },
   fr: {
     title: "Bulletin Sakia",
@@ -208,6 +242,22 @@ export const STRINGS: Record<UiLang, Strings> = {
     agoToday: "Aujourd'hui",
     agoOne: "il y a 1 jour",
     agoDays: "il y a {n} jours",
+    reportsTitle: "Pluie corrigée par des signalements d'agriculteurs",
+    reportsRow: "{rel} : {n} agriculteurs ont signalé « {level} » (la prévision disait {model} mm).",
+    reportsNote: "Ceci est un signalement d'agriculteurs, pas une mesure. Il remplace la prévision pour ce jour.",
+    reportsFictional: "Dans cette démonstration, les signalements sont fictifs.",
+    relDays: ["Aujourd'hui", "Hier", "Avant-hier", "Il y a trois jours"],
+    rainLevels: { none: "pas de pluie", very_light: "pluie très légère, quelques gouttes", light: "pluie légère", heavy: "beaucoup de pluie", very_heavy: "énormément de pluie" },
+    rainBtn: "Il a plu",
+    rainAsk: "Combien a-t-il plu chez vous ?",
+    rainSend: "Envoyer mon signalement",
+    rainSendAgain: "Envoyer un autre signalement",
+    rainSent: "Merci. Votre signalement compte dès que 2 personnes différentes de la région signalent la même journée. Appuyez de nouveau sur « Écouter » pour entendre le bulletin avec les signalements.",
+    rainQueued: "Pas de réseau : votre signalement reste dans votre téléphone et partira au retour du réseau.",
+    rainErrRate: "Trop de signalements depuis ce téléphone. Réessayez plus tard.",
+    rainErrDown: "Impossible d'enregistrer le signalement pour le moment. Réessayez plus tard.",
+    rainErrInvalid: "Le signalement n'a pas été accepté (jour trop ancien ou invalide).",
+    rainRule: "Anonyme : aucun nom, aucune adresse. Un seul signalement par personne, par région et par jour. Quand au moins 2 personnes différentes sont d'accord pour un jour, leur valeur médiane remplace la prévision pour ce jour.",
   },
   ar: {
     title: "نشرة ساقية",
@@ -276,6 +326,22 @@ export const STRINGS: Record<UiLang, Strings> = {
     agoToday: "اليوم",
     agoOne: "قبل يوم",
     agoDays: "قبل {n} أيام",
+    reportsTitle: "مطر مصحَّح ببلاغات الفلاحين",
+    reportsRow: "{rel}: أبلغ {n} من الفلاحين عن «{level}» (التوقعات: {model} مم).",
+    reportsNote: "هذا بلاغ من الفلاحين وليس قياسا، وقد أخذنا به بدل التوقعات لذلك اليوم.",
+    reportsFictional: "في هذا العرض التجريبي، البلاغات مفترضة وغير حقيقية.",
+    relDays: ["اليوم", "أمس", "أول أمس", "قبل ثلاثة أيام"],
+    rainLevels: { none: "لا مطر", very_light: "مطر خفيف جدا، قطرات", light: "مطر خفيف", heavy: "مطر غزير", very_heavy: "مطر غزير جدا" },
+    rainBtn: "هطل المطر",
+    rainAsk: "كم هطل من المطر عندكم؟",
+    rainSend: "أرسل بلاغي",
+    rainSendAgain: "أرسل بلاغا آخر",
+    rainSent: "شكرا. يُحتسب بلاغكم عندما يبلّغ شخصان مختلفان في الولاية عن اليوم نفسه. اضغطوا «استمع» من جديد لسماع النشرة مع البلاغات.",
+    rainQueued: "لا توجد شبكة: يبقى بلاغكم في هاتفكم ويُرسل عند عودة الشبكة.",
+    rainErrRate: "بلاغات كثيرة من هذا الهاتف. أعيدوا المحاولة لاحقا.",
+    rainErrDown: "تعذّر حفظ البلاغ الآن. أعيدوا المحاولة لاحقا.",
+    rainErrInvalid: "لم يُقبل البلاغ (يوم قديم أو غير صالح).",
+    rainRule: "مجهول: لا اسم ولا عنوان. بلاغ واحد لكل شخص ولكل ولاية ولكل يوم. عندما يتفق شخصان مختلفان أو أكثر على يوم ما، تعوّض قيمتهم الوسطى التوقعات لذلك اليوم.",
   },
   ko: {
     title: "사키아 방송",
@@ -344,5 +410,21 @@ export const STRINGS: Record<UiLang, Strings> = {
     agoToday: "오늘",
     agoOne: "1일 전",
     agoDays: "{n}일 전",
+    reportsTitle: "농민 신고로 보정된 비",
+    reportsRow: "{rel}: 농민 {n}명이 “{level}”라고 신고했습니다 (예보는 {model}mm).",
+    reportsNote: "이것은 농민들의 신고이며 측정값이 아닙니다. 그날은 예보 대신 반영했습니다.",
+    reportsFictional: "이 시연에서 신고는 가상의 데이터입니다.",
+    relDays: ["오늘", "어제", "그저께", "사흘 전"],
+    rainLevels: { none: "비 없음", very_light: "아주 약한 비, 몇 방울", light: "약한 비", heavy: "많은 비", very_heavy: "매우 많은 비" },
+    rainBtn: "비가 왔어요",
+    rainAsk: "지금 계신 곳에 비가 얼마나 왔나요?",
+    rainSend: "신고 보내기",
+    rainSendAgain: "신고 하나 더 보내기",
+    rainSent: "감사합니다. 같은 지역에서 서로 다른 2명이 같은 날을 신고하면 반영됩니다. “듣기”를 다시 눌러 신고가 반영된 방송을 들어 보세요.",
+    rainQueued: "네트워크가 없어 신고는 휴대폰에 보관되었다가 연결되면 전송됩니다.",
+    rainErrRate: "이 휴대폰에서 신고가 너무 많습니다. 나중에 다시 시도해 주세요.",
+    rainErrDown: "지금은 신고를 저장할 수 없습니다. 나중에 다시 시도해 주세요.",
+    rainErrInvalid: "신고가 받아들여지지 않았습니다(너무 오래된 날짜이거나 올바르지 않음).",
+    rainRule: "익명입니다: 이름도 주소도 없습니다. 사람마다, 지역마다, 하루에 한 번만 신고할 수 있습니다. 서로 다른 2명 이상이 같은 날에 동의하면 그 중간값이 그날의 예보를 대신합니다.",
   },
 };

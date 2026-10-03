@@ -15,6 +15,8 @@ export type Band = {
   next: { date: string; m3PerHa: number; litersPerTree?: number } | null;
   // garde-fou « pas sûr » : à afficher en évidence ; level "none" = aucun conseil donné
   confidence: Plan["confidence"];
+  // jours dont la pluie vient de signalements d'agriculteurs (pas du modèle) : « signalé », jamais « mesuré »
+  localReports?: NonNullable<Plan["localReports"]>;
 };
 
 export function bandFromPlan(plan: Plan): Band {
@@ -31,6 +33,7 @@ export function bandFromPlan(plan: Plan): Band {
     stressRisk: plan.summary.stressRisk,
     next: !none && first && plan.status === "ok" ? { date: first.date, m3PerHa: first.m3PerHa, litersPerTree: first.litersPerTree } : null,
     confidence: plan.confidence,
+    localReports: none || !plan.localReports?.length ? undefined : plan.localReports,
   };
 }
 
@@ -48,6 +51,8 @@ export type BulletinPayload = {
   soil?: string;
   system?: string;
   planting?: string;
+  // vrai quand les signalements de pluie affichés sont fictifs (démonstration) : la page doit le dire
+  reportsFictional?: boolean;
   voiceName?: string;
   voiceValidated?: boolean;
 };

@@ -81,7 +81,8 @@
   "confidence": {
    "level": "ok",
    "askAPerson": false,
-   "reasons": []
+   "reasons": [],
+   "notes": []
   }
  },
  "source": "demo",

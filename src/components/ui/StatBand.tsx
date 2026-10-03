@@ -29,7 +29,7 @@ export default function StatBand({ crop }: { crop: string }) {
   return (
     <section aria-labelledby="why-title" className="relative overflow-hidden bg-sakia-green-deep px-4 py-10 text-white">
       <div aria-hidden className="pointer-events-none absolute -end-16 -top-16 h-56 w-56 rounded-full bg-sakia-sun/10 blur-2xl" />
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <Reveal>
           <h2 id="why-title" className="font-display text-3xl font-bold leading-tight sm:text-4xl">
             {t("statsTitle")}

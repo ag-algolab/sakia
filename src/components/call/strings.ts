@@ -99,6 +99,16 @@ const fr: Dict = {
   ago_4: "Il y a plus de 5 jours",
   ago_9: "Je ne sais pas (le plan sera « pas sûr »)",
   voiceFootnote: "Voix : {voice} (ElevenLabs), sous-titres anglais pour le jury.",
+  hint_rain: "Signaler de la pluie",
+  loadingRain: "Enregistrement du signalement…",
+  rainTitle: "Signalement de pluie",
+  rainSaved: "Enregistré : {level} à {region}, aujourd'hui.",
+  rainCount: "{n} personne(s) différente(s) ont signalé aujourd'hui dans cette région.",
+  rainCounted: "Pris en compte : la pluie du modèle météo est remplacée par la valeur prudente signalée pour ce jour (médiane des signalements).",
+  rainNotYet: "Pas encore pris en compte : il faut au moins {min} personnes différentes qui signalent la même journée.",
+  rainNotSaved: "Pas enregistré : le serveur n'a pas pu garder le signalement pour le moment. L'appel l'a dit.",
+  rainNotSavedOffline: "Pas enregistré : un signalement a besoin d'internet pour être gardé. L'appel l'a dit.",
+  rainDemoNote: "Dans la démonstration, les signalements sont fictifs. Ils sont « signalés par des agriculteurs » : ce n'est jamais une mesure. Aucun nom, aucun numéro, aucune adresse n'est gardé.",
 };
 
 const en: Dict = {
@@ -192,6 +202,16 @@ const en: Dict = {
   ago_4: "More than 5 days ago",
   ago_9: "I do not know (the plan will say “not sure”)",
   voiceFootnote: "Voice: {voice} (ElevenLabs), English subtitles for the jury.",
+  hint_rain: "Report rain",
+  loadingRain: "Saving your report…",
+  rainTitle: "Rain report",
+  rainSaved: "Saved: {level} in {region}, today.",
+  rainCount: "{n} different person(s) have reported today in this region.",
+  rainCounted: "Taken into account: the rain of the weather model is replaced by the cautious value reported for this day (median of the reports).",
+  rainNotYet: "Not taken into account yet: at least {min} different people must report the same day.",
+  rainNotSaved: "Not saved: the server could not keep the report right now. The call said so.",
+  rainNotSavedOffline: "Not saved: a report needs internet to be kept. The call said so.",
+  rainDemoNote: "In this demo, reports are fictitious. They are “reported by farmers”, never a measurement. No name, number or address is kept.",
 };
 
 const ar: Dict = {
@@ -285,6 +305,16 @@ const ar: Dict = {
   ago_4: "قبل أكثر من 5 أيام",
   ago_9: "لا أعرف (ستكون الخطة «غير متأكد»)",
   voiceFootnote: "الصوت: {voice} (ElevenLabs)، ترجمة إنجليزية للجنة التحكيم.",
+  hint_rain: "التبليغ عن مطر",
+  loadingRain: "جارٍ تسجيل التبليغ…",
+  rainTitle: "تبليغ عن مطر",
+  rainSaved: "تم التسجيل: {level} في {region}، اليوم.",
+  rainCount: "بلّغ اليوم {n} أشخاص مختلفين في هذه الولاية.",
+  rainCounted: "مأخوذ في الحساب: يحل المقدار الحذر المبلغ عنه لهذا اليوم (وسيط التبليغات) محل مطر نموذج الطقس.",
+  rainNotYet: "لم يؤخذ في الحساب بعد: يلزم على الأقل {min} أشخاص مختلفين يبلغون عن اليوم نفسه.",
+  rainNotSaved: "لم يُسجَّل: تعذر على الخادم حفظ التبليغ حاليا. قالت المكالمة ذلك.",
+  rainNotSavedOffline: "لم يُسجَّل: يحتاج التبليغ إلى الإنترنت ليُحفظ. قالت المكالمة ذلك.",
+  rainDemoNote: "في هذا العرض التبليغات وهمية. هي «تبليغات من فلاحين» وليست قياسا أبدا. لا يُحفظ أي اسم أو رقم أو عنوان.",
 };
 
 const DICTS: Record<UiLang, Dict> = { fr, en, ar };

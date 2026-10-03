@@ -5,6 +5,7 @@
 import { getCrop } from "./crops";
 import { getRegion } from "./regions";
 import type { ConfidenceReason, Plan, PlanDay } from "./planCore";
+import { LEVEL_LABEL, levelFromMm } from "./rainLevels";
 
 export type Lang = "fr" | "ar" | "en";
 
@@ -134,7 +135,7 @@ export function planMessage(plan: Plan, lang: Lang = "fr"): string {
         : lang === "en"
           ? "This crop is not in its growing season right now."
           : "Cette culture n'est pas en végétation en ce moment.";
-    return `${head}\n${msg}`;
+    return plan.confidence.askAPerson ? `${head}\n${msg}\n⚠ ${ASK[lang]}` : `${head}\n${msg}`;
   }
   const lines = plan.days.map((d) => {
     const act =
@@ -169,17 +170,27 @@ export function planMessage(plan: Plan, lang: Lang = "fr"): string {
   const unsure = plan.confidence.askAPerson
     ? [`⚠ ${ASK[lang]} (${plan.confidence.reasons.map((r) => REASON[lang][r]).join(" ; ")})`]
     : [];
+  const heatNote = plan.confidence.notes?.includes("extreme_heat")
+    ? [
+        lang === "ar"
+          ? "حرارة شديدة متوقعة: الحساب لا يغطي الإجهاد الحراري، راقبوا محاصيلكم."
+          : lang === "en"
+            ? "Very high heat is forecast: the calculation does not cover heat stress, keep an eye on your crops."
+            : "Très forte chaleur prévue : le calcul ne couvre pas le stress thermique, surveillez vos cultures.",
+      ]
+    : [];
   const rainNote = plan.confidence.notes?.includes("uncertain_rain")
     ? [lang === "ar" ? "قد تسقط أمطار خلال 3 أيام: أعيدوا التحقق غدا." : lang === "en" ? "Rain is possible within 3 days: check again tomorrow." : "Pluie possible dans les 3 jours : revérifiez demain."]
     : [];
-  const neighbours = (plan.localReports ?? []).map((r) =>
-    lang === "ar"
-      ? `أمطار أبلغ عنها ${r.n} فلاحين يوم ${shortDay(r.date, lang)}: ${r.medianMm} مم (أُخذت بعين الاعتبار).`
+  const neighbours = (plan.localReports ?? []).map((r) => {
+    const word = LEVEL_LABEL[lang][r.level ?? levelFromMm(r.medianMm)];
+    return lang === "ar"
+      ? `أمطار أبلغ عنها ${r.n} فلاحين يوم ${shortDay(r.date, lang)}: «${word}» (تُحتسب على الأقل ${r.medianMm} مم، احتياطا).`
       : lang === "en"
-        ? `Rain reported by ${r.n} farmers on ${shortDay(r.date, lang)}: ${r.medianMm} mm (taken into account).`
-        : `Pluie signalée par ${r.n} agriculteurs le ${shortDay(r.date, lang)} : ${r.medianMm} mm (prise en compte).`,
-  );
-  return [head, ...lines, rainLine, ...rainNote, ...neighbours, ...unsure, foot].join("\n");
+        ? `Rain reported by ${r.n} farmers on ${shortDay(r.date, lang)}: "${word}" (counted as at least ${r.medianMm} mm, to be safe).`
+        : `Pluie signalée par ${r.n} agriculteurs le ${shortDay(r.date, lang)} : « ${word} » (comptée pour au moins ${r.medianMm} mm, par prudence).`;
+  });
+  return [head, ...lines, rainLine, ...rainNote, ...heatNote, ...neighbours, ...unsure, foot].join("\n");
 }
 
 export type BulletinLine = { id: string; text: string };
@@ -203,7 +214,10 @@ export function bulletinScript(plan: Plan, lang: Lang = "fr"): BulletinLine[] {
       `Here is today's irrigation bulletin for ${n.region}, crop: ${n.crop}.`,
     ),
   ];
-  if (plan.status === "hors_vegetation") {
+  if (plan.confidence.level === "none") {
+    // Sans conseil possible (météo trop ancienne) : la seule phrase est celle du garde-fou, jamais « pas d'irrigation ».
+    lines.push({ id: "unsure", text: ASK[lang] });
+  } else if (plan.status === "hors_vegetation") {
     lines.push(L("off", "Cette culture n'est pas en végétation en ce moment : aucune irrigation à prévoir.", "هذا المحصول ليس في موسم النمو الآن: لا حاجة للسقي.", "This crop is out of season right now: no irrigation is needed."));
   } else {
     lines.push(

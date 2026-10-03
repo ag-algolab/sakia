@@ -56,13 +56,13 @@ export default function BacktestPage() {
       {/* ---------- en-tête ---------- */}
       <section className="sk-hero-sky relative overflow-hidden px-4 pb-16 pt-8 text-white">
         <div aria-hidden className="pointer-events-none absolute -end-10 top-4 h-44 w-44 rounded-full bg-sakia-sun/25 blur-3xl" />
-        <div className="relative mx-auto max-w-3xl">
+        <div className="relative mx-auto max-w-4xl">
           <h1 className="font-display max-w-xl text-4xl font-bold leading-[1.05] sm:text-6xl">{t("proofHeadline")}</h1>
           <p className="mt-3 max-w-lg text-base leading-snug text-white/90 sm:text-lg">{t("proofSub")}</p>
         </div>
       </section>
 
-      <main className="relative z-10 mx-auto -mt-10 w-full max-w-3xl flex-1 space-y-6 px-4 pb-10">
+      <main className="relative z-10 mx-auto -mt-10 w-full max-w-4xl flex-1 space-y-6 px-4 pb-10">
         <div className="rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/5">
           <CropSelect catalog={catalog} value={crop} onChange={setCrop} />
         </div>

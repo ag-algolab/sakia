@@ -27,9 +27,26 @@ create table if not exists rain_reports (
   region_id text not null,
   day date not null,
   mm numeric(5,1) not null check (mm >= 0 and mm <= 150),
+  level text check (level in ('none','very_light','light','heavy','very_heavy')),
   reporter_hash text not null,
   created_at timestamptz not null default now(),
   unique (region_id, day, reporter_hash)
 );
 
 alter table rain_reports enable row level security;
+
+-- Si la table existait déjà sans la colonne « level » (échelle qualitative), cette ligne la rajoute sans rien casser :
+alter table rain_reports add column if not exists level text check (level in ('none','very_light','light','heavy','very_heavy'));
+
+-- ------------------------------------------------------------------------------
+-- Plafonds de consommation persistants (protègent les crédits ElevenLabs contre les appels abusifs).
+-- À coller UNE FOIS dans le même éditeur SQL. Aucune politique d'accès : serveur seulement.
+
+create table if not exists usage_counters (
+  counter text not null,
+  day date not null,
+  amount bigint not null default 0,
+  primary key (counter, day)
+);
+
+alter table usage_counters enable row level security;

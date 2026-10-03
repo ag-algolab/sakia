@@ -1,4 +1,4 @@
-// Lecture du plan en audio : texte du moteur (script.ts) → voix Rima M (ElevenLabs) → mp3 + sous-titres calés.
+// Lecture en audio : texte du moteur (script.ts) → voix Rima M (ElevenLabs) → mp3 + sous-titres calés.
 // SERVEUR SEULEMENT. Un même texte n'est jamais synthétisé deux fois (cache), et le budget de caractères du poste plafonne tout.
 
 import type { Plan } from "../plan";
@@ -6,12 +6,13 @@ import { timeLines } from "../voice";
 import { ttsWithTimestamps } from "../voice/elevenlabs";
 import { MODEL_ID, SELECTED_VOICE } from "../voice/voices";
 import type { IvrLang } from "./menu";
+import { rainCountText } from "./rain";
 import { ivrDetailLines, ivrPlanLines } from "./script";
 import { BudgetError, clipKey, readClip, recordCredits, reserveChars, writeClip } from "./store";
 
 export { BudgetError };
 
-const MAX_CHARS = 700; // garde-fou : une lecture normale fait 130 à 330 caractères
+const MAX_CHARS = 700; // garde-fou : une lecture normale fait 130 à 350 caractères
 
 export type ClipLine = { id: string; text: string; en: string; startMs: number; endMs: number };
 export type PlanClip = {
@@ -25,6 +26,8 @@ export type PlanClip = {
   durationMs: number;
 };
 
+type SpokenLine = { id: string; text: string };
+
 // Texte et sous-titres SANS voix (utile quand la synthèse est indisponible : l'écran montre quand même le conseil).
 export function planSubtitles(plan: Plan, lang: IvrLang, detail = false): { id: string; text: string; en: string }[] {
   const linesOf = detail ? ivrDetailLines : ivrPlanLines;
@@ -33,10 +36,8 @@ export function planSubtitles(plan: Plan, lang: IvrLang, detail = false): { id: 
   return spoken.map((l) => ({ ...l, en: english.get(l.id) ?? l.text }));
 }
 
-export async function planClip(plan: Plan, lang: IvrLang, detail = false): Promise<PlanClip> {
-  const linesOf = detail ? ivrDetailLines : ivrPlanLines;
-  const spoken = linesOf(plan, lang);
-  const english = new Map(linesOf(plan, "en").map((l) => [l.id, l.text]));
+// Synthétise des lignes de texte (avec cache et plafond de caractères) et rend l'audio et les sous-titres calés.
+export async function linesClip(spoken: SpokenLine[], english: Map<string, string>): Promise<PlanClip> {
   const text = spoken.map((l) => l.text).join(" ");
   if (text.length > MAX_CHARS) throw new Error(`texte trop long (${text.length} caractères)`);
 
@@ -70,4 +71,20 @@ export async function planClip(plan: Plan, lang: IvrLang, detail = false): Promi
     modelId: hit.modelId,
     durationMs: lines.length ? lines[lines.length - 1].endMs : 0,
   };
+}
+
+export async function planClip(plan: Plan, lang: IvrLang, detail = false): Promise<PlanClip> {
+  const linesOf = detail ? ivrDetailLines : ivrPlanLines;
+  return linesClip(linesOf(plan, lang), new Map(linesOf(plan, "en").map((l) => [l.id, l.text])));
+}
+
+// « N personnes ont signalé aujourd'hui… » dit après la confirmation d'un signalement de pluie.
+export const rainCountLines = (n: number, lang: IvrLang) => ({
+  spoken: [{ id: "count", text: rainCountText(n, lang) }],
+  english: new Map([["count", rainCountText(n, "en")]]),
+});
+
+export async function rainCountClip(n: number, lang: IvrLang): Promise<PlanClip> {
+  const { spoken, english } = rainCountLines(n, lang);
+  return linesClip(spoken, english);
 }

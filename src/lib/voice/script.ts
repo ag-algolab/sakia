@@ -11,6 +11,7 @@ import type { Plan } from "../plan";
 import { bulletinScriptAeb } from "./aeb";
 import { bulletinScriptKo } from "./ko";
 import type { VoiceLang } from "./langs";
+import { withReportsLine } from "./rainreports";
 import { withSoilLine } from "./soil";
 import type { SoilChoice } from "./soil";
 
@@ -18,7 +19,8 @@ import type { SoilChoice } from "./soil";
 export function bulletinScriptFor(plan: Plan, lang: VoiceLang, choice?: Partial<SoilChoice>): BulletinLine[] {
   const base = lang === "ko" ? bulletinScriptKo(plan) : lang === "aeb" ? bulletinScriptAeb(plan) : bulletinScript(plan, lang);
   // ligne « soil » avant l'avertissement : pour quel sol et quel système le conseil est calculé
-  const lines = withSoilLine(base, lang, plan.status === "ok", choice);
+  // ligne « reports » après la pluie : jours où la pluie vient de signalements d'agriculteurs et non du modèle
+  const lines = withSoilLine(withReportsLine(base, lang, plan), lang, plan.status === "ok", choice);
   if (plan.confidence.level !== "none") return lines;
   const unsure = lines.filter((l) => l.id === "unsure");
   if (unsure.length === 0) throw new Error("plan sans conseil mais sans ligne « pas sûr » : script incohérent");

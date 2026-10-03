@@ -95,6 +95,52 @@ const MAX_CHARS = 1500;
     console.log("clé de cache : sans paramètre inchangée, sol / système / semis la changent");
   }
 
+  // signalements de pluie des agriculteurs : ligne « reports » juste après « rain », dans chaque langue
+  {
+    const base = await buildPlan({ regionId: "kairouan", cropId: "olivier", lastIrrigationDaysAgo: 3 });
+    const day = (back: number) => new Date(Date.parse(`${base.today}T00:00:00Z`) - back * 86400000).toISOString().slice(0, 10);
+    const levels = [
+      { level: "none" as const, mm: 0 }, { level: "very_light" as const, mm: 1 }, { level: "light" as const, mm: 2 },
+      { level: "heavy" as const, mm: 8 }, { level: "very_heavy" as const, mm: 25 },
+    ];
+    let phrases = 0;
+    for (const lv of levels) {
+      for (const n of [2, 3, 5, 10, 11, 12]) {
+        for (const back of [0, 1, 2, 3]) {
+          const plan = { ...base, localReports: [{ date: day(back), medianMm: lv.mm, n, modelMm: 0.4, level: lv.level }] };
+          let refIds = "";
+          for (const l of VOICE_LANGS) {
+            const lines = bulletinScriptFor(plan, l.code);
+            const ids = lines.map((x) => x.id).join(",");
+            if (!refIds) refIds = ids;
+            const tag = `reports ${lv.level} n=${n} -${back}j ${l.code}`;
+            if (ids !== refIds) fail(`${tag} : ids ${ids} différents de ${refIds}`);
+            const i = lines.findIndex((x) => x.id === "reports");
+            if (i < 1 || lines[i - 1].id !== "rain") { fail(`${tag} : ligne reports absente ou pas après rain (${ids})`); continue; }
+            const text = lines[i].text;
+            phrases++;
+            if (l.code === "aeb") {
+              if (/[0-9٠-٩]/.test(text)) fail(`${tag} : chiffre dans « ${text} »`);
+              if (nonTunisianWords(text).length) fail(`${tag} : forme non tunisienne ${nonTunisianWords(text).join(", ")}`);
+            }
+            if (l.code === "ko" && /[A-Za-z]/.test(text)) fail(`${tag} : lettres latines dans « ${text} »`);
+            if (/undefined|NaN/.test(text)) fail(`${tag} : valeur absurde dans « ${text} »`);
+            // jamais « mesuré » : le texte doit dire que c'est un signalement
+            const says = { fr: /pas une mesure/, en: /not a measurement/, ar: /وليس قياسا/, aeb: /موش قياس/, ko: /측정값이 아니라/ }[l.code];
+            if (!says.test(text)) fail(`${tag} : ne dit pas « signalement, pas mesure » : « ${text} »`);
+          }
+        }
+      }
+    }
+    // pas de ligne reports quand il n'y a pas de conseil à corriger (hors saison) ou pas de signalement
+    const off = { ...base, status: "hors_vegetation" as const, localReports: [{ date: day(1), medianMm: 2, n: 3, modelMm: 0, level: "light" as const }] };
+    for (const l of VOICE_LANGS) {
+      if (bulletinScriptFor(off, l.code).some((x) => x.id === "reports")) fail(`reports présent hors saison (${l.code})`);
+      if (bulletinScriptFor(base, l.code).some((x) => x.id === "reports")) fail(`reports présent sans signalement (${l.code})`);
+    }
+    console.log(`ligne reports : ${phrases} phrases vérifiées (5 degrés x 6 effectifs x 4 jours x ${VOICE_LANGS.length} langues)`);
+  }
+
   // plan sans aucun conseil (météo trop ancienne) : on ne lit QUE la phrase « pas sûr », jamais de chiffre ni de « pas d'irrigation »
   const base = await buildPlan({ regionId: "kairouan", cropId: "olivier" });
   const none = { ...base, days: [], confidence: { level: "none" as const, askAPerson: true, reasons: ["very_stale_data" as const] } };

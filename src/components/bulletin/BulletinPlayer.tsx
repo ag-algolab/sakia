@@ -12,11 +12,12 @@ import type { Band, BulletinPayload } from "@/lib/voice/band";
 import { VOICE_LANGS, htmlLangOf, rtlOf } from "@/lib/voice/langs";
 import type { VoiceLang } from "@/lib/voice/langs";
 import Presenter from "./Presenter";
+import RainReportButton from "./RainReportButton";
 import { LOCALES, STRINGS } from "./strings";
 import type { UiLang } from "./strings";
 
 type Opt = { id: string; fr: string; ar: string; ko?: string; en?: string };
-export type DemoMeta = { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string };
+export type DemoMeta = { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string; fictionalReports?: boolean };
 type Loaded = BulletinPayload & { blobUrl: string; sizeKb: number; title?: string };
 type Fallback = "offline" | "budget" | "error" | null;
 
@@ -29,7 +30,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const [lang, setLang] = useState<VoiceLang>("aeb");
   const [subMode, setSubMode] = useState<"en" | "spoken">("en");
   const [muted, setMuted] = useState(false);
-  const [music, setMusic] = useState(true); // petite musique de fond « flash info » (components/ui/bedMusic.ts), sous la voix
+  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts), sous la voix : COUPÉE par défaut, la personne l'active
   const [ago, setAgo] = useState(""); // dernier arrosage : "" = inconnu, "0" à "7" = il y a N jours
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -200,8 +201,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const pickDemo = useCallback(() => {
     return (
-      demos.find((d) => d.region === region && d.crop === crop && d.lang === lang && !d.replayOf) ??
-      demos.find((d) => d.lang === lang) ??
+      demos.find((d) => d.region === region && d.crop === crop && d.lang === lang && !d.replayOf && !d.fictionalReports) ??
+      demos.find((d) => d.lang === lang && !d.fictionalReports) ??
       demos[0]
     );
   }, [demos, region, crop, lang]);
@@ -419,6 +420,35 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           </aside>
         )}
 
+        {/* pluie signalée par des agriculteurs : information, pas alarme ; « signalé », jamais « mesuré » */}
+        {loaded && band?.localReports && band.localReports.length > 0 && (
+          <aside className="mt-3 rounded-lg border border-[#5fb3c4] bg-[#0f2f36] px-4 py-3 text-sm text-[#d6f1f6]">
+            <p className="flex items-center gap-2 font-semibold">
+              <span aria-hidden>🌧</span>
+              {t.reportsTitle}
+            </p>
+            <ul className="mt-1 list-disc space-y-0.5 ps-5">
+              {[...band.localReports]
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .map((r) => {
+                  const back = Math.min(3, Math.max(0, Math.round((Date.parse(`${band.date}T00:00:00Z`) - Date.parse(`${r.date}T00:00:00Z`)) / 86400000)));
+                  const lv = r.level ?? (r.medianMm >= 25 ? "very_heavy" : r.medianMm >= 8 ? "heavy" : r.medianMm >= 2 ? "light" : r.medianMm >= 1 ? "very_light" : "none");
+                  return (
+                    <li key={r.date}>
+                      {t.reportsRow
+                        .replace("{rel}", t.relDays[back])
+                        .replace("{n}", String(r.n))
+                        .replace("{level}", t.rainLevels[lv])
+                        .replace("{model}", r.modelMm.toFixed(1))}
+                    </li>
+                  );
+                })}
+            </ul>
+            <p className="mt-2">{t.reportsNote}</p>
+            {loaded.reportsFictional && <p className="mt-1 font-semibold text-[#ffe9a6]">{t.reportsFictional}</p>}
+          </aside>
+        )}
+
         {/* messages de provenance : bulletin enregistré clairement annoncé */}
         <div className="mt-3 space-y-2">
           {notes.map((n, i) => (
@@ -572,6 +602,9 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             <p className="mt-2 text-xs text-[#9fb2a6]">{t.audioSize.replace("{kb}", String(loaded.sizeKb))}</p>
           </section>
         )}
+
+        {/* « Il a plu » : un agriculteur signale la pluie chez lui ; avec 2 personnes d'accord elle remplace la prévision */}
+        <RainReportButton regionId={region} t={t} regionName={nameOf(regions.find((r) => r.id === region) ?? regions[0])} />
 
         {/* bulletins enregistrés */}
         {demos.length > 0 && (

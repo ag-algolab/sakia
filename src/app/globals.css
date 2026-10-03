@@ -181,6 +181,16 @@ input {
     transform: translateX(1.5px) skewX(-1.2deg);
   }
 }
+@keyframes sk-rainfall {
+  from {
+    transform: translateY(-1px);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateY(1.4px);
+    opacity: 1;
+  }
+}
 @keyframes sk-sun-pulse {
   0%,
   100% {
@@ -229,6 +239,9 @@ input {
   }
   .sk-haze {
     animation: sk-haze 2.2s ease-in-out infinite;
+  }
+  .sk-rainfall path {
+    animation: sk-rainfall 0.9s ease-in-out infinite alternate;
   }
   .sk-sun-pulse {
     animation: sk-sun-pulse 5s ease-in-out infinite;
@@ -293,4 +306,24 @@ input {
 
 
 
-/* rebuild 1791055085 */
+
+
+
+/* Lisible pour tous, y compris les personnes âgées : sur ordinateur, tout (textes ET largeurs, qui sont en rem) grandit.
+   Les seuils des media queries Tailwind restent calculés sur 16 px, rien ne casse. */
+@media (min-width: 1024px) {
+  html {
+    font-size: 112.5%;
+  }
+}
+@media (min-width: 1440px) {
+  html {
+    font-size: 125%;
+  }
+}
+
+
+
+
+
+/* rebuild 1791055802 */

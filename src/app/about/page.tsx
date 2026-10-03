@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Reveal } from "@/components/ui/motion";
 import LiveSizes from "./LiveSizes";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ const EVIDENCE = [
   ["Agriculture's share of water withdrawals", "75.5 % (2.71 of 3.59 km³)", "FAO AQUASTAT, Tunisia", "2022", "Some values imputed"],
   ["Kairouan aquifer exploited at", "230 %", "African Manager (press)", "2024", "Press, not an official report"],
   ["Households with internet, Kairouan", "20.7 % (national 40.4 %)", "INS, ICT bulletin", "2025", "Households, not individuals"],
-  ["Illiteracy, Kairouan (age 10+)", "25.5 to 28.5 % (national 17.3 %)", "INS, census", "2024", "Range read from a summary"],
+  ["Illiteracy, five interior governorates incl. Kairouan (age 10+)", "about 25.5 to 28.5 % (Tunisia overall 17.3 %)", "INS, Flash Éducation (2024 census)", "2025", "Range of the five highest governorates: Jendouba, Kairouan, Sidi Bouzid, Kasserine, Siliana"],
   ["SMS received at the right time in a pilot", "15 % of 421 respondents", "ICARDA, ICT2Scale (WOCAT)", "2019-2021", "Small pilot"],
   ["Pumping cost for farms under 3 ha", "1.25 to 1.5 times higher", "Cahiers Agricultures", "2024", "Read via a summary: to verify"],
 ];
@@ -106,12 +107,12 @@ const REASONS = [
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section aria-labelledby={id} className="space-y-3">
-      <h2 id={id} className="text-xl font-extrabold text-sakia-green">
+    <Reveal as="section" className="space-y-3">
+      <h2 id={id} className="font-display text-3xl font-bold leading-tight text-sakia-green-deep">
         {title}
       </h2>
       {children}
-    </section>
+    </Reveal>
   );
 }
 
@@ -146,13 +147,18 @@ function Table({ head, rows }: { head: string[]; rows: string[][] }) {
 
 export default function AboutPage() {
   return (
-    <main dir="ltr" lang="en" className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 text-start">
-      <p className="rounded-xl bg-sakia-sand p-3 text-sm text-sakia-brown">
-        This page is in English. Sakia speaks to farmers in Tunisian Arabic (Darija), standard Arabic, French and English.
-      </p>
-
+    <>
+      <section className="sk-hero-sky px-4 pb-14 pt-8 text-white">
+        <div className="mx-auto max-w-4xl" dir="ltr" lang="en">
+          <h1 className="font-display max-w-xl text-4xl font-bold leading-[1.05] sm:text-6xl">What the AI does, and what it does not.</h1>
+          <p className="mt-3 max-w-lg text-base leading-snug text-white/90 sm:text-lg">
+            This page is in English. Sakia speaks to farmers in Tunisian Arabic (Darija), standard Arabic, French and English.
+          </p>
+        </div>
+      </section>
+      <main dir="ltr" lang="en" className="mx-auto w-full max-w-4xl flex-1 space-y-10 px-4 py-8 text-start">
       <Section id="problem" title="The problem, in one sentence">
-        <p className="rounded-xl bg-sakia-green p-4 text-lg font-semibold leading-relaxed text-white">
+        <p className="font-display rounded-3xl bg-gradient-to-br from-sakia-green to-sakia-green-deep p-6 text-xl font-semibold leading-relaxed text-white shadow-md">
           Because of Sakia, a smallholder in Kairouan will irrigate on the day the crop needs it, before heat stress,
           instead of following a fixed calendar that wastes water or arrives late; we know because, over 11 replayed
           seasons of real weather, the advised schedule used 3 to 27 % less pumped water with almost no stress days
@@ -175,7 +181,7 @@ export default function AboutPage() {
         </p>
         <p className="leading-relaxed text-sakia-ink">
           What a spreadsheet cannot do is meet the farmer where the language is the barrier. About one adult in four in
-          Kairouan cannot read, and many speak only Tunisian Arabic (Darija), which is spoken far more than it is
+          Kairouan and four other interior governorates cannot read (17.3 % in Tunisia overall), and many speak only Tunisian Arabic (Darija), which is spoken far more than it is
           written. So the AI is used to understand a farmer who speaks or writes in Darija, French or Latin-script
           Tunisian (“Arabizi”), to fill in the crop and region on their behalf, and to answer aloud in Darija.
         </p>
@@ -221,6 +227,21 @@ export default function AboutPage() {
         <Table head={["When the tool says “not sure”", "What the user sees"]} rows={REASONS} />
       </Section>
 
+      <Section id="rain" title="Farmers as weather stations">
+        <p className="leading-relaxed text-sakia-ink">
+          Weather models see a grid of 9 to 25 km, not your field. So a farmer can report how much rain fell at their place,
+          on a five-step scale (none, a few drops, light, a lot, a huge amount): nobody measures in millimetres. When at
+          least <strong>two different farmers</strong> of the same region report the same day, their cautious median replaces
+          the model's rain for that day, and the irrigation plan is recomputed. A human stays in the loop, and the data is local.
+        </p>
+        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
+          <li>One report per person, per region and per day; values bounded; today and the last 3 days only.</li>
+          <li>Median, not average: a single false report changes nothing. Each step counts for the low end of its range, because wrongly skipping an irrigation hurts the crop more than wasting a little water.</li>
+          <li>No name and no IP address stored: only an anonymous salted fingerprint. Limit of 20 reports per hour and per address.</li>
+          <li>Always shown as “reported by farmers, not measured”. <strong>In this demonstration the reports are fictional.</strong></li>
+        </ul>
+      </Section>
+
       <Section id="size" title="Small AI: measured sizes">
         <p className="text-sm text-sakia-brown">
           No large model runs on the device. These sizes are measured live from this site (bytes received, before compression).
@@ -255,6 +276,7 @@ export default function AboutPage() {
           <li>The weather point is the governorate capital, an approximation of the plot.</li>
         </ul>
       </Section>
-    </main>
+      </main>
+    </>
   );
 }

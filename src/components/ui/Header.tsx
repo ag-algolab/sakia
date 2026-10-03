@@ -19,7 +19,7 @@ export default function Header() {
   const path = usePathname();
   return (
     <header className="bg-[#0d2e22] text-white">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 pt-3">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 pt-3">
         <Link href="/" className="flex items-center gap-2.5 font-display text-2xl font-bold tracking-tight">
           <SakiaLogo size={38} className="text-white" />
           Sakia
@@ -42,7 +42,7 @@ export default function Header() {
           ))}
         </div>
       </div>
-      <nav aria-label="Sakia" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 pb-2 pt-2">
+      <nav aria-label="Sakia" className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-2 pb-2 pt-2">
         {LINKS.map((l) => {
           const active = l.href === "/" ? path === "/" : path.startsWith(l.href);
           return (

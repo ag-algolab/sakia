@@ -13,9 +13,10 @@ export type Day = {
 // Pluie signalée par des agriculteurs et retenue à la place de celle du modèle (voir src/lib/reports.ts).
 export type LocalReport = {
   date: string; // AAAA-MM-JJ
-  medianMm: number; // pluie retenue (médiane des signalements)
+  medianMm: number; // pluie retenue (médiane prudente des signalements)
   n: number; // nombre de personnes différentes
   modelMm: number; // ce que disait le modèle météo ce jour-là
+  level?: "none" | "very_light" | "light" | "heavy" | "very_heavy"; // échelle qualitative retenue
 };
 
 export type Forecast = {

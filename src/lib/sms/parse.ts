@@ -5,7 +5,7 @@
 import { CROPS } from "@/lib/crops";
 import { REGIONS } from "@/lib/regions";
 import type { Lang } from "@/lib/messages";
-import { AMBIGUOUS_CROP_ALIASES, CROP_ALIASES, KEYWORDS, LANGUAGE_WORDS, REGION_ALIASES } from "./lexicon";
+import { AMBIGUOUS_CROP_ALIASES, CROP_ALIASES, KEYWORDS, LANGUAGE_WORDS, RAIN_LEVEL_WORDS, RAIN_WORDS, REGION_ALIASES, YESTERDAY_WORDS } from "./lexicon";
 import type { KeywordKind } from "./lexicon";
 
 export type Parsed =
@@ -15,6 +15,8 @@ export type Parsed =
   | { kind: "help" }
   | { kind: "language"; lang?: Lang } // sans langue : on affiche le choix
   | { kind: "plan"; cropId?: string; regionId?: string; ambiguousCrops?: string[] }
+  // rapport de pluie : « PLUIE 10 », « مطر 10 », « shta 10 kairouan », « pluie beaucoup hier » ; sans quantité (`mm` et `level` absents) on la demande
+  | { kind: "rain"; mm?: number; level?: "none" | "light" | "heavy" | "very_heavy"; regionId?: string; dayOffset: 0 | -1 }
   | { kind: "unknown" };
 
 export const MAX_INPUT = 320; // au-delà, on ignore la suite (un SMS fait 160)
@@ -181,6 +183,18 @@ function matchWord(token: string, words: string[], minTypoLen: number, fuzzy: bo
   return false;
 }
 
+// Premier nombre isolé du message (« 10 », « 2,5 », « 10mm »), pas un chiffre collé à un mot d'arabizi (« 9ayrawan »).
+function extractNumber(raw: string): number | undefined {
+  for (const m of raw.matchAll(/\d+(?:[.,]\d+)?/g)) {
+    const at = m.index ?? 0;
+    if (at > 0 && /\p{L}/u.test(raw[at - 1])) continue;
+    const after = raw.slice(at + m[0].length);
+    if (/^\p{L}/u.test(after) && !/^(mm|ملم|millim)/iu.test(after)) continue;
+    return Number(m[0].replace(",", "."));
+  }
+  return undefined;
+}
+
 // ---------- analyse ----------
 
 // Alphabet dominant du message : sert à répondre en arabe à quelqu'un qui écrit seulement en arabe.
@@ -219,6 +233,25 @@ export function parseSms(text: string): Parsed {
   }
 
   if (keywords.has("stop")) return { kind: "stop" };
+
+  // Rapport de pluie : un mot « pluie » et une quantité (nombre ou mot). Sans quantité, seulement si le message ne parle de rien d'autre
+  // (« quand arroser mes oliviers s'il a plu ? » reste une demande de plan).
+  if (rest.some((tok) => matchWord(tok, RAIN_WORDS, 5, fuzzy))) {
+    const mm = extractNumber(raw);
+    let level: "none" | "light" | "heavy" | "very_heavy" | undefined;
+    for (const l of Object.keys(RAIN_LEVEL_WORDS) as (keyof typeof RAIN_LEVEL_WORDS)[]) {
+      if (rest.some((tok) => matchWord(tok, RAIN_LEVEL_WORDS[l], 6, fuzzy))) level = l;
+    }
+    if (mm !== undefined || level || (!crop && !region)) {
+      return {
+        kind: "rain",
+        mm,
+        level: mm === undefined ? level : undefined,
+        regionId: region?.entry.ids[0],
+        dayOffset: rest.some((tok) => matchWord(tok, YESTERDAY_WORDS, 5, false)) ? -1 : 0,
+      };
+    }
+  }
 
   if (crop || region) {
     const ids = crop?.entry.ids;

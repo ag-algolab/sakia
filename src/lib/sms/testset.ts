@@ -12,6 +12,7 @@ export type Group = "français" | "arabe" | "arabizi";
 export type Expect =
   | { kind: "plan"; cropId?: string; regionId?: string }
   | { kind: "ambiguous"; crops: string[] }
+  | { kind: "rain"; mm?: number; level?: "none" | "light" | "heavy" | "very_heavy"; regionId?: string; dayOffset?: 0 | -1 }
   | { kind: "help" | "stop" | "language" | "ussd" };
 
 export type Case = { text: string; group: Group; expect: Expect; note?: string };
@@ -70,6 +71,25 @@ export const TESTSET: Case[] = [
   { text: "dellaa3 sousse", group: "arabizi", expect: plan("pasteque", "sousse") },
   { text: "dhra kairouan", group: "arabizi", expect: plan("sorgho", "kairouan"), note: "difficile : « dhra » = maïs ou sorgho, mot volontairement non reconnu" },
   { text: "kifech nsa9i el ghalla fi sfax", group: "arabizi", expect: plan(undefined, "sfax"), note: "pas de culture reconnaissable : seule la région compte" },
+  // ---------- rapports de pluie (mot-clé PLUIE / مطر / shta + quantité) ----------
+  { text: "PLUIE 10", group: "français", expect: { kind: "rain", mm: 10 } },
+  { text: "pluie 10 kairouan", group: "français", expect: { kind: "rain", mm: 10, regionId: "kairouan" } },
+  { text: "il a plu 15 mm à Sfax", group: "français", expect: { kind: "rain", mm: 15, regionId: "sfax" }, note: "phrase entière" },
+  { text: "pluie 2,5mm", group: "français", expect: { kind: "rain", mm: 2.5 }, note: "virgule et unité" },
+  { text: "pluie hier 5 gafsa", group: "français", expect: { kind: "rain", mm: 5, regionId: "gafsa", dayOffset: -1 } },
+  { text: "pluie beaucoup kairouan", group: "français", expect: { kind: "rain", level: "heavy", regionId: "kairouan" } },
+  { text: "pluei 8", group: "français", expect: { kind: "rain", mm: 8 }, note: "faute de frappe (inversion i/e, absorbée par la forme de comparaison : volontairement laissée en échec)" },
+  { text: "pluie", group: "français", expect: { kind: "rain" }, note: "sans quantité : on la demande" },
+  { text: "مطر 10", group: "arabe", expect: { kind: "rain", mm: 10 } },
+  { text: "مطر 10 القيروان", group: "arabe", expect: { kind: "rain", mm: 10, regionId: "kairouan" } },
+  { text: "نزل مطر ١٢ ملم في صفاقس", group: "arabe", expect: { kind: "rain", mm: 12, regionId: "sfax" }, note: "phrase entière, chiffres arabes" },
+  { text: "مطر برشا القيروان", group: "arabe", expect: { kind: "rain", level: "heavy", regionId: "kairouan" } },
+  { text: "shta 10", group: "arabizi", expect: { kind: "rain", mm: 10 } },
+  { text: "chta 5 sfax", group: "arabizi", expect: { kind: "rain", mm: 5, regionId: "sfax" } },
+  { text: "shta barcha kairouan", group: "arabizi", expect: { kind: "rain", level: "heavy", regionId: "kairouan" } },
+  { text: "nzelet chta 7 f sousse", group: "arabizi", expect: { kind: "rain", mm: 7, regionId: "sousse" }, note: "phrase entière" },
+  { text: "chta lbare7 3 kairouan", group: "arabizi", expect: { kind: "rain", mm: 3, regionId: "kairouan", dayOffset: -1 }, note: "« lbare7 » = hier" },
+  { text: "quand arroser mes oliviers à kairouan s'il a plu ?", group: "français", expect: plan("olivier", "kairouan"), note: "« plu » sans quantité : reste une demande de plan" },
   // ---------- variantes d'écriture non prévues dans le lexique (écrites après coup pour ne pas se flatter) ----------
   { text: "zeitouna kairwan", group: "arabizi", expect: plan("olivier", "kairouan"), note: "variante libre" },
   { text: "tamatem sfax", group: "arabizi", expect: plan("tomate", "sfax"), note: "variante libre" },
@@ -90,6 +110,10 @@ function matches(text: string, e: Expect): boolean {
   switch (e.kind) {
     case "plan":
       return p.kind === "plan" && p.cropId === e.cropId && p.regionId === e.regionId && !p.ambiguousCrops;
+    case "rain": {
+      const p = parseSms(text);
+      return p.kind === "rain" && p.mm === e.mm && p.level === e.level && p.regionId === e.regionId && p.dayOffset === (e.dayOffset ?? 0);
+    }
     case "ambiguous":
       return p.kind === "plan" && !!p.ambiguousCrops && [...p.ambiguousCrops].sort().join() === [...e.crops].sort().join();
     default:

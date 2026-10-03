@@ -56,6 +56,15 @@ export type Strings = {
   languagesBody: string;
   measured: (ok: number, total: number) => string;
   measuredCaveat: string;
+  // rapports de pluie
+  rainTitle: string;
+  rainIntro: string;
+  rainDemo: string;
+  rainDayLabel: string;
+  rainPending: string;
+  rainSent: (n: number) => string;
+  rainRejected: string;
+  rainQueueTitle: string;
 };
 
 export const STRINGS: Record<UiLang, Strings> = {
@@ -109,6 +118,14 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "Arabe tunisien (écriture arabe et écriture latine « arabizi »), français et anglais, avec tolérance aux fautes de frappe. Le dialecte n'est pas garanti : voici ce qui a été mesuré.",
     measured: (ok, total) => `${ok} phrases comprises sur ${total}`,
     measuredCaveat: "Phrases écrites à la main par l'équipe, pas recueillies auprès d'agriculteurs : ce n'est pas une mesure sur le terrain.",
+    rainTitle: "Signaler la pluie tombée chez vous",
+    rainIntro: "Il a plu ? Dites-le en un geste. Quand au moins 2 personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse : un identifiant anonyme gardé dans cet appareil.",
+    rainDemo: "Démonstration : les rapports affichés ici sont fictifs. Ce sont des signalements d'agriculteurs, pas des mesures.",
+    rainDayLabel: "Quel jour ?",
+    rainPending: "en attente : part dès que le réseau revient",
+    rainSent: (n) => `envoyé · ${n} personne${n > 1 ? "s ont" : " a"} signalé ce jour`,
+    rainRejected: "refusé",
+    rainQueueTitle: "Vos signalements",
   },
   ar: {
     truth: "تعمل بدون إنترنت بعد التحميل الأول، ولا تعوّض شبكة الهاتف.",
@@ -160,6 +177,14 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "العربية التونسية (بالحروف العربية وبالحروف اللاتينية «عربيزي»)، والفرنسية والإنجليزية، مع التسامح مع أخطاء الكتابة. اللهجة غير مضمونة: هذا ما تم قياسه.",
     measured: (ok, total) => `${ok} جملة مفهومة من ${total}`,
     measuredCaveat: "جمل كتبها الفريق يدويا، لم تُجمع من فلاحين: ليس قياسا ميدانيا.",
+    rainTitle: "أبلغ عن المطر الذي نزل عندك",
+    rainIntro: "هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ شخصان مختلفان على الأقل في الولاية عن نفس اليوم، تحل قيمتهما الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان: معرّف مجهول محفوظ في هذا الجهاز.",
+    rainDemo: "عرض تجريبي: التقارير المعروضة هنا وهمية. هي تقارير من فلاحين وليست قياسات.",
+    rainDayLabel: "أي يوم؟",
+    rainPending: "في الانتظار: تُرسل فور عودة الشبكة",
+    rainSent: (n) => `أُرسل · ${n} أشخاص أبلغوا عن هذا اليوم`,
+    rainRejected: "مرفوض",
+    rainQueueTitle: "تقاريرك",
   },
   en: {
     truth: "Works without internet after a first load; it does not replace the mobile network.",
@@ -211,6 +236,14 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "Tunisian Arabic (Arabic script and Latin-letter “arabizi”), French and English, tolerating typing mistakes. The dialect is not guaranteed: here is what was measured.",
     measured: (ok, total) => `${ok} of ${total} sentences understood`,
     measuredCaveat: "Sentences written by hand by the team, not collected from farmers: this is not a field measurement.",
+    rainTitle: "Report the rain that fell at your place",
+    rainIntro: "Did it rain? Tell us in one tap. When at least 2 different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name, no address: an anonymous identifier kept on this device.",
+    rainDemo: "Demonstration: the reports shown here are fictitious. They are farmers' reports, not measurements.",
+    rainDayLabel: "Which day?",
+    rainPending: "waiting: sent as soon as the network is back",
+    rainSent: (n) => `sent · ${n} ${n > 1 ? "people have" : "person has"} reported that day`,
+    rainRejected: "rejected",
+    rainQueueTitle: "Your reports",
   },
 };
 
