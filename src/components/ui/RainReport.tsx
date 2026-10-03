@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { todayInTunisia } from "@/components/phone/usePlan";
-import { LEVEL_LABEL, RAIN_LEVELS } from "@/lib/rainLevels";
+import { LEVEL_LABEL, MIN_REPORTERS, RAIN_LEVELS } from "@/lib/rainLevels";
 import type { RainLevel } from "@/lib/rainLevels";
+import { sendRainReport } from "@/lib/reporterClient";
 import { useLang } from "./LangProvider";
 import { Reveal } from "./motion";
 import { SunIcon } from "./icons";
@@ -17,7 +18,6 @@ import { SunIcon } from "./icons";
 // Les signalements montrés dans la démonstration sont fictifs : le dire. Passer à false quand de vrais agriculteurs signalent.
 export const REPORTS_ARE_DEMO = true;
 
-const REPORTER_KEY = "sakia-reporter";
 const QUEUE_KEY = "sakia-report-queue";
 const MAX_AGE_DAYS = 3; // le serveur n'accepte que aujourd'hui et les 3 derniers jours
 
@@ -27,20 +27,6 @@ const RANGE: Record<RainLevel, string> = { none: "0", very_light: "< 2", light: 
 type Queued = { regionId: string; level: RainLevel; day: string; at: number };
 type Summary = { date: string; n: number; medianMm: number; level?: RainLevel }[];
 type Result = "ok" | "rate" | "down" | "invalid" | "network";
-
-// Identifiant anonyme gardé dans l'appareil (au moins 8 caractères), jamais affiché. Le serveur n'en garde qu'une empreinte salée.
-function reporterId(): string {
-  try {
-    let id = localStorage.getItem(REPORTER_KEY);
-    if (!id || id.length < 8) {
-      id = `web:${crypto.randomUUID().replace(/-/g, "")}`;
-      localStorage.setItem(REPORTER_KEY, id);
-    }
-    return id;
-  } catch {
-    return `web:${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-  }
-}
 
 function readQueue(): Queued[] {
   try {
@@ -62,20 +48,14 @@ function dayMinus(today: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// L'identité est émise et signée par le serveur (src/lib/reporterClient.ts) : sans elle, POST /api/reports répond 400.
 async function post(item: { regionId: string; level: RainLevel; day: string }): Promise<Result> {
-  try {
-    const res = await fetch("/api/reports", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ regionId: item.regionId, level: item.level, day: item.day, reporter: reporterId() }),
-    });
-    if (res.ok) return "ok";
-    if (res.status === 429) return "rate";
-    if (res.status === 503) return "down";
-    return "invalid";
-  } catch {
-    return "network";
-  }
+  const sent = await sendRainReport(item);
+  if (!sent.ok) return sent.reason;
+  if (sent.res.ok) return "ok";
+  if (sent.res.status === 429) return "rate";
+  if (sent.res.status === 503) return "down";
+  return "invalid";
 }
 
 // Envoie ce qui attendait dans l'appareil. Les rapports trop vieux (plus de 3 jours) sont abandonnés.
@@ -130,7 +110,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
   const [offset, setOffset] = useState(0); // 0 = aujourd'hui, 1 = hier
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "queued" | "rate" | "down" | "invalid">("idle");
   const [summary, setSummary] = useState<Summary>([]);
-  const [minReporters, setMinReporters] = useState(2);
+  const [minReporters, setMinReporters] = useState<number>(MIN_REPORTERS); // le serveur redit la même valeur ; hors connexion, c'est celle-ci
 
   const label = useCallback(
     (l: RainLevel) => (lang === "aeb" ? DARIJA_LABEL[l] : LEVEL_LABEL[lang][l]),

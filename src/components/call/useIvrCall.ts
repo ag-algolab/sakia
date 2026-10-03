@@ -12,7 +12,9 @@ import type { CallState, Key, Say, StepResult } from "@/lib/ivr/flow";
 import { SILENCE_MS } from "@/lib/ivr/menu";
 import type { IvrLang } from "@/lib/ivr/menu";
 import { promptEn, promptText } from "@/lib/ivr/prompts";
+import { MIN_REPORTERS } from "@/lib/ivr/rain";
 import type { RainLevel } from "@/lib/ivr/rain";
+import { reporterIdentity } from "@/lib/reporterClient";
 import { loadBlob, loadJson } from "./audioStore";
 import { playKeyTone, playRingback } from "./tones";
 
@@ -55,32 +57,12 @@ function b64ToBlob(b64: string, mime: string): Blob {
 }
 
 // Identité anonyme de cet appareil pour les signalements de pluie, ÉMISE ET SIGNÉE PAR LE SERVEUR (GET /api/reports/token) :
-// un navigateur ne choisit pas la sienne. Même clé que le site : le téléphone dessiné et le site, sur le même appareil, comptent pour
-// UNE personne (un seul rapport par personne), et plusieurs appels depuis le même appareil aussi. Jamais un nom, un numéro ni une adresse.
-const SIGNED = /^[0-9a-f]{24}\.[0-9a-f]{16}$/;
-let memoryReporter = "";
+// un navigateur ne choisit pas la sienne. Même code et même clé que tout le site (src/lib/reporterClient.ts) : le téléphone
+// dessiné et le site, sur le même appareil, comptent pour UNE personne (un seul rapport par personne), et plusieurs appels
+// depuis le même appareil aussi. Jamais un nom, un numéro ni une adresse.
 async function reporterId(forceNew = false): Promise<string | null> {
-  try {
-    const known = localStorage.getItem("sakia-reporter");
-    if (!forceNew && known && SIGNED.test(known)) return known;
-  } catch {
-    if (!forceNew && SIGNED.test(memoryReporter)) return memoryReporter;
-  }
-  try {
-    const res = await fetch("/api/reports/token");
-    if (!res.ok) return null;
-    const { reporter } = (await res.json()) as { reporter?: string };
-    if (!reporter || !SIGNED.test(reporter)) return null;
-    memoryReporter = reporter;
-    try {
-      localStorage.setItem("sakia-reporter", reporter);
-    } catch {
-      // stockage refusé : l'identité reste en mémoire pour cet appel
-    }
-    return reporter;
-  } catch {
-    return null;
-  }
+  const who = await reporterIdentity(forceNew);
+  return who.ok ? who.id : null;
 }
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -378,7 +360,7 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
         regionId: s.regionId,
         n: reply?.n ?? 0,
         counted: !!reply?.counted,
-        minReporters: reply?.minReporters ?? 2,
+        minReporters: reply?.minReporters ?? MIN_REPORTERS,
         offline,
       });
       if (!reply?.ok) return sayPrompt({ kind: "prompt", id: "rain_fail", lang: s.lang }, token);

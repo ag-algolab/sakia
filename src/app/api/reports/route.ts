@@ -52,7 +52,8 @@ export async function POST(request: Request) {
   }
   if (!validDay(day, today)) return Response.json({ error: "date invalide (aujourd'hui ou les 3 derniers jours)" }, { status: 400 });
   // L'identité doit avoir été émise par le serveur (GET /api/reports/token) : un navigateur ne la choisit pas.
-  if (!verifyReporterToken(reporter)) return Response.json({ error: "identité anonyme invalide : demandez-en une à /api/reports/token" }, { status: 400 });
+  // `code` : lisible par la machine, pour que le navigateur sache qu'il doit redemander une identité (src/lib/reporterClient.ts)
+  if (!verifyReporterToken(reporter)) return Response.json({ error: "identité anonyme invalide : demandez-en une à /api/reports/token", code: "bad_identity" }, { status: 400 });
   if (!ipAllowed(ip, reporter)) return Response.json({ error: "plafond de rapports atteint pour aujourd'hui" }, { status: 429 });
   const ok = await saveReport(regionId, day, mm, reporter, level);
   if (!ok) return Response.json({ error: "enregistrement impossible pour le moment" }, { status: 503 });
