@@ -58,3 +58,4 @@ docs/NOTES-*.md
 # Échantillons de choix de voix et cache audio généré : utiles en local, pas dans le dépôt public
 public/audio/samples/
 public/audio/cache/
+docs/SUBMISSION.md
