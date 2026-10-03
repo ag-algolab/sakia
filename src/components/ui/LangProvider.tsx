@@ -10,6 +10,8 @@ type Ctx = {
   t: (key: string, vars?: Record<string, string | number>) => string;
   fmtDate: (iso: string, opts?: Intl.DateTimeFormatOptions) => string;
   fmtNum: (n: number, digits?: number) => string;
+  // « : » selon la langue : le français met une espace insécable avant, l'anglais et l'arabe collent le deux-points au mot.
+  colon: string;
 };
 
 const LangContext = createContext<Ctx | null>(null);
@@ -19,6 +21,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
   // Lecture du choix mémorisé après l'hydratation (évite un écart serveur/navigateur).
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- l'adresse et le stockage n'existent que dans le navigateur : lecture APRÈS l'hydratation, volontaire */
     try {
       // ?lang=aeb dans l'adresse (lien ou QR code remis à un agriculteur) l'emporte sur le choix mémorisé
       const asked = new URLSearchParams(window.location.search).get("lang");
@@ -28,6 +31,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
         if (asked) localStorage.setItem("sakia-lang", saved);
       }
     } catch {}
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
@@ -51,6 +55,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
       new Intl.DateTimeFormat(LOCALES[lang], { timeZone: "UTC", ...opts }).format(new Date(`${iso}T00:00:00Z`)),
     fmtNum: (n, digits = 0) =>
       Number.isFinite(n) ? new Intl.NumberFormat(LOCALES[lang], { maximumFractionDigits: digits }).format(n) : "–",
+    colon: lang === "fr" ? "\u00A0:" : ":",
   };
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }

@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { todayInTunisia } from "@/components/phone/usePlan";
-import { LEVEL_LABEL, RAIN_LEVELS } from "@/lib/rainLevels";
+import { LEVEL_LABEL, MIN_REPORTERS, RAIN_LEVELS } from "@/lib/rainLevels";
 import type { RainLevel } from "@/lib/rainLevels";
 import { useLang } from "./LangProvider";
 import { Reveal } from "./motion";
 import { SunIcon } from "./icons";
 
 // « Signaler la pluie » : l'agriculteur dit combien il a plu chez lui, sur une échelle à cinq degrés (personne ne mesure
-// en millimètres). Quand au moins 2 personnes différentes de la région signalent la même journée, la médiane prudente
+// en millimètres). Quand au moins MIN_REPORTERS (3) personnes différentes de la région signalent la même journée, la médiane prudente
 // remplace la pluie du modèle météo (src/lib/reports.ts). C'est de la donnée locale avec un humain dans la boucle.
 // Jamais présenté comme une mesure : « signalé par des agriculteurs ».
 // Hors connexion : le signalement attend dans l'appareil et part au retour du réseau.
@@ -130,7 +130,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
   const [offset, setOffset] = useState(0); // 0 = aujourd'hui, 1 = hier
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "queued" | "rate" | "down" | "invalid">("idle");
   const [summary, setSummary] = useState<Summary>([]);
-  const [minReporters, setMinReporters] = useState(2);
+  const [minReporters, setMinReporters] = useState(MIN_REPORTERS); // repli (hors connexion) = la règle du moteur, jamais un chiffre écrit à la main
 
   const label = useCallback(
     (l: RainLevel) => (lang === "aeb" ? DARIJA_LABEL[l] : LEVEL_LABEL[lang][l]),
@@ -148,6 +148,8 @@ export default function RainReport({ regionId }: { regionId: string }) {
   }, [regionId]);
 
   useEffect(() => {
+    // chargement initial depuis le serveur : refresh() ne pose l'état qu'après la réponse du réseau, pas pendant l'effet
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
   }, [refresh]);
 

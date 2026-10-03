@@ -24,6 +24,8 @@ export function useInView<T extends Element>(threshold = 0.15): [React.RefObject
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
+      // très vieux navigateur : pas d'observation possible, on montre tout de suite (repli volontaire)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSeen(true);
       return;
     }
@@ -86,6 +88,8 @@ export function CountUp({
   const [shown, setShown] = useState<number>(value);
   useEffect(() => {
     if (!seen || reducedMotion() || !Number.isFinite(value)) {
+      // pas encore à l'écran, ou « réduire les animations » : la valeur finale s'affiche tout de suite (volontaire)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShown(value);
       return;
     }

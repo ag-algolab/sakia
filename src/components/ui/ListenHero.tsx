@@ -68,6 +68,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 
   useEffect(() => {
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- préférence lue dans le stockage de l'appareil APRÈS l'hydratation, volontaire
       setMusicOn(localStorage.getItem("sakia-music") === "on");
     } catch {}
   }, []);
@@ -94,9 +95,14 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 
   // Si la personne change région, culture ou date : le son en cours ne correspond plus, on l'arrête.
   useEffect(() => {
+    // changement de demande : on coupe le son en cours et on oublie l'âge de la copie gardée (remise à zéro volontaire)
+    /* eslint-disable react-hooks/set-state-in-effect */
     stop();
     setCachedAgeH(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
     return () => {
+      // runRef n'est pas un nœud du DOM : on veut bien invalider la lecture EN COURS au démontage, pas une copie ancienne
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       runRef.current++;
       abortRef.current?.abort();
       audioRef.current?.pause();
@@ -167,6 +173,8 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
       releaseBlob();
       blobUrlRef.current = URL.createObjectURL(payload);
       const audio = audioRef.current ?? new Audio();
+      // un élément <audio> du navigateur que ce composant possède, pas un état React : on lui donne sa source
+      // eslint-disable-next-line react-hooks/immutability
       audio.src = blobUrlRef.current;
       audioRef.current = audio;
       audio.onended = () => {
@@ -261,7 +269,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
           aria-label={t("musicLabel")}
           title={t("musicLabel")}
           className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
-            musicOn ? "bg-sakia-green-light text-sakia-green-deep" : "bg-sakia-sand text-sakia-brown/70 line-through"
+            musicOn ? "bg-sakia-green-light text-sakia-green-deep" : "bg-sakia-sand text-sakia-brown line-through"
           }`}
         >
           <NoteIcon className="h-5 w-5" />
