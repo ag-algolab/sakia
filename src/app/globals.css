@@ -1,32 +1,44 @@
 @import "tailwindcss";
 
-/* Palette terre et vert, sobre. */
+/* Palette « heure dorée » : vert d'olivier profond, sable chaud, or du soleil, bleu de l'eau, terre cuite pour la chaleur. */
 :root {
-  --background: #f7f2e8;
-  --foreground: #2b2118;
+  --background: #f8f2e4;
+  --foreground: #24301f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-sakia-green: #2f5d3a;
+  --color-sakia-green: #2b5a37;
   --color-sakia-green-light: #e3eedc;
+  --color-sakia-green-deep: #123524;
   --color-sakia-brown: #5a3d22;
-  --color-sakia-sand: #efe5d0;
+  --color-sakia-sand: #f0e5cb;
   --color-sakia-sand-dark: #d8c7a4;
-  --color-sakia-ink: #2b2118;
-  --color-sakia-water: #1f5f8b;
-  --color-sakia-water-light: #dcebf5;
-  --color-sakia-alert: #8a3b12;
-  --color-sakia-alert-light: #fbe6d4;
-  --font-sans: var(--font-geist-sans), "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+  --color-sakia-ink: #24301f;
+  --color-sakia-water: #1d74b6;
+  --color-sakia-water-light: #d9ecf8;
+  --color-sakia-water-deep: #0e4a75;
+  --color-sakia-alert: #9a3f12;
+  --color-sakia-alert-light: #fbe4d2;
+  --color-sakia-sun: #f2b33d;
+  --color-sakia-sun-deep: #d98a1c;
+  --font-sans: var(--font-cairo), var(--font-geist-sans), "Segoe UI", Tahoma, sans-serif;
+  --font-display: var(--font-fraunces), var(--font-cairo), Georgia, serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-cairo), var(--font-geist-sans), "Segoe UI", Tahoma, sans-serif;
+}
+
+/* Titres : serif chaleureuse en lettres latines ; en arabe, Cairo gras (la serif n'a pas de glyphes arabes). */
+:root[lang^="ar"] .font-display {
+  font-family: var(--font-cairo), sans-serif;
+  letter-spacing: 0;
+  font-weight: 800;
 }
 
 select,
@@ -35,6 +47,246 @@ input {
 }
 
 :focus-visible {
-  outline: 3px solid #1f5f8b;
+  outline: 3px solid #1d74b6;
   outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mouvement : tout est décoratif et s'éteint avec « réduire les animations ». */
+/* ------------------------------------------------------------------ */
+
+@keyframes sk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sk-spin-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes sk-drift {
+  from {
+    transform: translateX(-30px);
+  }
+  to {
+    transform: translateX(30px);
+  }
+}
+@keyframes sk-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+@keyframes sk-drop {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(46px) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes sk-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes sk-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+@keyframes sk-eq {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes sk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sk-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sk-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sk-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes sk-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes sk-wilt {
+  0%,
+  100% {
+    transform: rotate(7deg);
+  }
+  50% {
+    transform: rotate(11deg);
+  }
+}
+@keyframes sk-haze {
+  0%,
+  100% {
+    transform: translateX(0) skewX(0deg);
+  }
+  50% {
+    transform: translateX(1.5px) skewX(-1.2deg);
+  }
+}
+@keyframes sk-sun-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sk-spin {
+    animation: sk-spin 32s linear infinite;
+  }
+  .sk-spin-fast {
+    animation: sk-spin 14s linear infinite;
+  }
+  .sk-spin-rev {
+    animation: sk-spin-rev 120s linear infinite;
+  }
+  .sk-drift {
+    animation: sk-drift 38s ease-in-out infinite alternate;
+  }
+  .sk-drift-slow {
+    animation: sk-drift 62s ease-in-out infinite alternate-reverse;
+  }
+  .sk-sway {
+    animation: sk-sway 5s ease-in-out infinite;
+  }
+  .sk-drop {
+    animation: sk-drop 2s ease-in infinite;
+  }
+  .sk-flow {
+    animation: sk-flow 1.4s linear infinite;
+  }
+  .sk-ripple {
+    animation: sk-ripple 2.6s ease-out infinite;
+  }
+  .sk-eq {
+    animation: sk-eq 0.9s ease-in-out infinite;
+  }
+  .sk-wilt {
+    animation: sk-wilt 3.5s ease-in-out infinite;
+  }
+  .sk-haze {
+    animation: sk-haze 2.2s ease-in-out infinite;
+  }
+  .sk-sun-pulse {
+    animation: sk-sun-pulse 5s ease-in-out infinite;
+  }
+
+  /* Apparition à l'entrée dans l'écran. Sans JavaScript (ou avant l'hydratation) tout reste visible. */
+  html.sk-motion [data-reveal]:not([data-in]) {
+    opacity: 0;
+  }
+  html.sk-motion [data-reveal][data-in] {
+    animation: sk-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  html.sk-motion [data-reveal="pop"][data-in] {
+    animation-name: sk-pop;
+  }
+
+  /* Barres et courbes : dessinées à leur vraie taille, elles « poussent » quand leur bloc (Reveal) entre dans l'écran. */
+  html.sk-motion .sk-bar-x {
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+  html.sk-motion .sk-bar-y {
+    transform-origin: center bottom;
+    transform: scaleY(0);
+  }
+  html.sk-motion .sk-draw {
+    stroke-dasharray: var(--len, 600);
+    stroke-dashoffset: var(--len, 600);
+  }
+  html.sk-motion [data-in] .sk-bar-x {
+    animation: sk-grow-x 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  html.sk-motion [data-in] .sk-bar-y {
+    animation: sk-grow-y 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  html.sk-motion [data-in] .sk-draw {
+    animation: sk-draw 1.6s ease-out forwards;
+    animation-delay: var(--d, 0ms);
+  }
+}
+
+/* Cartes et boutons : léger relief au toucher. */
+.sk-press {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.sk-press:active {
+  transform: scale(0.985);
+}
+
+/* Fond du héros : ciel d'aube, du vert profond vers l'or de l'horizon. */
+.sk-hero-sky {
+  background: linear-gradient(180deg, #0d2e22 0%, #14503a 38%, #2f7a4a 58%, #e3b25a 88%, #f7d58a 100%);
+}
+
+/* Même héros pour le rejeu de la canicule : ciel qui chauffe. */
+.sk-hero-heat {
+  background: linear-gradient(180deg, #2a0c08 0%, #7a2412 34%, #cf5428 60%, #f4a64a 88%, #ffd68a 100%);
 }

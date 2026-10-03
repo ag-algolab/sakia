@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { startBedMusic } from "./bedMusic";
 import type { BedMusic } from "./bedMusic";
+import { AlertIcon, DropIcon, HandIcon, NoteIcon, RetryIcon, SpeakerIcon } from "./icons";
 import { useLang } from "./LangProvider";
 import type { Plan } from "@/lib/plan";
 
@@ -68,7 +69,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   const { t, fmtNum } = useLang();
   const [state, setState] = useState<State>("idle");
   const [cachedAgeH, setCachedAgeH] = useState<number | null>(null);
-  const [musicOn, setMusicOn] = useState(true);
+  const [musicOn, setMusicOn] = useState(false); // éteinte par défaut
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const musicRef = useRef<BedMusic | null>(null);
@@ -78,7 +79,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 
   useEffect(() => {
     try {
-      setMusicOn(localStorage.getItem("sakia-music") !== "off");
+      setMusicOn(localStorage.getItem("sakia-music") === "on");
     } catch {}
   }, []);
 
@@ -212,31 +213,52 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   // La voix est donnée pour la « norme » (sol limoneux, goutte-à-goutte) : on le dit toujours, et plus fort si les choix de la personne diffèrent.
   const showVoiceNote = !VOICE_SUPPORTS_SOIL_SYSTEM;
   const voiceDiffers = query.soil !== "limoneux" || query.system !== "goutte" || query.planting !== "";
+  const busy = state === "loading";
+  const playing = state === "playing";
 
   return (
-    <section aria-label={t("listenCaption")} className="rounded-2xl bg-sakia-green p-4 text-white shadow-md">
+    <section
+      aria-label={t("listenCaption")}
+      className="rounded-3xl bg-white p-4 text-sakia-ink shadow-[0_18px_40px_-12px_rgba(10,40,25,0.45)] ring-1 ring-black/5"
+    >
       <button
         type="button"
         onClick={onClick}
-        aria-pressed={state === "playing"}
-        aria-busy={state === "loading"}
-        className="flex min-h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl bg-white px-4 py-5 text-sakia-green active:scale-[0.99]"
+        aria-pressed={playing}
+        aria-busy={busy}
+        className="sk-press group flex w-full flex-col items-center gap-3 rounded-2xl px-2 py-2"
       >
-        <span
-          aria-hidden
-          className={`flex h-20 w-20 items-center justify-center rounded-full bg-sakia-green text-5xl text-white ${
-            state === "playing" ? "motion-safe:animate-pulse" : ""
-          }`}
-        >
-          {state === "loading" ? "⏳" : state === "playing" ? "⏸" : state === "error" ? "↻" : "🔊"}
+        <span aria-hidden className="relative grid h-32 w-32 place-items-center">
+          {/* ondes : elles invitent à appuyer, et pulsent plus vite quand la voix parle */}
+          <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" />
+          <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" style={{ animationDelay: "1.3s" }} />
+          <span
+            className={`relative grid h-28 w-28 place-items-center rounded-full bg-gradient-to-br from-[#4aa263] via-sakia-green to-sakia-green-deep text-white shadow-[0_10px_24px_-6px_rgba(18,53,36,0.7)] ring-4 ring-white ${
+              busy ? "motion-safe:animate-pulse" : ""
+            }`}
+          >
+            {playing ? (
+              <span className="flex h-12 items-end gap-1.5">
+                {[0, 0.18, 0.36, 0.1, 0.27].map((d, i) => (
+                  <span key={i} className="sk-eq block w-2 origin-bottom rounded-full bg-white" style={{ height: "100%", animationDelay: `${d}s` }} />
+                ))}
+              </span>
+            ) : state === "error" ? (
+              <RetryIcon className="h-12 w-12" />
+            ) : busy ? (
+              <span className="sk-spin-fast block h-10 w-10 rounded-full border-4 border-white/40 border-t-white" />
+            ) : (
+              <SpeakerIcon className="h-14 w-14" />
+            )}
+          </span>
         </span>
-        <span dir="rtl" lang="ar-TN" className="text-3xl font-extrabold leading-tight">
+        <span dir="rtl" lang="ar-TN" className="font-display text-4xl font-extrabold leading-tight text-sakia-green-deep">
           {BIG_LABEL}
         </span>
-        <span className="text-sm font-semibold text-sakia-brown">{t("listenCaption")}</span>
+        <span className="max-w-xs text-center text-sm font-semibold leading-snug text-sakia-brown">{t("listenCaption")}</span>
       </button>
 
-      <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-sakia-sand-dark/60 pt-3">
         <button
           type="button"
           onClick={toggleMusic}
@@ -244,26 +266,24 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
           aria-label={t("musicLabel")}
           title={t("musicLabel")}
           className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
-            musicOn ? "bg-white/20 text-white" : "bg-white/10 text-white/70 line-through"
+            musicOn ? "bg-sakia-green-light text-sakia-green-deep" : "bg-sakia-sand text-sakia-brown/70 line-through"
           }`}
         >
-          <span aria-hidden className="text-xl">
-            🎵
-          </span>
+          <NoteIcon className="h-5 w-5" />
           {t("musicLabel")}
         </button>
-        <Link href="/bulletin" className="text-sm font-semibold text-white underline">
+        <Link href="/bulletin" className="min-h-11 content-center text-sm font-semibold text-sakia-water underline underline-offset-2">
           {t("listenFull")}
         </Link>
       </div>
 
       {state === "error" && (
-        <p role="alert" className="mt-3 rounded-lg bg-sakia-alert-light p-3 text-sm font-semibold text-sakia-alert">
+        <p role="alert" className="mt-3 rounded-xl bg-sakia-alert-light p-3 text-sm font-semibold text-sakia-alert">
           {t("listenError")}
         </p>
       )}
       {cachedAgeH != null && (
-        <p role="status" className="mt-3 rounded-lg bg-white/15 p-3 text-sm font-semibold">
+        <p role="status" className="mt-3 rounded-xl bg-sakia-sand p-3 text-sm font-semibold text-sakia-brown">
           {t("listenCached", {
             h:
               cachedAgeH < 1
@@ -276,8 +296,8 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         <p
           className={
             voiceDiffers
-              ? "mt-3 rounded-lg bg-sakia-alert-light p-3 text-sm font-semibold text-sakia-alert"
-              : "mt-3 text-xs text-white/90"
+              ? "mt-3 rounded-xl bg-sakia-alert-light p-3 text-sm font-semibold text-sakia-alert"
+              : "mt-3 text-xs text-sakia-brown/80"
           }
         >
           {t("listenVoiceDefaults")}
@@ -289,37 +309,56 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   );
 }
 
-// Réponse en images : lisible sans savoir lire. Une ligne de 7 jours, une goutte les jours où il faut arroser.
+// Réponse en images : lisible sans savoir lire. Un grand pictogramme, puis une ligne de 7 jours avec une goutte
+// les jours où il faut arroser (goutte = arroser, main = attendre, triangle = demander à une personne).
 function Verdict({ plan }: { plan: Plan }) {
   const { t, fmtDate } = useLang();
   const none = plan.confidence.level === "none";
   const irrigateSoon = plan.days.some((d) => d.action === "irriguer");
-  const icon = none ? "⚠" : irrigateSoon ? "💧" : "✋";
+  const tone = none
+    ? "bg-sakia-alert-light text-sakia-alert"
+    : irrigateSoon
+      ? "bg-sakia-water-light text-sakia-water-deep"
+      : "bg-sakia-sand text-sakia-brown";
   const text = none ? t("askPersonShort") : irrigateSoon ? t("irrigate") : t("wait");
   return (
-    <div className="mt-4 rounded-xl bg-white/10 p-3">
-      <div className="flex items-center gap-3">
-        <span aria-hidden className="text-5xl leading-none">
-          {icon}
+    <div className="mt-4">
+      <div className={`flex items-center gap-4 rounded-2xl p-3 ${tone}`}>
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white/70">
+          {none ? (
+            <AlertIcon className="h-9 w-9" />
+          ) : irrigateSoon ? (
+            <DropIcon className="sk-sway h-10 w-10" />
+          ) : (
+            <HandIcon className="h-9 w-9" />
+          )}
         </span>
-        <p className="text-xl font-extrabold">{text}</p>
+        <p className="font-display text-2xl font-extrabold leading-tight">{text}</p>
         {plan.confidence.askAPerson && !none && (
-          <span aria-label={t("askPersonShort")} title={t("askPersonShort")} className="ms-auto text-4xl leading-none">
-            ⚠
+          <span title={t("askPersonShort")} className="ms-auto grid h-12 w-12 place-items-center rounded-full bg-sakia-alert-light text-sakia-alert">
+            <AlertIcon className="h-7 w-7" title={t("askPersonShort")} />
           </span>
         )}
       </div>
       {!none && plan.days.length > 0 && (
-        <ol className="mt-3 grid grid-cols-7 gap-1 text-center" aria-label={t("summary", { n: plan.days.length })}>
-          {plan.days.slice(0, 7).map((d, i) => (
-            <li key={d.date} className={`rounded-lg py-1 ${i === 0 ? "bg-white text-sakia-green" : "bg-white/15"}`}>
-              <span className="block text-[11px] leading-tight">{fmtDate(d.date, { weekday: "short" })}</span>
-              <span aria-hidden className="block text-2xl leading-tight">
-                {d.action === "irriguer" ? "💧" : "·"}
-              </span>
-              <span className="sr-only">{d.action === "irriguer" ? t("irrigate") : t("wait")}</span>
-            </li>
-          ))}
+        <ol className="mt-3 grid grid-cols-7 gap-1.5 text-center" aria-label={t("summary", { n: plan.days.length })}>
+          {plan.days.slice(0, 7).map((d, i) => {
+            const irr = d.action === "irriguer";
+            return (
+              <li
+                key={d.date}
+                className={`rounded-xl py-1.5 ${
+                  irr ? "bg-sakia-water text-white" : i === 0 ? "bg-sakia-green text-white" : "bg-sakia-sand text-sakia-brown"
+                }`}
+              >
+                <span className="block text-[11px] font-semibold leading-tight">{fmtDate(d.date, { weekday: "short" })}</span>
+                <span className="mt-0.5 grid h-7 place-items-center">
+                  {irr ? <DropIcon className="h-6 w-6" /> : <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />}
+                </span>
+                <span className="sr-only">{irr ? t("irrigate") : t("wait")}</span>
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>

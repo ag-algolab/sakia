@@ -47,10 +47,14 @@ export type ConfidenceReason =
   | "uncertain_rain" // pluie possible dans les 3 jours (probabilité entre 30 et 70 %)
   | "short_horizon"; // la prévision disponible ne couvre pas tout l'horizon demandé
 
+// Remarque utile mais qui ne retire pas la confiance (ex. de la pluie possible : c'est normal, on le dit).
+export type ConfidenceNote = "uncertain_rain";
+
 export type Confidence = {
   level: "ok" | "low" | "none"; // none = aucun conseil donné
   askAPerson: boolean;
-  reasons: ConfidenceReason[];
+  reasons: ConfidenceReason[]; // causes du « pas sûr » (vides quand level vaut ok)
+  notes?: ConfidenceNote[]; // simples informations, à afficher sans alarme
 };
 
 export type Plan = {
@@ -168,12 +172,14 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
   else if (!replay && dataAgeHours > 12) reasons.push("stale_data");
   if (status === "ok" && ago == null) reasons.push("unknown_last_irrigation");
   if (ANALOGY_CROPS.has(crop.id)) reasons.push("analogy_coefficients");
-  if (planDays.slice(0, 3).some((d) => d.rainProb != null && d.rainProb >= 30 && d.rainProb <= 70)) reasons.push("uncertain_rain");
+  // De la pluie possible n'est pas un manque d'information : on l'indique sans alarme.
+  const notes: ConfidenceNote[] = [];
+  if (planDays.slice(0, 3).some((d) => d.rainProb != null && d.rainProb >= 30 && d.rainProb <= 70)) notes.push("uncertain_rain");
   const covered = planDays.filter((d) => !d.estimated).length;
   if (status === "ok" && covered < Math.min(horizon, 7)) reasons.push("short_horizon");
 
   const level: Confidence["level"] = reasons.includes("very_stale_data") ? "none" : reasons.length > 0 ? "low" : "ok";
-  const confidence: Confidence = { level, askAPerson: level !== "ok", reasons };
+  const confidence: Confidence = { level, askAPerson: level !== "ok", reasons, notes };
 
   const tmaxs = planDays.map((d) => d.tmax).filter((t) => Number.isFinite(t));
   return {

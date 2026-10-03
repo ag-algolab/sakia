@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "./LangProvider";
 import { LANGS } from "./i18n";
+import SakiaLogo from "./SakiaLogo";
 
 const LINKS = [
   { href: "/", key: "navAdvice" },
@@ -17,10 +18,11 @@ export default function Header() {
   const { lang, setLang, t } = useLang();
   const path = usePathname();
   return (
-    <header className="bg-sakia-green text-white">
+    <header className="bg-[#0d2e22] text-white">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 pt-3">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
-          <span aria-hidden className="text-2xl">☸</span> Sakia
+        <Link href="/" className="flex items-center gap-2.5 font-display text-2xl font-bold tracking-tight">
+          <SakiaLogo size={38} className="text-white" />
+          Sakia
         </Link>
         <div role="group" aria-label={t("language")} className="flex overflow-hidden rounded-lg border border-white/40">
           {LANGS.map((l) => (
@@ -40,8 +42,7 @@ export default function Header() {
           ))}
         </div>
       </div>
-      <p className="mx-auto max-w-3xl px-4 pb-2 pt-1 text-sm text-white/85">{t("tagline")}</p>
-      <nav aria-label="Sakia" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 pb-2">
+      <nav aria-label="Sakia" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 pb-2 pt-2">
         {LINKS.map((l) => {
           const active = l.href === "/" ? path === "/" : path.startsWith(l.href);
           return (
@@ -50,7 +51,7 @@ export default function Header() {
               href={l.href}
               aria-current={active ? "page" : undefined}
               className={`flex min-h-11 items-center whitespace-nowrap rounded-lg px-3 text-base font-medium ${
-                active ? "bg-white text-sakia-green" : "text-white hover:bg-white/15"
+                active ? "bg-white text-sakia-green-deep" : "text-white/90 hover:bg-white/15"
               }`}
             >
               {t(l.key)}

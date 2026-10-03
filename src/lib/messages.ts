@@ -162,14 +162,17 @@ export function planMessage(plan: Plan, lang: Lang = "fr"): string {
         : `Pluie prévue : ${s.rainExpectedMm.toFixed(0)} mm · risque de stress hydrique : ${STRESS.fr[s.stressRisk]}`;
   const foot =
     lang === "ar"
-      ? "نصيحة إرشادية: يجب التحقق منها لدى المصالح الفلاحية الجهوية."
+      ? "نصيحة إرشادية محسوبة حسب الطقس المتوقع (وقد يتغير). القرار لكم."
       : lang === "en"
-        ? "Indicative advice: to be checked with the regional agriculture office."
-        : "Conseil indicatif : à valider auprès de l'administration agricole régionale.";
+        ? "Indicative advice, calculated from the forecast weather (it can change). The decision is yours."
+        : "Conseil indicatif, calculé d'après la météo prévue (elle peut changer). La décision vous appartient.";
   const unsure = plan.confidence.askAPerson
     ? [`⚠ ${ASK[lang]} (${plan.confidence.reasons.map((r) => REASON[lang][r]).join(" ; ")})`]
     : [];
-  return [head, ...lines, rainLine, ...unsure, foot].join("\n");
+  const rainNote = plan.confidence.notes?.includes("uncertain_rain")
+    ? [lang === "ar" ? "قد تسقط أمطار خلال 3 أيام: أعيدوا التحقق غدا." : lang === "en" ? "Rain is possible within 3 days: check again tomorrow." : "Pluie possible dans les 3 jours : revérifiez demain."]
+    : [];
+  return [head, ...lines, rainLine, ...rainNote, ...unsure, foot].join("\n");
 }
 
 export type BulletinLine = { id: string; text: string };

@@ -3,8 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Assumptions from "@/components/ui/Assumptions";
 import { CropSelect, Field, regionName, selectClass, useCatalog } from "@/components/ui/catalog";
+import { Chips, Segmented } from "@/components/ui/controls";
+import HeroScene from "@/components/ui/HeroScene";
+import { AlertIcon, DropIcon, HandIcon, RainIcon, SunIcon, ThermoIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
 import { useLang } from "@/components/ui/LangProvider";
+import { Reveal } from "@/components/ui/motion";
+import StatBand from "@/components/ui/StatBand";
+import WaterTank from "@/components/ui/WaterTank";
 import { usePlan } from "@/components/phone/usePlan";
 import type { Confidence, Plan, PlanDay } from "@/lib/plan";
 import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
@@ -140,167 +146,204 @@ export default function Home() {
   const ageMin = plan && now != null ? Math.max(0, (now - Date.parse(plan.dataFetchedAt)) / 60000) : null;
   const stale = ageMin != null && ageMin > STALE_AFTER_HOURS * 60;
 
+  const hot = replay;
+
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-4 py-5">
-      <ListenHero
-        query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }}
-        plan={plan}
-      />
-
-      {replay && (
-        <div role="status" className="rounded-xl border-2 border-sakia-alert bg-sakia-alert-light p-3 text-sakia-alert">
-          <p className="text-base font-extrabold">{t("replayBadge")}</p>
-          <p className="text-sm">{t("replayDate", { d: fmtDate(REPLAY_DATE, { day: "numeric", month: "long", year: "numeric" }) })}</p>
+    <>
+      {/* ---------- héros : l'aube sur Kairouan ---------- */}
+      <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
+        <div className="relative z-10 mx-auto max-w-3xl px-4 pb-44 pt-6 sm:pb-60 sm:pt-10">
+          <h1 className="font-display max-w-xl text-[2.4rem] font-bold leading-[1.02] sm:text-6xl">{t("heroTitle")}</h1>
+          <p className="mt-3 max-w-md text-base leading-snug text-white/90 sm:text-lg">{t("heroSub")}</p>
         </div>
-      )}
-
-      <section
-        aria-label={t("lastWatering")}
-        className={`rounded-xl border-2 p-4 ${
-          form.ago === "" ? "border-sakia-alert bg-sakia-alert-light" : "border-sakia-green bg-sakia-green-light"
-        }`}
-      >
-        <Field
-          label={t("lastWatering")}
-          hint={form.ago === "" ? `⚠ ${t("lastWateringMissing")}` : t("lastWateringSet")}
-        >
-          <select className={selectClass} value={form.ago} onChange={(e) => set("ago")(e.target.value)}>
-            <option value="">{t("unknown")}</option>
-            <option value="0">{t("today")}</option>
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <option key={n} value={n}>
-                {t("daysAgo", { n })}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <HeroScene className={`pointer-events-none absolute inset-x-0 bottom-0 h-[215px] w-full sm:h-[290px] ${hot ? "sk-haze" : ""}`} />
       </section>
 
-      <section aria-label={t("crop")} className="grid grid-cols-1 gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-2">
-        <Field label={t("region")}>
-          <select className={selectClass} value={form.region} onChange={(e) => set("region")(e.target.value)}>
-            {!catalog && <option value={form.region}>{form.region}</option>}
-            {catalog?.regions.map((r) => (
-              <option key={r.id} value={r.id}>
-                {regionName(r, lang)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <CropSelect catalog={catalog} value={form.crop} onChange={set("crop")} />
-        <Field label={t("soil")}>
-          <select className={selectClass} value={form.soil} onChange={(e) => set("soil")(e.target.value)}>
-            {["sableux", "limoneux", "argileux"].map((s) => (
-              <option key={s} value={s}>
-                {t(s)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label={t("system")}>
-          <select className={selectClass} value={form.system} onChange={(e) => set("system")(e.target.value)}>
-            {["goutte", "aspersion", "gravitaire"].map((s) => (
-              <option key={s} value={s}>
-                {t(s)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label={t("planting")} hint={t("plantingHint")}>
-          <input
-            type="date"
-            className={selectClass}
-            value={form.planting}
-            onChange={(e) => set("planting")(e.target.value)}
-          />
-        </Field>
-      </section>
+      {/* ---------- bouton d'écoute : la première chose à toucher ---------- */}
+      <div className="relative z-20 mx-auto -mt-24 w-full max-w-3xl px-4">
+        <ListenHero query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }} plan={plan} />
+      </div>
 
-      <button
-        type="button"
-        onClick={toggleReplay}
-        className={`min-h-14 w-full rounded-xl px-4 text-base font-bold ${
-          replay
-            ? "border-2 border-sakia-green bg-white text-sakia-green"
-            : "bg-sakia-alert text-white hover:brightness-110"
-        }`}
-      >
-        {replay ? t("replayBack") : `🔥 ${t("replayButton")}`}
-      </button>
-
-      {plan && !replay && ageMin != null && (
-        <p
-          role="status"
-          className={`rounded-lg px-3 py-2 text-sm font-medium ${
-            stale ? "border border-sakia-alert bg-sakia-alert-light text-sakia-alert" : "bg-sakia-green-light text-sakia-green"
+      <main className="mx-auto w-full max-w-3xl flex-1 space-y-5 px-4 pt-5">
+        {/* rejeu de la canicule : la scène de la vidéo */}
+        <button
+          type="button"
+          onClick={toggleReplay}
+          className={`sk-press flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-start shadow-md ${
+            replay
+              ? "border-2 border-sakia-green bg-white text-sakia-green"
+              : "bg-gradient-to-r from-[#a63d16] to-[#e0832a] text-white"
           }`}
         >
-          {stale
-            ? `⚠ ${t("stale", { h: fmtAge(ageMin) })}`
-            : ageMin < 2
-              ? t("freshJustNow")
-              : t("fresh", { h: fmtAge(ageMin) })}
-        </p>
-      )}
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-black/10">
+            <ThermoIcon className="h-7 w-7" />
+          </span>
+          <span className="font-display text-lg font-bold leading-tight">{replay ? t("replayBack") : t("replayButton")}</span>
+        </button>
 
-      {loading && !plan && <p className="py-8 text-center text-base text-sakia-brown">{t("loading")}</p>}
+        {replay && (
+          <div role="status" className="rounded-2xl border-2 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
+            <p className="text-base font-extrabold tracking-wide">{t("replayBadge")}</p>
+            <p className="text-sm font-medium">{t("replayDate", { d: fmtDate(REPLAY_DATE, { day: "numeric", month: "long", year: "numeric" }) })}</p>
+          </div>
+        )}
 
-      {!replay && (local.status === "no-data" || local.status === "too-old") && (
-        <div role="alert" className="rounded-xl border-4 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
-          <p className="text-lg font-extrabold">⚠ {t(local.status === "no-data" ? "noDataOffline" : "savedTooOld")}</p>
-          <p className="mt-2 text-sm font-semibold">{t("askPerson")}</p>
-        </div>
-      )}
+        {/* garde-fou éliminatoire : « pas sûr, demandez à une personne » */}
+        {plan?.confidence.askAPerson && <AskPerson confidence={plan.confidence} />}
 
-      {failed && (
-        <div role="alert" className="rounded-xl border border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
-          <p className="font-semibold">{t("error")}</p>
-          <button
-            type="button"
-            onClick={() => (replay ? setReload((n) => n + 1) : void local.refresh())}
-            className="mt-2 min-h-11 rounded-lg bg-sakia-alert px-4 font-semibold text-white"
+        {plan && !replay && ageMin != null && (
+          <p
+            role="status"
+            className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+              stale ? "border border-sakia-alert bg-sakia-alert-light text-sakia-alert" : "bg-sakia-green-light text-sakia-green"
+            }`}
           >
-            {t("retry")}
-          </button>
-        </div>
-      )}
+            {stale ? `⚠ ${t("stale", { h: fmtAge(ageMin) })}` : ageMin < 2 ? t("freshJustNow") : t("fresh", { h: fmtAge(ageMin) })}
+          </p>
+        )}
 
-      {plan && (
-        <div className={loading ? "space-y-4 opacity-60" : "space-y-4"} aria-busy={loading}>
-          {plan.confidence.askAPerson && <AskPerson confidence={plan.confidence} />}
-          {plan.confidence.level === "none" ? null : plan.status === "hors_vegetation" ? (
-            <div className="rounded-xl border border-sakia-sand-dark bg-sakia-sand p-5 text-sakia-brown">
-              <p className="text-lg font-bold">{t("offSeason")}</p>
-              <p className="mt-1 text-sm">{t("offSeasonHint")}</p>
-            </div>
-          ) : (
-            <>
-              <Summary plan={plan} />
-              <ol className="space-y-3">
-                {plan.days.map((d) => (
-                  <DayCard key={d.date} day={d} />
+        {!replay && (local.status === "no-data" || local.status === "too-old") && (
+          <div role="alert" className="rounded-2xl border-4 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
+            <p className="text-lg font-extrabold">⚠ {t(local.status === "no-data" ? "noDataOffline" : "savedTooOld")}</p>
+            <p className="mt-2 text-sm font-semibold">{t("askPerson")}</p>
+          </div>
+        )}
+
+        {failed && (
+          <div role="alert" className="rounded-2xl border border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
+            <p className="font-semibold">{t("error")}</p>
+            <button
+              type="button"
+              onClick={() => (replay ? setReload((n) => n + 1) : void local.refresh())}
+              className="mt-2 min-h-11 rounded-lg bg-sakia-alert px-4 font-semibold text-white"
+            >
+              {t("retry")}
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* ---------- pourquoi c'est important ---------- */}
+      <div className="mt-8">
+        <StatBand crop={form.crop} />
+      </div>
+
+      <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-8">
+        {/* ---------- votre champ ---------- */}
+        <section aria-labelledby="field-title" className="space-y-4">
+          <Reveal>
+            <h2 id="field-title" className="font-display text-3xl font-bold text-sakia-green-deep">
+              {t("yourField")}
+            </h2>
+          </Reveal>
+
+          <Reveal
+            className={`rounded-3xl border-2 p-4 ${
+              form.ago === "" ? "border-sakia-alert bg-sakia-alert-light" : "border-sakia-green/40 bg-sakia-green-light"
+            }`}
+          >
+            <p className="text-lg font-bold text-sakia-ink">{t("lastWatering")}</p>
+            <p className={`mb-3 text-sm font-semibold ${form.ago === "" ? "text-sakia-alert" : "text-sakia-green"}`}>
+              {form.ago === "" ? `⚠ ${t("lastWateringMissing")}` : t("lastWateringSet")}
+            </p>
+            <Chips
+              label={t("lastWatering")}
+              value={form.ago}
+              tone={form.ago === "" ? "alert" : "green"}
+              onChange={set("ago")}
+              options={[
+                { value: "", label: t("unknown") },
+                { value: "0", label: t("today") },
+                ...[1, 2, 3, 4, 5, 6, 7].map((n) => ({ value: String(n), label: t("daysAgo", { n }) })),
+              ]}
+            />
+          </Reveal>
+
+          <Reveal delay={80} className="grid grid-cols-1 gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:grid-cols-2">
+            <Field label={t("region")}>
+              <select className={selectClass} value={form.region} onChange={(e) => set("region")(e.target.value)}>
+                {!catalog && <option value={form.region}>{form.region}</option>}
+                {catalog?.regions.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {regionName(r, lang)}
+                  </option>
                 ))}
-              </ol>
-            </>
-          )}
-          <Assumptions items={plan.assumptions} />
-          <p className="text-center text-xs text-sakia-brown/80">{t("indicative")}</p>
-          {!replay && <p className="text-center text-xs font-semibold text-sakia-green">{t("computedOnDevice")}</p>}
-          <dl className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-sakia-brown/80">
-            <div className="flex gap-1">
-              <dt className="font-semibold">{t("planSize")} :</dt>
-              <dd dir="ltr">
-                {bytes != null ? `${fmtNum(bytes)} B (${fmtNum(bytes / 1024, 1)} KB)` : "–"} · {t("sizeNote")}
-              </dd>
+              </select>
+            </Field>
+            <CropSelect catalog={catalog} value={form.crop} onChange={set("crop")} />
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-sakia-brown">{t("soil")}</span>
+              <Segmented
+                label={t("soil")}
+                value={form.soil}
+                onChange={set("soil")}
+                options={["sableux", "limoneux", "argileux"].map((s) => ({ value: s, label: t(s) }))}
+              />
             </div>
-            <div className="flex gap-1">
-              <dt className="font-semibold">{t("dataAge")} :</dt>
-              <dd>{replay ? t("replayDataNote") : ageMin != null ? fmtAge(ageMin) : "–"}</dd>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-sakia-brown">{t("system")}</span>
+              <Segmented
+                label={t("system")}
+                value={form.system}
+                onChange={set("system")}
+                options={["goutte", "aspersion", "gravitaire"].map((s) => ({ value: s, label: t(s) }))}
+              />
             </div>
-          </dl>
-        </div>
-      )}
-    </main>
+            <Field label={t("planting")} hint={t("plantingHint")}>
+              <input type="date" className={selectClass} value={form.planting} onChange={(e) => set("planting")(e.target.value)} />
+            </Field>
+          </Reveal>
+        </section>
+
+        {/* ---------- les 7 prochains jours ---------- */}
+        {plan && (
+          <section aria-labelledby="plan-title" className={loading ? "space-y-4 opacity-60" : "space-y-4"} aria-busy={loading}>
+            {plan.confidence.level !== "none" && (
+              <Reveal>
+                <h2 id="plan-title" className="font-display text-3xl font-bold text-sakia-green-deep">
+                  {t("planTitle")}
+                </h2>
+              </Reveal>
+            )}
+            {plan.confidence.level === "none" ? null : plan.status === "hors_vegetation" ? (
+              <div className="rounded-3xl border border-sakia-sand-dark bg-sakia-sand p-5 text-sakia-brown">
+                <p className="text-lg font-bold">{t("offSeason")}</p>
+                <p className="mt-1 text-sm">{t("offSeasonHint")}</p>
+              </div>
+            ) : (
+              <>
+                <Summary plan={plan} />
+                <Reveal>
+                  <WaterTank days={plan.days} />
+                </Reveal>
+                <ol className="space-y-3">
+                  {plan.days.map((d, i) => (
+                    <DayCard key={d.date} day={d} index={i} />
+                  ))}
+                </ol>
+              </>
+            )}
+            <Assumptions items={plan.assumptions} />
+            <p className="text-center text-xs text-sakia-brown/80">{t("indicative")}</p>
+            {!replay && <p className="text-center text-xs font-semibold text-sakia-green">{t("computedOnDevice")}</p>}
+            <dl className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-sakia-brown/80">
+              <div className="flex gap-1">
+                <dt className="font-semibold">{t("planSize")} :</dt>
+                <dd dir="ltr">
+                  {bytes != null ? `${fmtNum(bytes)} B (${fmtNum(bytes / 1024, 1)} KB)` : "–"} · {t("sizeNote")}
+                </dd>
+              </div>
+              <div className="flex gap-1">
+                <dt className="font-semibold">{t("dataAge")} :</dt>
+                <dd>{replay ? t("replayDataNote") : ageMin != null ? fmtAge(ageMin) : "–"}</dd>
+              </div>
+            </dl>
+          </section>
+        )}
+
+        {loading && !plan && <p className="py-8 text-center text-base text-sakia-brown">{t("loading")}</p>}
+      </main>
+    </>
   );
 }
 
@@ -312,11 +355,14 @@ function AskPerson({ confidence }: { confidence: Confidence }) {
     <section
       role="alert"
       aria-labelledby="ask-title"
-      className="rounded-xl border-4 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert"
+      className="rounded-2xl border-4 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert"
     >
-      <h2 id="ask-title" className="text-xl font-extrabold leading-snug">
-        ⚠ {t("askPerson")}
-      </h2>
+      <div className="flex items-start gap-3">
+        <AlertIcon className="mt-1 h-9 w-9 shrink-0" />
+        <h2 id="ask-title" className="text-xl font-extrabold leading-snug">
+          {t("askPerson")}
+        </h2>
+      </div>
       {confidence.reasons.length > 0 && (
         <div className="mt-2">
           <p className="text-sm font-bold">{t("askWhy")}</p>
@@ -335,68 +381,101 @@ function AskPerson({ confidence }: { confidence: Confidence }) {
 function Summary({ plan }: { plan: Plan }) {
   const { t, fmtDate, fmtNum } = useLang();
   const s = plan.summary;
+  const risk = { faible: "bg-[#4aa263]", moyen: "bg-sakia-sun", eleve: "bg-[#d2552a]" }[s.stressRisk];
   return (
-    <section aria-label={t("summary", { n: plan.days.length })} className="rounded-xl bg-sakia-green p-4 text-white">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-white/80">{t("summary", { n: plan.days.length })}</h2>
-      <p className="mt-1 text-xl font-bold">
-        {s.nextIrrigation ? `${t("nextIrrigation")} : ${fmtDate(s.nextIrrigation)}` : t("noIrrigation")}
-      </p>
-      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
-        <Stat label={t("irrigations")} value={fmtNum(s.irrigationCount)} />
-        <Stat label={t("totalWater")} value={t("perHa", { n: fmtNum(s.totalM3PerHa) })} />
-        <Stat label={t("rainExpected")} value={`${fmtNum(s.rainExpectedMm, 1)} ${t("mm")}`} />
-        <Stat label={t("stressRisk")} value={t(`risk_${s.stressRisk}`)} />
-      </dl>
-    </section>
+    <Reveal>
+      <div className="overflow-hidden rounded-3xl bg-sakia-green-deep text-white shadow-md">
+        <div className="relative p-5">
+          <DropIcon className="sk-sway pointer-events-none absolute -end-3 -top-3 h-28 w-28 text-white/10" />
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-white/70">{t("summary", { n: plan.days.length })}</h3>
+          <p className="font-display mt-1 text-2xl font-bold leading-tight sm:text-3xl">
+            {s.nextIrrigation ? `${t("nextIrrigation")} : ${fmtDate(s.nextIrrigation)}` : t("noIrrigation")}
+          </p>
+        </div>
+        <dl className="grid grid-cols-2 gap-px bg-white/10 text-sm sm:grid-cols-4">
+          <Stat label={t("irrigations")} value={fmtNum(s.irrigationCount)} />
+          <Stat label={t("totalWater")} value={t("perHa", { n: fmtNum(s.totalM3PerHa) })} />
+          <Stat label={t("rainExpected")} value={`${fmtNum(s.rainExpectedMm, 1)} ${t("mm")}`} />
+          <Stat
+            label={t("stressRisk")}
+            value={
+              <span className="inline-flex items-center gap-2">
+                <span className={`h-3 w-3 rounded-full ${risk}`} />
+                {t(`risk_${s.stressRisk}`)}
+              </span>
+            }
+          />
+        </dl>
+      </div>
+    </Reveal>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div>
-      <dt className="text-white/80">{label}</dt>
-      <dd className="text-lg font-bold">{value}</dd>
+    <div className="bg-sakia-green-deep p-4">
+      <dt className="text-white/70">{label}</dt>
+      <dd className="mt-0.5 text-lg font-extrabold">{value}</dd>
     </div>
   );
 }
 
-function DayCard({ day }: { day: PlanDay }) {
+function DayCard({ day, index }: { day: PlanDay; index: number }) {
   const { t, fmtDate, fmtNum } = useLang();
   const irrigate = day.action === "irriguer";
+  const rainy = day.rain >= 1;
+  const scorching = Number.isFinite(day.tmax) && day.tmax >= 40;
   return (
-    <li
-      className={`rounded-xl border-2 p-4 ${
-        irrigate ? "border-sakia-water bg-sakia-water-light" : "border-sakia-sand-dark bg-white"
+    <Reveal
+      as="li"
+      delay={Math.min(index, 4) * 70}
+      className={`overflow-hidden rounded-3xl border-2 ${
+        irrigate ? "border-sakia-water bg-sakia-water-light" : "border-transparent bg-white shadow-sm ring-1 ring-black/5"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-base font-bold text-sakia-ink">{fmtDate(day.date)}</p>
+      <div className="flex items-center gap-4 p-4">
+        <span
+          className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${
+            rainy ? "bg-sakia-water-light text-sakia-water" : scorching ? "bg-sakia-alert-light text-sakia-alert" : "bg-[#fdf1cf] text-sakia-sun-deep"
+          }`}
+        >
+          {rainy ? (
+            <RainIcon className="h-10 w-10" />
+          ) : (
+            <SunIcon className={`h-10 w-10 ${scorching ? "sk-spin" : ""}`} />
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-lg font-bold leading-tight text-sakia-ink">{fmtDate(day.date)}</p>
           <p className="mt-0.5 text-sm text-sakia-brown">
             {t("rain")} {fmtNum(day.rain, 1)} {t("mm")}
-            {Number.isFinite(day.tmax) && <> · {t("tmax")} {fmtNum(day.tmax)} °C</>}
+            {Number.isFinite(day.tmax) && (
+              <span className={scorching ? "font-bold text-sakia-alert" : ""}>
+                {" "}
+                · {t("tmax")} {fmtNum(day.tmax)} °C
+              </span>
+            )}
           </p>
         </div>
         <span
-          className={`rounded-full px-4 py-1.5 text-base font-extrabold ${
+          className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-base font-extrabold ${
             irrigate ? "bg-sakia-water text-white" : "bg-sakia-sand text-sakia-brown"
           }`}
         >
-          {irrigate ? `💧 ${t("irrigate")}` : t("wait")}
+          {irrigate ? <DropIcon className="h-5 w-5" /> : <HandIcon className="h-5 w-5" />}
+          {irrigate ? t("irrigate") : t("wait")}
         </span>
       </div>
       {irrigate && (
-        <p className="mt-2 text-lg font-bold text-sakia-water">
-          {t("dose")}:{" "}
-          {day.litersPerTree != null
-            ? t("perTree", { n: fmtNum(day.litersPerTree) })
-            : t("perHa", { n: fmtNum(day.m3PerHa) })}
+        <p className="border-t border-sakia-water/20 bg-white/50 px-4 py-3 text-xl font-extrabold text-sakia-water-deep">
+          {t("dose")} :{" "}
+          {day.litersPerTree != null ? t("perTree", { n: fmtNum(day.litersPerTree) }) : t("perHa", { n: fmtNum(day.m3PerHa) })}
           {day.litersPerTree != null && (
             <span className="ms-2 text-sm font-medium text-sakia-brown">({t("perHa", { n: fmtNum(day.m3PerHa) })})</span>
           )}
         </p>
       )}
-      {day.estimated && <p className="mt-2 text-xs font-semibold text-sakia-alert">{t("estimated")}</p>}
-    </li>
+      {day.estimated && <p className="px-4 pb-3 text-xs font-semibold text-sakia-alert">{t("estimated")}</p>}
+    </Reveal>
   );
 }
