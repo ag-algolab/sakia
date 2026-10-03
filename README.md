@@ -37,7 +37,7 @@ The irrigation numbers come from a **deterministic FAO-56 water balance, on purp
 
 We do **not** train a model, and nothing is tuned on local data yet. Our local-data contribution is **farmers' own rain reports**; calibrating the weather source against Tunisian stations is the roadmap (see the data card).
 
-**Guardrails.** When the data is not enough — weather older than 12 h, last irrigation unknown, coefficients estimated by analogy, forecast not covering the week — Sakia says **"I am not sure: ask an agricultural technician (CRDA)"**; with weather older than 48 h it gives **no advice**. The web and Telegram plan messages carry *"Indicative advice, calculated from the forecast weather (it can change). The decision is yours."* (the short SMS and spoken forms carry a shorter caveat). A person always decides. Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings (data card, section D).
+**Guardrails.** When the data is not enough — weather older than 12 h, last irrigation unknown, coefficients estimated by analogy, forecast not covering the week — Sakia says **"I am not sure: ask an agricultural technician (CRDA)"**; with weather older than 48 h it gives **no advice**. The web and Telegram plan messages carry *"Indicative advice, calculated from the forecast weather (it can change). The decision is yours."* (the spoken forms carry a shorter caveat; the one-sentence SMS plan carries none, only the "not sure" flag when it applies). A person always decides. Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings (data card, section D).
 
 ## What already exists (and how Sakia differs)
 

@@ -12,14 +12,16 @@ import type { BacktestResult } from "@/lib/backtest";
 
 export default function StatBand({ crop }: { crop: string }) {
   const { t, fmtNum } = useLang();
-  const [data, setData] = useState<BacktestResult | null>(null);
+  // Le résultat porte la culture pour laquelle il a été calculé : quand la culture change, il n'est plus montré
+  // (pas de setState dans l'effet pour le remettre à zéro).
+  const [result, setResult] = useState<{ crop: string; data: BacktestResult } | null>(null);
+  const data = result && result.crop === crop ? result.data : null;
 
   useEffect(() => {
     const ctrl = new AbortController();
-    setData(null);
     fetch(`/api/backtest?crop=${encodeURIComponent(crop)}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? (r.json() as Promise<BacktestResult>) : null))
-      .then((d) => setData(d))
+      .then((d) => setResult(d ? { crop, data: d } : null))
       .catch(() => {});
     return () => ctrl.abort();
   }, [crop]);

@@ -15,14 +15,16 @@ export default function BacktestPage() {
   const catalog = useCatalog();
   const [crop, setCrop] = useState("olivier");
   const [data, setData] = useState<BacktestResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
   const [reload, setReload] = useState(0);
+  // Chargement et échec se déduisent de « quelle demande a abouti » (culture + numéro d'essai) : rien n'est remis à
+  // zéro dans l'effet. Les derniers résultats restent affichés pendant qu'un nouveau calcul charge.
+  const [settled, setSettled] = useState<{ key: string; failed: boolean } | null>(null);
+  const key = `${crop}#${reload}`;
+  const loading = settled?.key !== key;
+  const failed = settled?.key === key && settled.failed;
 
   useEffect(() => {
     const ctrl = new AbortController();
-    setLoading(true);
-    setFailed(false);
     fetch(`/api/backtest?crop=${encodeURIComponent(crop)}`, { signal: ctrl.signal })
       .then(async (r) => {
         if (!r.ok) throw new Error(String(r.status));
@@ -30,15 +32,14 @@ export default function BacktestPage() {
       })
       .then((d) => {
         setData(d);
-        setLoading(false);
+        setSettled({ key, failed: false });
       })
       .catch((e) => {
         if (e.name === "AbortError") return;
-        setFailed(true);
-        setLoading(false);
+        setSettled({ key, failed: true });
       });
     return () => ctrl.abort();
-  }, [crop, reload]);
+  }, [crop, key]);
 
   const s = data?.summary;
   const maxMm = data ? Math.max(1, ...data.seasons.flatMap((x) => [x.fixed.grossMm, x.adaptive.grossMm])) : 1;
@@ -47,7 +48,7 @@ export default function BacktestPage() {
   const stressAdaptive = s?.meanStressDaysAdaptive ?? 0;
 
   return (
-    <>
+    <main className="flex flex-1 flex-col">
       {/* Bandeau permanent : toujours visible, jamais masqué par un état de chargement. */}
       <div role="note" className="bg-sakia-alert-light px-4 py-3 text-center text-base font-extrabold text-sakia-alert">
         {t("proofBanner")}
@@ -62,7 +63,7 @@ export default function BacktestPage() {
         </div>
       </section>
 
-      <main className="relative z-10 mx-auto -mt-10 w-full max-w-4xl flex-1 space-y-6 px-4 pb-10">
+      <div className="relative z-10 mx-auto -mt-10 w-full max-w-4xl flex-1 space-y-6 px-4 pb-10">
         <div className="rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/5">
           <CropSelect catalog={catalog} value={crop} onChange={setCrop} />
         </div>
@@ -207,8 +208,8 @@ export default function BacktestPage() {
         >
           {t("seeAdvice")}
         </Link>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
 

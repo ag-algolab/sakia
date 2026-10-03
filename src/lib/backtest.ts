@@ -183,7 +183,7 @@ export function backtest(
       fixedNetMm,
     },
     assumptions: [
-      "Météo réelle ERA5 (Open-Meteo) du chef-lieu, saisons rejouées depuis 2015.",
+      "Météo observée ERA5 (Open-Meteo) du chef-lieu (pas des prévisions passées), saisons rejouées depuis 2015.",
       `Calendrier fixe saisonnier : une irrigation tous les ${everyDays} jours, dose calée sur la demande moyenne du mois sur toutes les saisons (référence volontairement exigeante). HYPOTHÈSE à remplacer par le calendrier réel de l'administration.`,
       "Rendement relatif : relation FAO-33, estimation par modèle et non mesure ; fiable pour des déficits modérés seulement.",
       crop.status === "a_verifier"

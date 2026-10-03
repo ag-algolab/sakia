@@ -39,4 +39,8 @@ export function levelFromMm(mm: number): RainLevel {
 }
 
 // Nombre minimal de personnes DIFFÉRENTES pour qu'un signalement remplace la pluie du modèle (anti-abus).
+// Ce nombre est aussi écrit en toutes lettres dans quelques textes fixes : en changer la valeur impose de les relire
+// (rechercher « 3 personnes » / « 3 different » / « ثلاثة أشخاص » / « 3명 » dans src/components/phone/strings.ts,
+// src/components/bulletin/strings.ts, src/lib/telegram/i18n.ts et src/app/about/page.tsx). Les textes de l'interface
+// principale (src/components/ui/i18n.ts, clé rainRule) lisent la valeur du serveur et ne sont pas concernés.
 export const MIN_REPORTERS = 3;

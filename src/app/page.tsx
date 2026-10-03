@@ -43,7 +43,7 @@ type Form = {
 const DEFAULT_FORM: Form = { region: "kairouan", crop: "olivier", soil: "limoneux", system: "goutte", ago: "", planting: "" };
 
 export default function Home() {
-  const { lang, t, fmtDate, fmtNum } = useLang();
+  const { lang, t, fmtDate, fmtNum, colon } = useLang();
   const catalog = useCatalog();
   const [form, setForm] = useState<Form>(DEFAULT_FORM);
   const [replay, setReplay] = useState(false);
@@ -74,11 +74,13 @@ export default function Home() {
   // Le formulaire est gardé sur l'appareil : réglé une fois (par la personne ou par un technicien), il est là à chaque visite.
   const [formLoaded, setFormLoaded] = useState(false);
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- lecture du stockage de l'appareil APRÈS l'hydratation : le serveur ne l'a pas, la lire avant créerait un écart serveur/navigateur */
     try {
       const saved = JSON.parse(localStorage.getItem("sakia-form") ?? "null") as Partial<Form> | null;
       if (saved && typeof saved === "object") setForm((f) => ({ ...f, ...saved }));
     } catch {}
     setFormLoaded(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
   useEffect(() => {
     if (!formLoaded || replay) return; // le rejeu (tomate, 7 jours) ne doit pas écraser le vrai profil
@@ -110,8 +112,11 @@ export default function Home() {
     if (form.ago !== "") q.set("ago", form.ago);
     if (validDate(form.planting)) q.set("planting", validDate(form.planting));
     q.set("asOf", REPLAY_DATE);
+    // début de chargement d'une nouvelle demande : l'écran passe en « chargement » et efface l'échec précédent
+    /* eslint-disable react-hooks/set-state-in-effect -- état de chargement posé au lancement de la requête, volontaire */
     setReplayLoading(true);
     setReplayFailed(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
     fetch(`/api/plan?${q}`, { signal: ctrl.signal })
       .then(async (r) => {
         if (!r.ok) throw new Error(String(r.status));
@@ -133,6 +138,8 @@ export default function Home() {
 
   // Horloge pour « mis à jour il y a X heures » (rafraîchie chaque minute).
   useEffect(() => {
+    // l'heure n'est lue qu'après l'hydratation (le serveur n'a pas la même horloge que l'appareil)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- première lecture de l'horloge de l'appareil, volontaire
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
@@ -151,8 +158,9 @@ export default function Home() {
 
   const hot = replay;
 
+  // Un seul repère <main> pour toute la page (héros compris) : un lecteur d'écran saute ainsi directement au contenu.
   return (
-    <>
+    <main className="flex flex-1 flex-col">
       {/* ---------- héros : l'aube sur Kairouan ---------- */}
       <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
         {/* téléphone et tablette : texte, puis scène */}
@@ -181,7 +189,7 @@ export default function Home() {
         <ListenHero query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }} plan={plan} />
       </div>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
+      <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
         {/* rejeu de la canicule : la scène de la vidéo */}
         <button
           type="button"
@@ -238,14 +246,14 @@ export default function Home() {
             </button>
           </div>
         )}
-      </main>
+      </div>
 
       {/* ---------- pourquoi c'est important ---------- */}
       <div className="mt-8">
         <StatBand crop={form.crop} />
       </div>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
+      <div className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
         {/* ---------- votre champ ---------- */}
         <section aria-labelledby="field-title" className="space-y-4">
           <Reveal>
@@ -371,13 +379,19 @@ export default function Home() {
             {!replay && <p className="text-center text-xs font-semibold text-sakia-green">{t("computedOnDevice")}</p>}
             <dl className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-sakia-brown/80">
               <div className="flex gap-1">
-                <dt className="font-semibold">{t("planSize")} :</dt>
+                <dt className="font-semibold">
+                  {t("planSize")}
+                  {colon}
+                </dt>
                 <dd dir="ltr">
                   {bytes != null ? `${fmtNum(bytes)} B (${fmtNum(bytes / 1024, 1)} KB)` : "–"} · {t("sizeNote")}
                 </dd>
               </div>
               <div className="flex gap-1">
-                <dt className="font-semibold">{t("dataAge")} :</dt>
+                <dt className="font-semibold">
+                  {t("dataAge")}
+                  {colon}
+                </dt>
                 <dd>{replay ? t("replayDataNote") : ageMin != null ? fmtAge(ageMin) : "–"}</dd>
               </div>
             </dl>
@@ -385,8 +399,8 @@ export default function Home() {
         )}
 
         {loading && !plan && <p className="py-8 text-center text-base text-sakia-brown">{t("loading")}</p>}
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
 
@@ -422,7 +436,7 @@ function AskPerson({ confidence }: { confidence: Confidence }) {
 }
 
 function Summary({ plan }: { plan: Plan }) {
-  const { t, fmtDate, fmtNum } = useLang();
+  const { t, fmtDate, fmtNum, colon } = useLang();
   const s = plan.summary;
   const risk = { faible: "bg-[#4aa263]", moyen: "bg-sakia-sun", eleve: "bg-[#d2552a]" }[s.stressRisk];
   return (
@@ -432,7 +446,7 @@ function Summary({ plan }: { plan: Plan }) {
           <DropIcon className="sk-sway pointer-events-none absolute -end-3 -top-3 h-28 w-28 text-white/10" />
           <h3 className="text-sm font-semibold uppercase tracking-wider text-white/70">{t("summary", { n: plan.days.length })}</h3>
           <p className="font-display mt-1 text-2xl font-bold leading-tight sm:text-3xl">
-            {s.nextIrrigation ? `${t("nextIrrigation")} : ${fmtDate(s.nextIrrigation)}` : t("noIrrigation")}
+            {s.nextIrrigation ? `${t("nextIrrigation")}${colon} ${fmtDate(s.nextIrrigation)}` : t("noIrrigation")}
           </p>
         </div>
         <dl className="grid grid-cols-2 gap-px bg-white/10 text-sm sm:grid-cols-4">
@@ -464,10 +478,11 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function DayCard({ day, index, report }: { day: PlanDay; index: number; report?: LocalReport }) {
-  const { t, fmtDate, fmtNum } = useLang();
+  const { t, fmtDate, fmtNum, colon } = useLang();
   const irrigate = day.action === "irriguer";
   const rainy = day.rain >= 1;
   const scorching = Number.isFinite(day.tmax) && day.tmax >= 40;
+  // Petits écrans (320-360 px) : pictogramme et pastille plus compacts, pour que la date et les mesures aient la place de respirer.
   return (
     <Reveal
       as="li"
@@ -476,42 +491,48 @@ function DayCard({ day, index, report }: { day: PlanDay; index: number; report?:
         irrigate ? "border-sakia-water bg-sakia-water-light" : "border-transparent bg-white shadow-sm ring-1 ring-black/5"
       }`}
     >
-      <div className="flex items-center gap-4 p-4">
+      <div className="flex items-center gap-3 p-4 sm:gap-4">
         <span
-          className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl sm:h-16 sm:w-16 ${
             rainy ? "bg-sakia-water-light text-sakia-water" : scorching ? "bg-sakia-alert-light text-sakia-alert" : "bg-[#fdf1cf] text-sakia-sun-deep"
           }`}
         >
           {rainy ? (
-            <RainIcon className="h-10 w-10" />
+            <RainIcon className="h-8 w-8 sm:h-10 sm:w-10" />
           ) : (
-            <SunIcon className={`h-10 w-10 ${scorching ? "sk-spin" : ""}`} />
+            <SunIcon className={`h-8 w-8 sm:h-10 sm:w-10 ${scorching ? "sk-spin" : ""}`} />
           )}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-bold leading-tight text-sakia-ink">{fmtDate(day.date)}</p>
-          <p className="mt-0.5 text-sm text-sakia-brown">
-            {t("rain")} {fmtNum(day.rain, 1)} {t("mm")}
+          <p className="text-base font-bold leading-tight text-sakia-ink sm:text-lg">{fmtDate(day.date)}</p>
+          {/* Chaque mesure est insécable (« 42 °C » ne se coupe jamais) et passe à la ligne d'un bloc. L'unité °C est isolée
+              en lecture gauche-droite : sinon, en arabe, elle s'afficherait à l'envers (« C° 42 »). */}
+          <p className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-sakia-brown">
+            <span className="whitespace-nowrap">
+              {t("rain")} {fmtNum(day.rain, 1)}
+              {"\u00A0"}
+              {t("mm")}
+            </span>
             {Number.isFinite(day.tmax) && (
-              <span className={scorching ? "font-bold text-sakia-alert" : ""}>
-                {" "}
-                · {t("tmax")} {fmtNum(day.tmax)} °C
+              <span className={`whitespace-nowrap ${scorching ? "font-bold text-sakia-alert" : ""}`}>
+                {t("tmax")} <bdi dir="ltr">{fmtNum(day.tmax)}&nbsp;°C</bdi>
               </span>
             )}
           </p>
         </div>
         <span
-          className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-base font-extrabold ${
+          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-extrabold sm:gap-2 sm:px-4 sm:py-2 sm:text-base ${
             irrigate ? "bg-sakia-water text-white" : "bg-sakia-sand text-sakia-brown"
           }`}
         >
-          {irrigate ? <DropIcon className="h-5 w-5" /> : <HandIcon className="h-5 w-5" />}
+          {irrigate ? <DropIcon className="h-4 w-4 sm:h-5 sm:w-5" /> : <HandIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
           {irrigate ? t("irrigate") : t("wait")}
         </span>
       </div>
       {irrigate && (
         <p className="border-t border-sakia-water/20 bg-white/50 px-4 py-3 text-xl font-extrabold text-sakia-water-deep">
-          {t("dose")} :{" "}
+          {t("dose")}
+          {colon}{" "}
           {day.litersPerTree != null ? t("perTree", { n: fmtNum(day.litersPerTree) }) : t("perHa", { n: fmtNum(day.m3PerHa) })}
           {day.litersPerTree != null && (
             <span className="ms-2 text-sm font-medium text-sakia-brown">({t("perHa", { n: fmtNum(day.m3PerHa) })})</span>
