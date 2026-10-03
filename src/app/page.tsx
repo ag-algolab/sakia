@@ -186,16 +186,16 @@ export default function Home() {
         <button
           type="button"
           onClick={toggleReplay}
-          className={`sk-press flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-start shadow-md ${
+          className={`sk-press flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-start shadow-md ${
             replay
               ? "border-2 border-sakia-green bg-white text-sakia-green"
               : "bg-gradient-to-r from-[#a63d16] to-[#e0832a] text-white"
           }`}
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-black/10">
-            <ThermoIcon className="h-7 w-7" />
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/10">
+            <ThermoIcon className="h-6 w-6" />
           </span>
-          <span className="font-display text-lg font-bold leading-tight">{replay ? t("replayBack") : t("replayButton")}</span>
+          <span className="font-display text-base font-bold leading-tight sm:text-lg">{replay ? t("replayBack") : t("replayButton")}</span>
         </button>
 
         {replay && (
@@ -276,39 +276,60 @@ export default function Home() {
             />
           </Reveal>
 
-          <Reveal delay={80} className="grid grid-cols-1 gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:grid-cols-2">
-            <Field label={t("region")}>
-              <select className={selectClass} value={form.region} onChange={(e) => set("region")(e.target.value)}>
-                {!catalog && <option value={form.region}>{form.region}</option>}
-                {catalog?.regions.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {regionName(r, lang)}
-                  </option>
-                ))}
-              </select>
-            </Field>
+          {/* deux questions seulement : la culture et le dernier arrosage ; le reste est replié */}
+          <Reveal delay={80} className="space-y-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
             <CropSelect catalog={catalog} value={form.crop} onChange={set("crop")} />
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-sakia-brown">{t("soil")}</span>
-              <Segmented
-                label={t("soil")}
-                value={form.soil}
-                onChange={set("soil")}
-                options={["sableux", "limoneux", "argileux"].map((s) => ({ value: s, label: t(s) }))}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-sakia-brown">{t("system")}</span>
-              <Segmented
-                label={t("system")}
-                value={form.system}
-                onChange={set("system")}
-                options={["goutte", "aspersion", "gravitaire"].map((s) => ({ value: s, label: t(s) }))}
-              />
-            </div>
-            <Field label={t("planting")} hint={t("plantingHint")}>
-              <input type="date" className={selectClass} value={form.planting} onChange={(e) => set("planting")(e.target.value)} />
-            </Field>
+
+            <details className="group rounded-2xl border border-sakia-sand-dark/70 bg-sakia-sand/40">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-base font-bold text-sakia-ink [&::-webkit-details-marker]:hidden">
+                <span>
+                  {t("fieldMore")}
+                  <span className="mt-0.5 block text-sm font-medium text-sakia-brown">
+                    {catalog ? regionName(catalog.regions.find((r) => r.id === form.region) ?? { id: form.region, nameFr: form.region, nameAr: form.region }, lang) : form.region}
+                    {" · "}
+                    {t(form.soil)}
+                    {" · "}
+                    {t(form.system)}
+                  </span>
+                </span>
+                <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <div className="grid grid-cols-1 gap-4 px-4 pb-4 pt-2 sm:grid-cols-2">
+                <Field label={t("region")}>
+                  <select className={selectClass} value={form.region} onChange={(e) => set("region")(e.target.value)}>
+                    {!catalog && <option value={form.region}>{form.region}</option>}
+                    {catalog?.regions.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {regionName(r, lang)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label={t("planting")} hint={t("plantingHint")}>
+                  <input type="date" className={selectClass} value={form.planting} onChange={(e) => set("planting")(e.target.value)} />
+                </Field>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-sakia-brown">{t("soil")}</span>
+                  <Segmented
+                    label={t("soil")}
+                    value={form.soil}
+                    onChange={set("soil")}
+                    options={["sableux", "limoneux", "argileux"].map((s) => ({ value: s, label: t(s) }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-sakia-brown">{t("system")}</span>
+                  <Segmented
+                    label={t("system")}
+                    value={form.system}
+                    onChange={set("system")}
+                    options={["goutte", "aspersion", "gravitaire"].map((s) => ({ value: s, label: t(s) }))}
+                  />
+                </div>
+              </div>
+            </details>
           </Reveal>
         </section>
 

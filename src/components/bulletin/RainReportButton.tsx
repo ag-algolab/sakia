@@ -3,7 +3,7 @@
 // Bouton « Il a plu » : l'agriculteur dit combien il a plu chez lui, sur une échelle à cinq degrés (personne ne mesure en
 // millimètres). Quand au moins 2 personnes différentes de la région signalent la même journée, la médiane prudente remplace
 // la pluie du modèle météo, et le bulletin le dit (src/lib/reports.ts, src/lib/voice/rainreports.ts).
-// Garde-fous : aucun nom, un seul rapport par personne, par région et par jour, jamais présenté comme une mesure.
+// Garde-fous : aucun nom, un seul rapport par personne, par région et par jour ; présenté comme « signalement d'agriculteurs ».
 // Mêmes clés de stockage que la page d'accueil (components/ui/RainReport.tsx) : la même personne n'est comptée qu'une fois,
 // quelle que soit la page d'où elle signale. Hors connexion, le signalement attend dans l'appareil et part au retour du réseau.
 

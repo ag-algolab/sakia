@@ -125,9 +125,10 @@ const MAX_CHARS = 1500;
             }
             if (l.code === "ko" && /[A-Za-z]/.test(text)) fail(`${tag} : lettres latines dans « ${text} »`);
             if (/undefined|NaN/.test(text)) fail(`${tag} : valeur absurde dans « ${text} »`);
-            // jamais « mesuré » : le texte doit dire que c'est un signalement
-            const says = { fr: /pas une mesure/, en: /not a measurement/, ar: /وليس قياسا/, aeb: /موش قياس/, ko: /측정값이 아니라/ }[l.code];
-            if (!says.test(text)) fail(`${tag} : ne dit pas « signalement, pas mesure » : « ${text} »`);
+            // la ligne dit que c'est un signalement d'agriculteurs, et ne parle jamais de « mesure » (ni pour l'affirmer, ni pour le nier)
+            const says = { fr: /signalement d'agriculteurs/, en: /report by farmers/, ar: /بلاغ الفلاحين/, aeb: /كلام الفلاحين/, ko: /농민 신고/ }[l.code];
+            if (!says.test(text)) fail(`${tag} : ne dit pas que c'est un signalement d'agriculteurs : « ${text} »`);
+            if (/mesur|measur|قياس|측정/.test(text)) fail(`${tag} : parle de mesure : « ${text} »`);
           }
         }
       }

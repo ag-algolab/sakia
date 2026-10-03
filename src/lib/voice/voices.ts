@@ -36,6 +36,10 @@ export const OUTPUT_FORMAT = "mp3_22050_32";
 
 export const VOICE_SETTINGS = { stability: 0.6, similarity_boost: 0.75, style: 0.1, use_speaker_boost: false };
 
+// Crédits réellement facturés par caractère (en-tête « character-cost » mesuré le 3 octobre 2026). Sert au grand livre
+// de l'appli ; un modèle inconnu compte 1 crédit par caractère (prudence).
+export const CREDITS_PER_CHAR: Record<string, number> = { eleven_v4: 0.12, eleven_v4_turbo: 0.06, eleven_multilingual_v2: 0.44, eleven_v3: 0.44 };
+
 // Budget de crédits de tests (plan Creator ~131 000) : on ne dépasse jamais 20 000.
 export const BUDGET_CREDITS = Number(process.env.VOICE_BUDGET_CREDITS || 20000);
 

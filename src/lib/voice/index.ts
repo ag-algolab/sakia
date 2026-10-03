@@ -59,7 +59,7 @@ export async function synthesizeBulletinMeta(plan: Plan, lang: VoiceLang, option
   let hit = readCache(key);
   const source: "live" | "cache" = hit ? "cache" : "live";
   if (!hit) {
-    reserveCredits(text.length); // refuse si le budget serait dépassé
+    reserveCredits(text.length, MODEL_ID); // refuse si le budget serait dépassé
     const { audio, alignment } = await ttsWithTimestamps(text, voiceId, MODEL_ID);
     hit = {
       mime: MIME,

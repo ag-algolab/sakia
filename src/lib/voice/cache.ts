@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { BUDGET_CREDITS, MODEL_ID, OUTPUT_FORMAT } from "./voices";
+import { BUDGET_CREDITS, CREDITS_PER_CHAR, MODEL_ID, OUTPUT_FORMAT } from "./voices";
 
 export type TimedLine = { id: string; text: string; startMs: number; endMs: number };
 
@@ -88,10 +88,11 @@ export function creditsSpent(): number {
 export class BudgetError extends Error {}
 
 // À appeler AVANT une synthèse : refuse si le budget serait dépassé.
-export function reserveCredits(chars: number): void {
+export function reserveCredits(chars: number, modelId: string = MODEL_ID): void {
+  const credits = Math.ceil(chars * (CREDITS_PER_CHAR[modelId] ?? 1));
   const spent = creditsSpent();
-  if (spent + chars > BUDGET_CREDITS) {
+  if (spent + credits > BUDGET_CREDITS) {
     throw new BudgetError(`budget de crédits vocaux atteint (${spent}/${BUDGET_CREDITS})`);
   }
-  writeFileSync(ledgerPath(), JSON.stringify({ spent: spent + chars, updatedAt: new Date().toISOString() }));
+  writeFileSync(ledgerPath(), JSON.stringify({ spent: spent + credits, updatedAt: new Date().toISOString() }));
 }

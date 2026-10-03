@@ -85,4 +85,4 @@ Database tables are described in `docs/supabase.sql`. Next.js 16, TypeScript, Ta
 
 All code in this repository was written between Saturday 3 October 2026 (kick-off) and Sunday 4 October 2026 (deadline), with AI coding assistance (Claude Code) directed by the author. Pre-existing components: the Next.js starter scaffold and open-source libraries only. Weather data © Open-Meteo (CC BY 4.0); FAO publications cited in `src/lib/crops.ts`.
 
-**Licence:** none chosen yet — all rights reserved until the author decides.
+**Licence:** [MIT](LICENSE). Third-party data and voices keep their own terms (Open-Meteo CC BY 4.0, FAO publications, ElevenLabs terms).

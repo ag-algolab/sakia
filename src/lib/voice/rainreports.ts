@@ -1,7 +1,7 @@
 // Ligne « reports » du bulletin : quand la pluie d'un ou plusieurs jours vient de signalements d'agriculteurs de la région
 // (plan.localReports, au moins 2 personnes différentes, médiane prudente) et non du modèle météo, le bulletin le dit.
 //
-// Règles (HANDOFF section 13) : on dit « signalé par des agriculteurs », jamais « mesuré » ; on dit que le signalement
+// Règles (HANDOFF section 13) : on dit « signalé par des agriculteurs » (Anthony : sans ajouter « pas une mesure ») ; on dit que le signalement
 // remplace la prévision ; on ne cite aucun nom. On parle en ÉCHELLE (pas de pluie, très légère, légère, beaucoup,
 // énormément), comme les agriculteurs la donnent, pas en millimètres : la voix reste simple et sans chiffre à deviner.
 // Le nombre de personnes est dit en toutes lettres en darija. Textes darija, arabe standard et coréen à faire valider.
@@ -37,11 +37,11 @@ const LEVEL: Record<VoiceLang, Record<RainLevel, string>> = {
 const KO_COUNT = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열"]; // « 두 명 », pas « 이 명 »
 
 const CLOSING: Record<VoiceLang, string> = {
-  fr: "Nous avons retenu leur signalement à la place de la prévision. C'est un signalement, pas une mesure.",
-  en: "We used their report instead of the forecast. It is a report, not a measurement.",
-  ar: "أخذنا ببلاغهم بدل التوقعات. هذا بلاغ وليس قياسا.",
-  aeb: "خذينا بكلامهم بدل التوقعات. هذا كلام فلاحين، موش قياس.",
-  ko: "예보 대신 이 신고를 반영했습니다. 측정값이 아니라 농민들의 신고입니다.",
+  fr: "Nous avons retenu ce signalement d'agriculteurs à la place de la prévision.",
+  en: "We used this report by farmers instead of the forecast.",
+  ar: "أخذنا ببلاغ الفلاحين هذا بدل التوقعات.",
+  aeb: "خذينا بكلام الفلاحين هذا بدل التوقعات.",
+  ko: "예보 대신 이 농민 신고를 반영했습니다.",
 };
 
 function daysBetween(today: string, date: string): number {
