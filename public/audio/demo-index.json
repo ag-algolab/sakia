@@ -1,0 +1,87 @@
+[
+ {
+  "id": "kairouan-olivier-aeb",
+  "title": "Kairouan · olive tree · last irrigation 3 days ago · Tunisian Arabic (Darija) voice",
+  "lang": "aeb",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T18:29:55.296Z"
+ },
+ {
+  "id": "kairouan-olivier-fr",
+  "title": "Kairouan · olive tree · last irrigation 3 days ago · French voice",
+  "lang": "fr",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T18:30:03.083Z"
+ },
+ {
+  "id": "kairouan-olivier-ar",
+  "title": "Kairouan · olive tree · last irrigation 3 days ago · Standard Arabic voice",
+  "lang": "ar",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T18:30:11.563Z"
+ },
+ {
+  "id": "kairouan-olivier-en",
+  "title": "Kairouan · olive tree · last irrigation 3 days ago · English voice",
+  "lang": "en",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T18:30:18.821Z"
+ },
+ {
+  "id": "kairouan-olivier-ko",
+  "title": "Kairouan · olive tree · last irrigation 3 days ago · Korean voice (한국어)",
+  "lang": "ko",
+  "region": "kairouan",
+  "crop": "olivier",
+  "recordedAt": "2026-10-03T18:30:26.933Z"
+ },
+ {
+  "id": "kairouan-tomate-canicule-aeb",
+  "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Tunisian Arabic (Darija) voice",
+  "lang": "aeb",
+  "region": "kairouan",
+  "crop": "tomate",
+  "replayOf": "2026-07-17",
+  "recordedAt": "2026-10-03T18:30:36.611Z"
+ },
+ {
+  "id": "kairouan-tomate-canicule-fr",
+  "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · French voice",
+  "lang": "fr",
+  "region": "kairouan",
+  "crop": "tomate",
+  "replayOf": "2026-07-17",
+  "recordedAt": "2026-10-03T18:30:46.930Z"
+ },
+ {
+  "id": "kairouan-tomate-canicule-ar",
+  "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Standard Arabic voice",
+  "lang": "ar",
+  "region": "kairouan",
+  "crop": "tomate",
+  "replayOf": "2026-07-17",
+  "recordedAt": "2026-10-03T18:30:57.771Z"
+ },
+ {
+  "id": "kairouan-tomate-canicule-en",
+  "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · English voice",
+  "lang": "en",
+  "region": "kairouan",
+  "crop": "tomate",
+  "replayOf": "2026-07-17",
+  "recordedAt": "2026-10-03T18:31:06.574Z"
+ },
+ {
+  "id": "kairouan-tomate-canicule-ko",
+  "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Korean voice (한국어)",
+  "lang": "ko",
+  "region": "kairouan",
+  "crop": "tomate",
+  "replayOf": "2026-07-17",
+  "recordedAt": "2026-10-03T18:31:17.145Z"
+ }
+]

@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: اللوز.",
+   "startMs": 0,
+   "endMs": 4520,
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "startMs": 4720,
+   "endMs": 7760,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة ثمانية وأربعون درجة.",
+   "startMs": 7840,
+   "endMs": 11680,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: اسقِ يوم الخميس ثلاثة وعشرون جويلية، ما يعادل مطرا من ستون ميليمتر، أي ستمائة واثنان متر مكعب للهكتار.",
+   "startMs": 11800,
+   "endMs": 22240,
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: متوسط.",
+   "startMs": 22400,
+   "endMs": 24880,
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: اللوز.",
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة ثمانية وأربعون درجة.",
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: اسقِ يوم الخميس ثلاثة وعشرون جويلية، ما يعادل مطرا من ستون ميليمتر، أي ستمائة واثنان متر مكعب للهكتار.",
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: متوسط.",
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "durationMs": 24880
+}

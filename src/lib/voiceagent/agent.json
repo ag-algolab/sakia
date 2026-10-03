@@ -1,0 +1,8 @@
+{
+ "agentId": "agent_4401m41hhmyaf3a8trybsnrxajjh",
+ "toolId": "tool_8101m41hhmmxfszsepjew4rte770",
+ "createdAt": "2026-10-03T18:48:43.162Z",
+ "llm": "claude-sonnet-4-5",
+ "ttsModel": "eleven_v4_turbo",
+ "voiceId": "GLRyn2pNxpZ4FAjmlY3z"
+}

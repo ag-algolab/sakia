@@ -1,0 +1,103 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "Bonjour à tous, et bienvenue sur Sakia.",
+   "startMs": 0,
+   "endMs": 2640,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "Voici le bulletin d'irrigation pour Kairouan, culture : Tomate.",
+   "startMs": 2680,
+   "endMs": 6640,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Tomato."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "startMs": 7040,
+   "endMs": 9200,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 48 degrés.",
+   "startMs": 9240,
+   "endMs": 12080,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : irriguer lundi 20 juillet, avec 391 m³/ha.",
+   "startMs": 12160,
+   "endMs": 18000,
+   "en": "Our advice: irrigate on Monday 20 July, with 391 m³/ha."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "startMs": 18040,
+   "endMs": 20320,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "unsure",
+   "text": "Je ne suis pas sûr : demandez à un technicien agricole (CRDA).",
+   "startMs": 20360,
+   "endMs": 24960,
+   "en": "I am not sure: please ask an agricultural technician (CRDA)."
+  },
+  {
+   "id": "soil",
+   "text": "Ce conseil est donné pour un sol normal, limoneux, avec goutte-à-goutte. Pour les détails, choisissez votre type de sol dans l'application.",
+   "startMs": 25040,
+   "endMs": 32720,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "Ce conseil est indicatif : vérifiez-le auprès de votre administration agricole.",
+   "startMs": 32800,
+   "endMs": 37520,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "Merci pour le service que vous rendez au pays. Bonne chance à tous.",
+   "startMs": 37680,
+   "endMs": 41120,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-tomate-canicule-fr.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T18:30:46.930Z",
+ "lang": "fr",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "tomate",
+  "date": "2026-07-17",
+  "replay": true,
+  "outOfSeason": false,
+  "rainMm": 0,
+  "tmaxMax": 48,
+  "stressRisk": "faible",
+  "next": {
+   "date": "2026-07-20",
+   "m3PerHa": 391.38333333333327
+  },
+  "confidence": {
+   "level": "low",
+   "askAPerson": true,
+   "reasons": [
+    "unknown_last_irrigation"
+   ]
+  }
+ },
+ "source": "demo",
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · French voice"
+}

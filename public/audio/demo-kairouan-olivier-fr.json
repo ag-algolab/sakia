@@ -1,0 +1,91 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "Bonjour à tous, et bienvenue sur Sakia.",
+   "startMs": 0,
+   "endMs": 2720,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "Voici le bulletin d'irrigation pour Kairouan, culture : Olivier.",
+   "startMs": 2760,
+   "endMs": 7040,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Olive."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "startMs": 7080,
+   "endMs": 9280,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 35 degrés.",
+   "startMs": 9360,
+   "endMs": 12160,
+   "en": "Temperatures may reach 35 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.",
+   "startMs": 12240,
+   "endMs": 16160,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "startMs": 16240,
+   "endMs": 18640,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "soil",
+   "text": "Ce conseil est donné pour un sol normal, limoneux, avec goutte-à-goutte. Pour les détails, choisissez votre type de sol dans l'application.",
+   "startMs": 18680,
+   "endMs": 26080,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "Ce conseil est indicatif : vérifiez-le auprès de votre administration agricole.",
+   "startMs": 26120,
+   "endMs": 30640,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "Merci pour le service que vous rendez au pays. Bonne chance à tous.",
+   "startMs": 30720,
+   "endMs": 34080,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-olivier-fr.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T18:30:03.083Z",
+ "lang": "fr",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "olivier",
+  "date": "2026-10-03",
+  "replay": false,
+  "outOfSeason": false,
+  "rainMm": 0.3,
+  "tmaxMax": 34.9,
+  "stressRisk": "faible",
+  "next": null,
+  "confidence": {
+   "level": "ok",
+   "askAPerson": false,
+   "reasons": []
+  }
+ },
+ "source": "demo",
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · olive tree · last irrigation 3 days ago · French voice"
+}

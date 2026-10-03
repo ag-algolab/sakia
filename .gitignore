@@ -1,0 +1,60 @@
+﻿# Secrets : ne jamais publier
+.env
+.env.local
+.env.*.local
+
+# Notes de prÃ©paration (ne font pas partie du rendu)
+hackathon-prep/
+
+node_modules/
+.next/
+.vercel/
+
+# --- Next.js ---
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+# testing
+/coverage
+# next.js
+/.next/
+/out/
+# production
+/build
+# misc
+.DS_Store
+*.pem
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+# env files (can opt-in for committing if needed)
+.env*
+# vercel
+.vercel
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Réglages locaux de l’assistant
+.claude/
+
+# Documents de travail internes : ils restent sur le disque mais ne partent pas dans le dépôt public
+docs/HANDOFF.md
+docs/MARKETING.md
+docs/WB-EXIGENCES.md
+docs/WB-VIDEO.md
+docs/postes/
+docs/NOTES-*.md
+
+# Échantillons de choix de voix et cache audio généré : utiles en local, pas dans le dépôt public
+public/audio/samples/
+public/audio/cache/

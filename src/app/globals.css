@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Palette terre et vert, sobre. */
+:root {
+  --background: #f7f2e8;
+  --foreground: #2b2118;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sakia-green: #2f5d3a;
+  --color-sakia-green-light: #e3eedc;
+  --color-sakia-brown: #5a3d22;
+  --color-sakia-sand: #efe5d0;
+  --color-sakia-sand-dark: #d8c7a4;
+  --color-sakia-ink: #2b2118;
+  --color-sakia-water: #1f5f8b;
+  --color-sakia-water-light: #dcebf5;
+  --color-sakia-alert: #8a3b12;
+  --color-sakia-alert-light: #fbe6d4;
+  --font-sans: var(--font-geist-sans), "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+select,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #1f5f8b;
+  outline-offset: 2px;
+}

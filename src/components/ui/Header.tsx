@@ -1,0 +1,63 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useLang } from "./LangProvider";
+import { LANGS } from "./i18n";
+
+const LINKS = [
+  { href: "/", key: "navAdvice" },
+  { href: "/backtest", key: "navProof" },
+  { href: "/bulletin", key: "navBulletin" },
+  { href: "/phone", key: "navPhone" },
+  { href: "/about", key: "navAbout" },
+];
+
+export default function Header() {
+  const { lang, setLang, t } = useLang();
+  const path = usePathname();
+  return (
+    <header className="bg-sakia-green text-white">
+      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 pt-3">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <span aria-hidden className="text-2xl">☸</span> Sakia
+        </Link>
+        <div role="group" aria-label={t("language")} className="flex overflow-hidden rounded-lg border border-white/40">
+          {LANGS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => setLang(l.id)}
+              aria-pressed={lang === l.id}
+              aria-label={l.name}
+              title={l.name}
+              className={`min-h-11 min-w-12 px-3 text-sm font-semibold ${
+                lang === l.id ? "bg-white text-sakia-green" : "text-white hover:bg-white/15"
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="mx-auto max-w-3xl px-4 pb-2 pt-1 text-sm text-white/85">{t("tagline")}</p>
+      <nav aria-label="Sakia" className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-2 pb-2">
+        {LINKS.map((l) => {
+          const active = l.href === "/" ? path === "/" : path.startsWith(l.href);
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-11 items-center whitespace-nowrap rounded-lg px-3 text-base font-medium ${
+                active ? "bg-white text-sakia-green" : "text-white hover:bg-white/15"
+              }`}
+            >
+              {t(l.key)}
+            </Link>
+          );
+        })}
+      </nav>
+    </header>
+  );
+}

@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Blé.",
+   "startMs": 0,
+   "endMs": 3440,
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "startMs": 3840,
+   "endMs": 6160,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 31 degrés.",
+   "startMs": 6240,
+   "endMs": 9120,
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.",
+   "startMs": 9200,
+   "endMs": 13280,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "startMs": 13360,
+   "endMs": 15680,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Blé.",
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 31 degrés.",
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.",
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 15680
+}

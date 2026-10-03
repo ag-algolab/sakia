@@ -1,0 +1,40 @@
+{
+ "at": "2026-10-03T18:50:51.779Z",
+ "summary": {
+  "phrases": 1,
+  "passed": 1,
+  "plan_crop_ok": "1/1 (100 %)",
+  "plan_region_ok": "1/1 (100 %)",
+  "plan_both_ok": "1/1 (100 %)",
+  "plan_read_verbatim": "1/1 (100 %)",
+  "ask_ok": "n/a",
+  "refuse_ok": "n/a",
+  "median_ms_to_tool_call": 3962,
+  "conversation_seconds": 12
+ },
+ "results": [
+  {
+   "id": 1,
+   "style": "fr",
+   "text": "J'ai du blé à Kairouan.",
+   "kind": "plan",
+   "toolCalled": true,
+   "reply": "Quand avez-vous irrigué la dernière fois ? Conseil d'irrigation pour Kairouan, culture : Blé. Cette culture n'est pas en végétation en ce moment : aucune irrigation à prévoir.\n\nVoulez-vous un conseil pour une autre culture ?",
+   "pass": true,
+   "seconds": 12,
+   "firstReplyMs": 168,
+   "toolArgs": {
+    "region_id": "kairouan",
+    "crop_id": "ble",
+    "language": "fr"
+   },
+   "toolMs": 3962,
+   "followUps": 1,
+   "cropOk": true,
+   "regionOk": true,
+   "langOk": true,
+   "readVerbatim": true,
+   "agoOk": true
+  }
+ ]
+}

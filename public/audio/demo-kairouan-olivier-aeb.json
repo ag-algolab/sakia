@@ -1,0 +1,91 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "عسلامة بيكم، ومرحبا بيكم في ساقية.",
+   "startMs": 0,
+   "endMs": 2960,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "هاذي نشرة السقي متاع ولاية القيروان، والمحصول: الزيتون.",
+   "startMs": 3080,
+   "endMs": 7840,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Olive."
+  },
+  {
+   "id": "rain",
+   "text": "الأسبوع هذا ما فمّاش شتا تنفع الزرع.",
+   "startMs": 7920,
+   "endMs": 10800,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "الحرارة تنجّم توصل لين خمسة وثلاثين درجة.",
+   "startMs": 10880,
+   "endMs": 13840,
+   "en": "Temperatures may reach 35 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: ما فمّاش لزوم للسقي في السبعة أيام الجاية.",
+   "startMs": 13920,
+   "endMs": 17440,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "خطر العطش على الزرع: قليل.",
+   "startMs": 17600,
+   "endMs": 19840,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "soil",
+   "text": "هاذي النصيحة لتربة عادية، طميية، وسقي قطرة قطرة. للتفاصيل، اختارو نوع التربة متاعكم في التطبيق.",
+   "startMs": 19920,
+   "endMs": 27440,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "هاذي نصيحة برّك: تثبّتو منها عند المصالح الفلاحية.",
+   "startMs": 27520,
+   "endMs": 31200,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "يعطيكم الصحة على الخدمة اللي تعملوها لبلادنا. بالتوفيق للجميع.",
+   "startMs": 31280,
+   "endMs": 35360,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-olivier-aeb.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T18:29:55.296Z",
+ "lang": "aeb",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "olivier",
+  "date": "2026-10-03",
+  "replay": false,
+  "outOfSeason": false,
+  "rainMm": 0.3,
+  "tmaxMax": 34.9,
+  "stressRisk": "faible",
+  "next": null,
+  "confidence": {
+   "level": "ok",
+   "askAPerson": false,
+   "reasons": []
+  }
+ },
+ "source": "demo",
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · olive tree · last irrigation 3 days ago · Tunisian Arabic (Darija) voice"
+}

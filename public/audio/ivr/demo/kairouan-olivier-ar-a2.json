@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: الزيتون.",
+   "startMs": 0,
+   "endMs": 4400,
+   "en": "Irrigation advice for Kairouan, crop: Olive."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "startMs": 4800,
+   "endMs": 7840,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة ثمانية وأربعون درجة.",
+   "startMs": 7920,
+   "endMs": 11680,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
+   "startMs": 11800,
+   "endMs": 16320,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "startMs": 16480,
+   "endMs": 18800,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: الزيتون.",
+   "en": "Irrigation advice for Kairouan, crop: Olive."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة ثمانية وأربعون درجة.",
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 18800
+}

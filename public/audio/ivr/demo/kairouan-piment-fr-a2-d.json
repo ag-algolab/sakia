@@ -1,0 +1,79 @@
+{
+ "lines": [
+  {
+   "id": "dhead",
+   "text": "Détail de la semaine, Piment ou poivron.",
+   "startMs": 0,
+   "endMs": 2880,
+   "en": "Week details, Pepper."
+  },
+  {
+   "id": "irr1",
+   "text": "Le vendredi 17 juillet : 19 millimètres.",
+   "startMs": 3120,
+   "endMs": 6560,
+   "en": "On Friday 17 July: 19 millimetres."
+  },
+  {
+   "id": "irr2",
+   "text": "Le dimanche 19 juillet : 18 millimètres.",
+   "startMs": 6640,
+   "endMs": 9680,
+   "en": "On Sunday 19 July: 18 millimetres."
+  },
+  {
+   "id": "irr3",
+   "text": "Le mardi 21 juillet : 18 millimètres.",
+   "startMs": 9720,
+   "endMs": 12880,
+   "en": "On Tuesday 21 July: 18 millimetres."
+  },
+  {
+   "id": "irr4",
+   "text": "Le jeudi 23 juillet : 19 millimètres.",
+   "startMs": 12960,
+   "endMs": 16160,
+   "en": "On Thursday 23 July: 19 millimetres."
+  },
+  {
+   "id": "total",
+   "text": "Total de la semaine : l'équivalent d'une pluie de 74 millimètres, soit 743 mètres cubes par hectare.",
+   "startMs": 16320,
+   "endMs": 23200,
+   "en": "Week total: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "dhead",
+   "text": "Détail de la semaine, Piment ou poivron.",
+   "en": "Week details, Pepper."
+  },
+  {
+   "id": "irr1",
+   "text": "Le vendredi 17 juillet : 19 millimètres.",
+   "en": "On Friday 17 July: 19 millimetres."
+  },
+  {
+   "id": "irr2",
+   "text": "Le dimanche 19 juillet : 18 millimètres.",
+   "en": "On Sunday 19 July: 18 millimetres."
+  },
+  {
+   "id": "irr3",
+   "text": "Le mardi 21 juillet : 18 millimètres.",
+   "en": "On Tuesday 21 July: 18 millimetres."
+  },
+  {
+   "id": "irr4",
+   "text": "Le jeudi 23 juillet : 19 millimètres.",
+   "en": "On Thursday 23 July: 19 millimetres."
+  },
+  {
+   "id": "total",
+   "text": "Total de la semaine : l'équivalent d'une pluie de 74 millimètres, soit 743 mètres cubes par hectare.",
+   "en": "Week total: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
+  }
+ ],
+ "durationMs": 23200
+}

@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: القمح.",
+   "startMs": 0,
+   "endMs": 4320,
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "startMs": 4720,
+   "endMs": 7760,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة واحد وثلاثون درجة.",
+   "startMs": 7840,
+   "endMs": 11680,
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
+   "startMs": 11800,
+   "endMs": 16240,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "startMs": 16320,
+   "endMs": 18720,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: القمح.",
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "قد تبلغ درجات الحرارة واحد وثلاثون درجة.",
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 18720
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Sakia">
+  <title>Sakia</title>
+  <defs><clipPath id="r"><rect width="512" height="512" rx="112"/></clipPath></defs>
+  <g clip-path="url(#r)">
+    <rect width="512" height="512" fill="#2f6b3a"/>
+    <path d="M0 392 Q256 340 512 392 V512 H0 Z" fill="#8a5a2b"/>
+    <path d="M0 424 Q256 372 512 424" fill="none" stroke="#a8743c" stroke-width="10"/>
+    <path d="M256 78 C256 78 146 204 146 282 a110 110 0 0 0 220 0 C366 204 256 78 256 78 Z" fill="#f4efe6"/>
+    <path d="M256 330 V232" stroke="#2f6b3a" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <path d="M256 262 C256 224 222 204 192 208 C192 244 220 266 256 262 Z" fill="#2f6b3a"/>
+    <path d="M256 238 C256 204 286 186 316 190 C316 224 288 244 256 238 Z" fill="#2f6b3a"/>
+    <text x="256" y="478" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="700" fill="#f4efe6" letter-spacing="2">Sakia</text>
+  </g>
+</svg>

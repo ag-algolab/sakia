@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: الفلفل.",
+   "startMs": 0,
+   "endMs": 4400,
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "startMs": 4800,
+   "endMs": 8080,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: اسقِ يوم الجمعة سبعة عشر جويلية، ما يعادل مطرا من تسعة عشر ميليمتر، أي مائة واثنان وتسعون متر مكعب للهكتار.",
+   "startMs": 8200,
+   "endMs": 19600,
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "startMs": 19760,
+   "endMs": 22240,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "unsure",
+   "text": "لست متأكدا: اسألوا فنيا فلاحيا (المندوبية الجهوية للتنمية الفلاحية).",
+   "startMs": 22320,
+   "endMs": 28480,
+   "en": "I am not sure: please ask an agricultural technician (CRDA)."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "نصيحة السقي لولاية القيروان، المحصول: الفلفل.",
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "لا أمطار مفيدة متوقعة هذا الأسبوع.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "نصيحتنا: اسقِ يوم الجمعة سبعة عشر جويلية، ما يعادل مطرا من تسعة عشر ميليمتر، أي مائة واثنان وتسعون متر مكعب للهكتار.",
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "خطر الإجهاد المائي: ضعيف.",
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "unsure",
+   "text": "لست متأكدا: اسألوا فنيا فلاحيا (المندوبية الجهوية للتنمية الفلاحية).",
+   "en": "I am not sure: please ask an agricultural technician (CRDA)."
+  }
+ ],
+ "durationMs": 28480
+}

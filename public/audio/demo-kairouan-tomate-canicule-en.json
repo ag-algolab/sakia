@@ -1,0 +1,103 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "Hello everyone, and welcome to Sakia.",
+   "startMs": 0,
+   "endMs": 2640,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "Here is today's irrigation bulletin for Kairouan, crop: Tomato.",
+   "startMs": 2720,
+   "endMs": 7280,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Tomato."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 7360,
+   "endMs": 9840,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 48 degrees.",
+   "startMs": 9920,
+   "endMs": 12560,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Monday 20 July, with 391 m³/ha.",
+   "startMs": 12640,
+   "endMs": 19200,
+   "en": "Our advice: irrigate on Monday 20 July, with 391 m³/ha."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "startMs": 19280,
+   "endMs": 21200,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "unsure",
+   "text": "I am not sure: please ask an agricultural technician (CRDA).",
+   "startMs": 21440,
+   "endMs": 26640,
+   "en": "I am not sure: please ask an agricultural technician (CRDA)."
+  },
+  {
+   "id": "soil",
+   "text": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app.",
+   "startMs": 26720,
+   "endMs": 33200,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "This advice is indicative: please check it with your agriculture office.",
+   "startMs": 33280,
+   "endMs": 37440,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "Thank you for the service you give to the country. Good luck to all.",
+   "startMs": 37520,
+   "endMs": 41040,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-tomate-canicule-en.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T18:31:06.574Z",
+ "lang": "en",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "tomate",
+  "date": "2026-07-17",
+  "replay": true,
+  "outOfSeason": false,
+  "rainMm": 0,
+  "tmaxMax": 48,
+  "stressRisk": "faible",
+  "next": {
+   "date": "2026-07-20",
+   "m3PerHa": 391.38333333333327
+  },
+  "confidence": {
+   "level": "low",
+   "askAPerson": true,
+   "reasons": [
+    "unknown_last_irrigation"
+   ]
+  }
+ },
+ "source": "demo",
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · English voice"
+}

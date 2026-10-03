@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Piment ou poivron.",
+   "startMs": 0,
+   "endMs": 4320,
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "startMs": 4720,
+   "endMs": 6760,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : irriguer le vendredi 17 juillet, avec l'équivalent d'une pluie de 19 millimètres, soit 192 mètres cubes par hectare.",
+   "startMs": 6960,
+   "endMs": 15600,
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Arrosages suivants : dimanche, mardi et jeudi.",
+   "startMs": 15640,
+   "endMs": 19200,
+   "en": "Next irrigations: Sunday, Tuesday and Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "startMs": 19280,
+   "endMs": 21440,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Piment ou poivron.",
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : irriguer le vendredi 17 juillet, avec l'équivalent d'une pluie de 19 millimètres, soit 192 mètres cubes par hectare.",
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Arrosages suivants : dimanche, mardi et jeudi.",
+   "en": "Next irrigations: Sunday, Tuesday and Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : faible.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 21440
+}

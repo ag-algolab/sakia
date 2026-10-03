@@ -1,0 +1,103 @@
+{
+ "lines": [
+  {
+   "id": "hello",
+   "text": "안녕하세요, 여러분. 사키아에 오신 것을 환영합니다.",
+   "startMs": 0,
+   "endMs": 3840,
+   "en": "Hello everyone, and welcome to Sakia."
+  },
+  {
+   "id": "where",
+   "text": "오늘의 관개 안내입니다. 지역은 카이루안, 작물은 토마토입니다.",
+   "startMs": 3920,
+   "endMs": 9440,
+   "en": "Here is today's irrigation bulletin for Kairouan, crop: Tomato."
+  },
+  {
+   "id": "rain",
+   "text": "이번 주에는 작물에 도움이 될 만한 비가 예상되지 않습니다.",
+   "startMs": 9520,
+   "endMs": 13920,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "기온은 최고 48도까지 오를 수 있습니다.",
+   "startMs": 14080,
+   "endMs": 17520,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "다음을 권장합니다. 7월 20일 월요일에 관개하세요. 관개량은 헥타르당 391세제곱미터입니다.",
+   "startMs": 17600,
+   "endMs": 26000,
+   "en": "Our advice: irrigate on Monday 20 July, with 391 m³/ha."
+  },
+  {
+   "id": "stress",
+   "text": "수분 스트레스 위험은 낮은 수준입니다.",
+   "startMs": 26160,
+   "endMs": 28880,
+   "en": "Water-stress risk: low."
+  },
+  {
+   "id": "unsure",
+   "text": "이번 조언은 확실하지 않습니다. 지역 농업 기술자에게 문의해 주세요.",
+   "startMs": 28960,
+   "endMs": 34000,
+   "en": "I am not sure: please ask an agricultural technician (CRDA)."
+  },
+  {
+   "id": "soil",
+   "text": "이 조언은 보통 양토에 점적 관개를 기준으로 합니다. 자세한 내용은 앱에서 토양 종류를 선택해 주세요.",
+   "startMs": 34080,
+   "endMs": 41840,
+   "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
+  },
+  {
+   "id": "caveat",
+   "text": "이 조언은 참고용입니다. 지역 농업 당국에 확인해 주세요.",
+   "startMs": 41920,
+   "endMs": 46240,
+   "en": "This advice is indicative: please check it with your agriculture office."
+  },
+  {
+   "id": "bye",
+   "text": "나라를 위해 애써 주시는 모든 분께 감사드립니다. 풍성한 수확을 기원합니다.",
+   "startMs": 46320,
+   "endMs": 52080,
+   "en": "Thank you for the service you give to the country. Good luck to all."
+  }
+ ],
+ "audioUrl": "/audio/demo-kairouan-tomate-canicule-ko.mp3",
+ "mime": "audio/mpeg",
+ "generatedAt": "2026-10-03T18:31:17.145Z",
+ "lang": "ko",
+ "band": {
+  "regionId": "kairouan",
+  "cropId": "tomate",
+  "date": "2026-07-17",
+  "replay": true,
+  "outOfSeason": false,
+  "rainMm": 0,
+  "tmaxMax": 48,
+  "stressRisk": "faible",
+  "next": {
+   "date": "2026-07-20",
+   "m3PerHa": 391.38333333333327
+  },
+  "confidence": {
+   "level": "low",
+   "askAPerson": true,
+   "reasons": [
+    "unknown_last_irrigation"
+   ]
+  }
+ },
+ "source": "demo",
+ "voiceName": "Rima M",
+ "voiceValidated": true,
+ "title": "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Korean voice (한국어)"
+}

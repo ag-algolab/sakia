@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Amandier.",
+   "startMs": 0,
+   "endMs": 3680,
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "startMs": 4080,
+   "endMs": 6320,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 48 degrés.",
+   "startMs": 6400,
+   "endMs": 9280,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : irriguer le jeudi 23 juillet, avec l'équivalent d'une pluie de 60 millimètres, soit 602 mètres cubes par hectare.",
+   "startMs": 9360,
+   "endMs": 17920,
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : moyen.",
+   "startMs": 18000,
+   "endMs": 20240,
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Conseil d'irrigation pour Kairouan, culture : Amandier.",
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "Pas de pluie utile prévue cette semaine.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Les températures peuvent atteindre 48 degrés.",
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Notre conseil : irriguer le jeudi 23 juillet, avec l'équivalent d'une pluie de 60 millimètres, soit 602 mètres cubes par hectare.",
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "Risque de stress hydrique : moyen.",
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "durationMs": 20240
+}
