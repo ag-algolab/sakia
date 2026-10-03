@@ -131,12 +131,13 @@ export function rainThanks(opts: { regionId: string; kept: number; fromWord: boo
   const when = lang === "ar" ? (yesterday ? "البارحة" : "اليوم") : lang === "en" ? (yesterday ? "yesterday" : "today") : yesterday ? "hier" : "aujourd'hui";
   if (lang === "ar") {
     const head = `شكرا. مطر ${r} ${when}: ${mm} ملم${fromWord ? " (تقدير حذر)" : ""}.`;
-    return n >= need ? `${head} ${n} أشخاص أبلغوا: تم تصحيح المطر في الخطة.` : `${head} تقرير واحد، ويلزم ${need} لتصحيح الخطة.`;
+    const reports = n === 1 ? "تقرير واحد" : n === 2 ? "تقريران" : `${n} تقارير`; // 1 : singulier, 2 : duel, 3 et plus : pluriel
+    return n >= need ? `${head} ${n} أشخاص أبلغوا: تم تصحيح المطر في الخطة.` : `${head} ${reports}، ويلزم ${need} لتصحيح الخطة.`;
   }
   if (lang === "en") {
     const head = `Thanks. Rain at ${r} ${when}: ${mm} mm${fromWord ? " (cautious estimate)" : ""}.`;
-    return n >= need ? `${head} ${n} people reported: the plan's rain is corrected.` : `${head} ${n} report so far; ${need} are needed to correct the plan.`;
+    return n >= need ? `${head} ${n} people reported: the plan's rain is corrected.` : `${head} ${n} report${n > 1 ? "s" : ""} so far; ${need} are needed to correct the plan.`;
   }
   const head = `Merci. Pluie à ${r} ${when} : ${mm} mm${fromWord ? " (estimation prudente)" : ""}.`;
-  return n >= need ? `${head} ${n} personnes ont signalé : la pluie du plan est corrigée.` : `${head} ${n} signalement pour l'instant ; il en faut ${need} pour corriger le plan.`;
+  return n >= need ? `${head} ${n} personnes ont signalé : la pluie du plan est corrigée.` : `${head} ${n} signalement${n > 1 ? "s" : ""} pour l'instant ; il en faut ${need} pour corriger le plan.`;
 }

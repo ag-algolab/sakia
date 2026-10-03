@@ -2,6 +2,7 @@
 // L'ARABE EST À FAIRE VALIDER par un locuteur tunisien.
 // Pas de "use client" : utilisable aussi par les pages serveur (page hors connexion).
 
+import { MIN_REPORTERS } from "@/lib/rainLevels";
 export type UiLang = "fr" | "ar" | "en";
 export const UI_LANGS: UiLang[] = ["fr", "ar", "en"];
 
@@ -119,7 +120,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} phrases comprises sur ${total}`,
     measuredCaveat: "Phrases écrites à la main par l'équipe, pas recueillies auprès d'agriculteurs : ce n'est pas une mesure sur le terrain.",
     rainTitle: "Signaler la pluie tombée chez vous",
-    rainIntro: "Il a plu ? Dites-le en un geste. Quand au moins 2 personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse : un identifiant anonyme gardé dans cet appareil.",
+    rainIntro: `Il a plu ? Dites-le en un geste. Quand au moins ${MIN_REPORTERS} personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse : un identifiant anonyme gardé dans cet appareil.`,
     rainDemo: "Démonstration : les rapports affichés ici sont fictifs. Ce sont des signalements d'agriculteurs, pas des mesures.",
     rainDayLabel: "Quel jour ?",
     rainPending: "en attente : part dès que le réseau revient",
@@ -178,7 +179,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} جملة مفهومة من ${total}`,
     measuredCaveat: "جمل كتبها الفريق يدويا، لم تُجمع من فلاحين: ليس قياسا ميدانيا.",
     rainTitle: "أبلغ عن المطر الذي نزل عندك",
-    rainIntro: "هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ شخصان مختلفان على الأقل في الولاية عن نفس اليوم، تحل قيمتهما الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان: معرّف مجهول محفوظ في هذا الجهاز.",
+    rainIntro: `هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ ${MIN_REPORTERS} أشخاص مختلفين على الأقل في الولاية عن نفس اليوم، تحل قيمتهم الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان: معرّف مجهول محفوظ في هذا الجهاز.`,
     rainDemo: "عرض تجريبي: التقارير المعروضة هنا وهمية. هي تقارير من فلاحين وليست قياسات.",
     rainDayLabel: "أي يوم؟",
     rainPending: "في الانتظار: تُرسل فور عودة الشبكة",
@@ -237,7 +238,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} of ${total} sentences understood`,
     measuredCaveat: "Sentences written by hand by the team, not collected from farmers: this is not a field measurement.",
     rainTitle: "Report the rain that fell at your place",
-    rainIntro: "Did it rain? Tell us in one tap. When at least 2 different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name, no address: an anonymous identifier kept on this device.",
+    rainIntro: `Did it rain? Tell us in one tap. When at least ${MIN_REPORTERS} different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name, no address: an anonymous identifier kept on this device.`,
     rainDemo: "Demonstration: the reports shown here are fictitious. They are farmers' reports, not measurements.",
     rainDayLabel: "Which day?",
     rainPending: "waiting: sent as soon as the network is back",

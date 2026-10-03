@@ -11,11 +11,11 @@ import type { Forecast } from "../weather";
 import { handleIncoming, resetSmsSessions } from "./handler";
 import type { PlanSource, ReportsApi } from "./handler";
 import type { ReportRow } from "../reports";
-import { reporterHash } from "../reports";
+import { MIN_REPORTERS, reporterHash } from "../reports";
 import { todayInTunisia } from "../weather";
 import { fitGsm, gsmLength, smsInfo } from "./encoding";
 import { parseSms } from "./parse";
-import { R } from "./replies";
+import { R, rainThanks } from "./replies";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = "") {
@@ -213,11 +213,15 @@ async function rainReports() {
 
   const a = await sayR("r1", "PLUIE 10 kairouan", api);
   check("PLUIE 10 kairouan : enregistré (10 mm, aujourd'hui, empreinte « sms:r1 »)", saved.length === 1 && saved[0].mm === 10 && saved[0].day === today && saved[0].token === "sms:r1" && saved[0].regionId === "kairouan", JSON.stringify(saved));
-  check("1re personne : dit qu'il en faut 2", a.includes("10 mm") && a.includes("1 signalement") && a.includes("2"), a);
+  check("1re personne : dit qu'il en faut 3 (MIN_REPORTERS)", a.includes("10 mm") && a.includes("1 signalement") && a.includes(`il en faut ${MIN_REPORTERS}`), a);
   const b = await sayR("r2", "pluie 6 kairouan", api);
-  check("2e personne : « la pluie du plan est corrigée » et le nombre", b.includes("2 personnes") && b.includes("corrigée"), b);
+  check("2e personne : pas encore corrigée, il en faut 3 (pluriel « 2 signalements »)", b.includes("2 signalements") && b.includes(`il en faut ${MIN_REPORTERS}`) && !b.includes("corrigée"), b);
+  const c = await sayR("r2b", "pluie 8 kairouan", api);
+  check("3e personne : « la pluie du plan est corrigée » et le nombre", c.includes(`${MIN_REPORTERS} personnes`) && c.includes("corrigée"), c);
+  check("arabe, 2 signalements : « تقريران » (duel), pas « تقرير واحد »", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "ar").includes("تقريران"));
+  check("anglais, 2 reports : pluriel", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "en").includes("2 reports so far"));
   await sayR("r1", "pluie 12 kairouan", api);
-  check("même personne qui renvoie : un seul rapport, valeur remplacée", saved.length === 2 && saved.find((r) => r.token === "sms:r1")?.mm === 12);
+  check("même personne qui renvoie : un seul rapport, valeur remplacée", saved.length === 3 && saved.find((r) => r.token === "sms:r1")?.mm === 12);
 
   const ar = await sayR("r3", "مطر 10 القيروان", api);
   check("مطر 10 القيروان : accepté, réponse en arabe", /[؀-ۿ]/.test(ar) && saved.some((r) => r.token === "sms:r3" && r.mm === 10), ar);
@@ -252,7 +256,7 @@ async function rainReports() {
   for (let i = 0; i < 12; i++) last = await sayR("spam", `pluie ${i} kairouan`, lim.api);
   check("limite de 10 rapports par heure et par expéditeur", last.includes("trop de rapports") && lim.saved.length === 1, last);
 
-  for (const reply of [a, b, ar, word, down]) check(`réponse de pluie ≤ 160 caractères (${reply.length})`, /[\u0600-\u06FF]/.test(reply) || fitGsm(reply).length <= 160 && reply.length <= 160, reply);
+  for (const reply of [a, b, c, ar, word, down]) check(`réponse de pluie ≤ 160 caractères (${reply.length})`, /[\u0600-\u06FF]/.test(reply) || fitGsm(reply).length <= 160 && reply.length <= 160, reply);
 }
 
 (async () => {

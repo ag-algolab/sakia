@@ -12,7 +12,7 @@ import { bulletinScript, planMessage } from "../messages";
 import type { Lang } from "../messages";
 import { buildPlan } from "../plan";
 import type { Plan } from "../plan";
-import { LEVEL_LABEL, LEVEL_MM } from "../rainLevels";
+import { LEVEL_LABEL, LEVEL_MM, MIN_REPORTERS } from "../rainLevels";
 import type { RainLevel } from "../rainLevels";
 import { loadReports, reporterHash, saveReport, summarize } from "../reports";
 import type { ReportRow } from "../reports";
@@ -321,7 +321,7 @@ async function finishSetup(deps: Deps, chatId: number, messageId: number | undef
 
 // « Il a plu ici » : le signalement va dans la région de l’abonné, pour la journée en cours, sous un identifiant anonyme
 // (tg:<chat_id>, jamais affiché ; la base n’en garde qu’une empreinte salée). Le plan en tient compte quand
-// au moins 2 personnes différentes ont signalé la même journée (médiane) : voir src/lib/reports.ts.
+// au moins MIN_REPORTERS (3) personnes différentes ont signalé la même journée (médiane) : voir src/lib/reports.ts.
 async function reportRain(deps: Deps, cb: TgCallback, sub: Subscriber, level: RainLevel): Promise<void> {
   const chatId = sub.chat_id;
   const messageId = cb.message!.message_id;
@@ -346,7 +346,7 @@ async function reportRain(deps: Deps, cb: TgCallback, sub: Subscriber, level: Ra
   const text = [
     s.rainThanks(LEVEL_LABEL[sub.lang][level], region),
     s.rainCount(n, region, LEVEL_LABEL[sub.lang][day?.level ?? level]),
-    n >= 2 ? s.rainApplied : s.rainRule,
+    n >= MIN_REPORTERS ? s.rainApplied : s.rainRule, // « pris en compte » seulement quand le plan l'applique vraiment
   ].join("\n\n");
   await editOrSend(deps, chatId, messageId, text, refreshKeyboard(sub.lang));
 }

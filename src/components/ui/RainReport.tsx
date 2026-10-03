@@ -10,7 +10,7 @@ import { Reveal } from "./motion";
 import { SunIcon } from "./icons";
 
 // « Signaler la pluie » : l'agriculteur dit combien il a plu chez lui, sur une échelle à cinq degrés (personne ne mesure
-// en millimètres). Quand au moins 2 personnes différentes de la région signalent la même journée, la médiane prudente
+// en millimètres). Quand au moins MIN_REPORTERS (3) personnes différentes de la région signalent la même journée, la médiane prudente
 // remplace la pluie du modèle météo (src/lib/reports.ts). C'est de la donnée locale avec un humain dans la boucle.
 // Jamais présenté comme une mesure : « signalé par des agriculteurs ».
 // Hors connexion : le signalement attend dans l'appareil et part au retour du réseau.
@@ -232,7 +232,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
               <span className="grid h-7 w-7 place-items-center rounded-full bg-sakia-green text-white" style={{ animation: "sk-pop .5s both" }}>
                 ✓
               </span>
-              {t("rainSent")}
+              {t("rainSent", { min: fmtNum(minReporters) })}
             </p>
           )}
           {status === "queued" && (
