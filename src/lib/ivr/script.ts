@@ -164,7 +164,7 @@ function buildLines(plan: Plan, lang: Lang): PlanLine[] {
     lines.push({ id: "off", text: bulletin.get("off")! });
   } else {
     lines.push({ id: "rain", text: rainLine(plan.summary.rainExpectedMm, lang) });
-    // transparence : la pluie d'un ou plusieurs jours vient de signalements d'agriculteurs (au moins 2 personnes), pas du modèle
+    // transparence : la pluie d'un ou plusieurs jours vient de signalements d'agriculteurs (au moins MIN_REPORTERS = 3 personnes), pas du modèle
     if (plan.localReports && plan.localReports.length > 0) {
       lines.push({
         id: "local",

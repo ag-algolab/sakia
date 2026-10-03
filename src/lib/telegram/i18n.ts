@@ -87,7 +87,7 @@ const fr: Strings = {
       ? `Vous êtes la première personne à signaler la pluie à ${region} aujourd'hui.`
       : `${n} agriculteurs ont signalé de la pluie à ${region} aujourd'hui (niveau retenu : ${level}).`,
   rainApplied: "✅ Pris en compte dans votre plan, avec une valeur prudente : appuyez sur « Mettre à jour ». Signalement d'agriculteurs, pas une mesure.",
-  rainRule: "Pris en compte dans le plan quand au moins 2 personnes différentes signalent la même journée, avec une valeur prudente (le bas de la fourchette). Signalement d'agriculteurs, pas une mesure.",
+  rainRule: "Pris en compte dans le plan quand au moins 3 personnes différentes signalent la même journée, avec une valeur prudente (le bas de la fourchette). Signalement d'agriculteurs, pas une mesure.",
   rainFailed: "Je n'ai pas pu enregistrer votre signalement pour le moment. Réessayez plus tard.",
   rainLimit: "Trop de signalements pour le moment. Réessayez dans une heure.",
 };
@@ -135,7 +135,7 @@ const ar: Strings = {
       ? `أنتم أول من أبلغ عن المطر في ${region} اليوم.`
       : `أبلغ ${n} فلاحين عن المطر في ${region} اليوم (المستوى المعتمد: ${level}).`,
   rainApplied: "✅ تم أخذه بعين الاعتبار في خطتكم بقيمة حذرة: اضغطوا على «تحديث». إبلاغ من فلاحين وليس قياسا.",
-  rainRule: "يُؤخذ بعين الاعتبار في الخطة عندما يبلغ شخصان مختلفان على الأقل عن نفس اليوم، بقيمة حذرة (الحد الأدنى للمجال). إبلاغ من فلاحين وليس قياسا.",
+  rainRule: "يُؤخذ بعين الاعتبار في الخطة عندما يبلغ ثلاثة أشخاص مختلفين على الأقل عن نفس اليوم، بقيمة حذرة (الحد الأدنى للمجال). إبلاغ من فلاحين وليس قياسا.",
   rainFailed: "تعذّر تسجيل إبلاغكم حاليا. حاولوا لاحقا.",
   rainLimit: "إبلاغات كثيرة حاليا. حاولوا بعد ساعة.",
 };
@@ -183,7 +183,7 @@ const en: Strings = {
       ? `You are the first person to report rain in ${region} today.`
       : `${n} farmers have reported rain in ${region} today (level kept: ${level}).`,
   rainApplied: "✅ Taken into account in your plan, with a cautious value: press “Refresh”. Reported by farmers, not a measurement.",
-  rainRule: "Used in the plan once at least 2 different people report the same day, with a cautious value (the low end of the range). Reported by farmers, not a measurement.",
+  rainRule: "Used in the plan once at least 3 different people report the same day, with a cautious value (the low end of the range). Reported by farmers, not a measurement.",
   rainFailed: "I could not save your report right now. Please try again later.",
   rainLimit: "Too many reports right now. Please try again in an hour.",
 };

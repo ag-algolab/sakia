@@ -1,5 +1,5 @@
 // Ligne « reports » du bulletin : quand la pluie d'un ou plusieurs jours vient de signalements d'agriculteurs de la région
-// (plan.localReports, au moins 2 personnes différentes, médiane prudente) et non du modèle météo, le bulletin le dit.
+// (plan.localReports, au moins MIN_REPORTERS = 3 personnes différentes, médiane prudente) et non du modèle météo, le bulletin le dit.
 //
 // Règles (HANDOFF section 13) : on dit « signalé par des agriculteurs » (Anthony : sans ajouter « pas une mesure ») ; on dit que le signalement
 // remplace la prévision ; on ne cite aucun nom. On parle en ÉCHELLE (pas de pluie, très légère, légère, beaucoup,

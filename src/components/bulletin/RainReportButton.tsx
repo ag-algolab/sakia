@@ -1,7 +1,7 @@
 "use client";
 
 // Bouton « Il a plu » : l'agriculteur dit combien il a plu chez lui, sur une échelle à cinq degrés (personne ne mesure en
-// millimètres). Quand au moins 2 personnes différentes de la région signalent la même journée, la médiane prudente remplace
+// millimètres). Quand au moins MIN_REPORTERS (3) personnes différentes de la région signalent la même journée, la médiane prudente remplace
 // la pluie du modèle météo, et le bulletin le dit (src/lib/reports.ts, src/lib/voice/rainreports.ts).
 // Garde-fous : aucun nom, un seul rapport par personne, par région et par jour ; présenté comme « signalement d'agriculteurs ».
 // Mêmes clés de stockage que la page d'accueil (components/ui/RainReport.tsx) : la même personne n'est comptée qu'une fois,
@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { todayInTunisia } from "@/components/phone/usePlan";
-import { RAIN_LEVELS } from "@/lib/rainLevels";
+import { MIN_REPORTERS, RAIN_LEVELS } from "@/lib/rainLevels";
 import type { RainLevel } from "@/lib/rainLevels";
 import { REPORTS_ARE_FICTIONAL } from "@/lib/voice/flags";
 import type { VoiceLang } from "@/lib/voice/langs";
@@ -110,7 +110,7 @@ async function impactFor(regionId: string, day: string): Promise<{ n: number; mi
     const res = await fetch(`/api/reports?region=${encodeURIComponent(regionId)}`);
     if (!res.ok) return null;
     const body = (await res.json()) as { days?: { date: string; n: number }[]; minReporters?: number };
-    return { n: body.days?.find((d) => d.date === day)?.n ?? 0, min: body.minReporters ?? 2 };
+    return { n: body.days?.find((d) => d.date === day)?.n ?? 0, min: body.minReporters ?? MIN_REPORTERS };
   } catch {
     return null;
   }

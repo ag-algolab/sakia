@@ -12,6 +12,7 @@ import type { CallState, Key, Say, StepResult } from "@/lib/ivr/flow";
 import { SILENCE_MS } from "@/lib/ivr/menu";
 import type { IvrLang } from "@/lib/ivr/menu";
 import { promptEn, promptText } from "@/lib/ivr/prompts";
+import { MIN_REPORTERS } from "@/lib/ivr/rain";
 import type { RainLevel } from "@/lib/ivr/rain";
 import { loadBlob, loadJson } from "./audioStore";
 import { playKeyTone, playRingback } from "./tones";
@@ -378,7 +379,7 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
         regionId: s.regionId,
         n: reply?.n ?? 0,
         counted: !!reply?.counted,
-        minReporters: reply?.minReporters ?? 2,
+        minReporters: reply?.minReporters ?? MIN_REPORTERS,
         offline,
       });
       if (!reply?.ok) return sayPrompt({ kind: "prompt", id: "rain_fail", lang: s.lang }, token);

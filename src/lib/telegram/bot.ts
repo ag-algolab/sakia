@@ -321,7 +321,7 @@ async function finishSetup(deps: Deps, chatId: number, messageId: number | undef
 
 // « Il a plu ici » : le signalement va dans la région de l’abonné, pour la journée en cours, sous un identifiant anonyme
 // (tg:<chat_id>, jamais affiché ; la base n’en garde qu’une empreinte salée). Le plan en tient compte quand
-// au moins 2 personnes différentes ont signalé la même journée (médiane) : voir src/lib/reports.ts.
+// au moins MIN_REPORTERS (3) personnes différentes ont signalé la même journée (médiane) : voir src/lib/reports.ts.
 async function reportRain(deps: Deps, cb: TgCallback, sub: Subscriber, level: RainLevel): Promise<void> {
   const chatId = sub.chat_id;
   const messageId = cb.message!.message_id;
