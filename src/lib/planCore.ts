@@ -3,6 +3,7 @@
 // Le chargement de la météo est dans plan.ts (serveur).
 
 import { getCrop } from "./crops";
+import { MIN_REPORTERS } from "./rainLevels";
 import { getRegion } from "./regions";
 import { EFFICIENCY, SOILS, simulate, sum } from "./waterBalance";
 import type { IrrigationSystem, SimDay, SoilName } from "./waterBalance";
@@ -218,7 +219,7 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
       `Coefficients de culture FAO-56${crop.status === "a_verifier" ? " (certaines valeurs ajustées ou interpolées : voir la fiche de la culture)" : ""}.`,
       "Pluie utile (règle FAO-56) : ignorée si inférieure à 0,2 × ET0, comptée entièrement sinon ; ruissellement non modélisé.",
       ...(localReports.length > 0
-        ? [`Pluie corrigée par des signalements d'agriculteurs (au moins 2 personnes différentes, médiane) pour ${localReports.length} jour(s) : ${localReports.map((r) => `${r.date} : ${r.medianMm} mm signalés au lieu de ${r.modelMm.toFixed(1)} mm prévus`).join(" ; ")}.`]
+        ? [`Pluie corrigée par des signalements d'agriculteurs (au moins ${MIN_REPORTERS} personnes différentes, médiane) pour ${localReports.length} jour(s) : ${localReports.map((r) => `${r.date} : ${r.medianMm} mm signalés au lieu de ${r.modelMm.toFixed(1)} mm prévus`).join(" ; ")}.`]
         : []),
       crop.treesPerHa ? `Densité supposée : ${crop.treesPerHa} arbres/ha (à ajuster).` : "Besoins exprimés en mm et en m³/ha.",
       estimatedFrom

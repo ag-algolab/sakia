@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import { buildPlan, loadForecast } from "../plan";
 import type { Plan } from "../plan";
-import { getCrop, CROPS } from "../crops";
+import { getCrop, CROPS, defaultCropForMonth } from "../crops";
 import { chargeUsage, LIMITS } from "../usage";
 import type { IrrigationSystem, SoilName } from "../waterBalance";
 import type { VoiceLang } from "../voice/langs";
@@ -155,6 +155,9 @@ export async function clipFor(
 // Cultures par ordre d'importance pour la démonstration : celle de l'accueil d'abord, puis les plus parlantes.
 const FIRST_CROPS = ["olivier", "piment", "tomate", "ble", "pomme-de-terre", "oignon"];
 
+// Gouvernorats agricoles les plus probables après Kairouan (voir regions.ts)
+const EXTRA_REGIONS = ["sidi-bouzid", "sfax", "kasserine", "sousse", "nabeul", "gafsa"];
+
 export function pregenQueries(regions: string[] = ["kairouan"], langs: VoiceLang[] = ["aeb"]): AdviceQuery[] {
   const ids = CROPS.map((c) => c.id);
   const crops = [...FIRST_CROPS.filter((c) => ids.includes(c)), ...ids.filter((c) => !FIRST_CROPS.includes(c))].filter((c) => getCrop(c));
@@ -167,6 +170,14 @@ export function pregenQueries(regions: string[] = ["kairouan"], langs: VoiceLang
         out.push({ region, crop, lang, ago, soil: "limoneux", system: "goutte", asOf: REPLAY_DATE });
       for (const crop of crops) for (const ago of agos) out.push({ region, crop, lang, ago, soil: "limoneux", system: "goutte" });
     }
+  // les autres grandes régions agricoles, pour les deux cultures qu'un visiteur essaie d'abord (celle de saison et l'olivier) :
+  // un juré qui change de région entend la voix tout de suite au lieu d'attendre une fabrication
+  if (regions.length === 1 && regions[0] === "kairouan") {
+    const month = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Tunis", month: "numeric" }).format(new Date()));
+    const first = [defaultCropForMonth(month), "olivier"].filter((c, i, a) => a.indexOf(c) === i);
+    for (const region of EXTRA_REGIONS)
+      for (const lang of langs) for (const crop of first) for (const ago of [undefined, 3] as (number | undefined)[]) out.push({ region, crop, lang, ago, soil: "limoneux", system: "goutte" });
+  }
   return out;
 }
 

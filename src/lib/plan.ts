@@ -44,7 +44,7 @@ export async function loadForecast(regionId: string, asOf?: string, horizon = 7)
     return { days: archive, today: asOf, fetchedAt: new Date().toISOString(), source: "open-meteo" };
   }
   const fc = await fetchForecast(region.lat, region.lon);
-  // Solidarité locale : la pluie signalée par au moins 2 agriculteurs de la région remplace celle du modèle.
+  // Solidarité locale : la pluie signalée par au moins MIN_REPORTERS (3) agriculteurs de la région remplace celle du modèle.
   const { days, applied } = applyReports(fc.days, summarize(await loadReports(regionId, addDays(fc.today, -7))));
   return { ...fc, days, localReports: applied };
 }
