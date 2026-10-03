@@ -1,13 +1,23 @@
 "use client";
 
 // Plateau de télé : présentateur dessiné, bouche pilotée par le volume réel du son (Web Audio),
-// sous-titres calés sur l'alignement ElevenLabs, bandeau de données en bas.
-// Fonctionne sans réseau avec les bulletins enregistrés (public/audio/demo-*.json).
+// sous-titres calés sur l'alignement ElevenLabs. Fonctionne sans réseau avec les bulletins enregistrés
+// (public/audio/demo-*.json).
+//
+// ÉCRAN PAR DÉFAUT : le présentateur, les sous-titres et UN gros bouton « Écouter ». Rien d'autre à régler :
+//  - région, culture, sol, système, dernier arrosage et date de semis sont LUS dans le localStorage (clé « sakia-form »,
+//    que l'accueil remplit) ;
+//  - la langue de l'interface est celle des boutons de l'en-tête du site (clé « sakia-lang », via useLang) ;
+//  - la voix est en darija par défaut ; le reste (langue de la voix, région, culture, son, musique, sous-titres,
+//    bulletins enregistrés) est dans le volet replié « Options ».
+// Une fois le bulletin lu, ce qu'il faut savoir apparaît (pas sûr, pluie signalée, provenance) : ce sont des résultats,
+// pas des réglages.
 
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { startBedMusic } from "@/components/ui/bedMusic";
 import type { BedMusic } from "@/components/ui/bedMusic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLang } from "@/components/ui/LangProvider";
+import { isArabic } from "@/components/ui/i18n";
 import type { Band, BulletinPayload } from "@/lib/voice/band";
 import { VOICE_LANGS, htmlLangOf, rtlOf } from "@/lib/voice/langs";
 import type { VoiceLang } from "@/lib/voice/langs";
@@ -22,16 +32,41 @@ type Loaded = BulletinPayload & { blobUrl: string; sizeKb: number; title?: strin
 type Fallback = "offline" | "budget" | "error" | null;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const FORM_KEY = "sakia-form"; // rempli par l'accueil : { region, crop, soil, system, ago, planting }
+const VOICE_KEY = "sakia-bulletin-voice"; // dernière langue de voix choisie dans « Options »
+const SOILS = ["sableux", "limoneux", "argileux"];
+const SYSTEMS = ["goutte", "aspersion", "gravitaire"];
+
+// Profil de l'agriculteur gardé sur l'appareil par l'accueil. Relu à chaque clic sur « Écouter » : toujours à jour.
+function readForm(): { region?: string; crop?: string; soil?: string; system?: string; ago?: string; planting?: string } {
+  try {
+    const f = JSON.parse(localStorage.getItem(FORM_KEY) ?? "null") as Record<string, unknown> | null;
+    if (!f || typeof f !== "object") return {};
+    const s = (v: unknown) => (typeof v === "string" ? v : typeof v === "number" ? String(v) : "");
+    const ago = s(f.ago);
+    const planting = s(f.planting);
+    return {
+      region: s(f.region) || undefined,
+      crop: s(f.crop) || undefined,
+      soil: SOILS.includes(s(f.soil)) ? s(f.soil) : undefined,
+      system: SYSTEMS.includes(s(f.system)) ? s(f.system) : undefined,
+      ago: /^[0-7]$/.test(ago) ? ago : undefined,
+      planting: /^\d{4}-\d{2}-\d{2}$/.test(planting) ? planting : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
 
 export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt[]; crops: Opt[]; demos: DemoMeta[] }) {
-  const [ui, setUi] = useState<UiLang>("en");
+  const { lang: siteLang } = useLang(); // boutons FR / EN / TN / AR de l'en-tête
+  const ui: UiLang = siteLang;
   const [region, setRegion] = useState("kairouan");
   const [crop, setCrop] = useState("olivier");
-  const [lang, setLang] = useState<VoiceLang>("aeb");
+  const [lang, setLang] = useState<VoiceLang>("aeb"); // voix en darija par défaut
   const [subMode, setSubMode] = useState<"en" | "spoken">("en");
   const [muted, setMuted] = useState(false);
-  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts), sous la voix : COUPÉE par défaut, la personne l'active
-  const [ago, setAgo] = useState(""); // dernier arrosage : "" = inconnu, "0" à "7" = il y a N jours
+  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts) : COUPÉE par défaut, la personne l'active
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +77,28 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const t = STRINGS[ui];
   const locale = LOCALES[ui];
+  const rtl = isArabic(siteLang);
+
+  // région et culture de l'accueil, langue de voix mémorisée : lues après l'affichage (pas d'écart serveur/navigateur)
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const f = readForm();
+      if (f.region && regions.some((r) => r.id === f.region)) setRegion(f.region);
+      if (f.crop && crops.some((c) => c.id === f.crop)) setCrop(f.crop);
+      try {
+        const v = localStorage.getItem(VOICE_KEY);
+        if (v && VOICE_LANGS.some((l) => l.code === v)) setLang(v as VoiceLang);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [regions, crops]);
+
+  const chooseVoice = (code: VoiceLang) => {
+    setLang(code);
+    try {
+      localStorage.setItem(VOICE_KEY, code);
+    } catch {}
+  };
 
   // --- refs : audio, graphe Web Audio, présentateur
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -133,7 +190,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // la ligne courante reste visible dans la liste (sans faire défiler la page)
+  // la ligne courante reste visible dans le texte complet (sans faire défiler la page)
   useEffect(() => {
     const ol = listRef.current;
     const li = ol?.children[idx] as HTMLElement | undefined;
@@ -228,7 +285,14 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           item = await fetchDemo(d.id, "offline");
         } else {
           try {
-            const r = await fetch(`/api/voice/bulletin?region=${region}&crop=${crop}&lang=${lang}${ago !== "" ? `&ago=${ago}` : ""}`);
+            // le profil de l'agriculteur (sol, système, dernier arrosage, semis) vient de l'accueil : on ne le redemande pas
+            const f = readForm();
+            const q = new URLSearchParams({ region, crop, lang });
+            if (f.soil) q.set("soil", f.soil);
+            if (f.system) q.set("system", f.system);
+            if (f.ago) q.set("ago", f.ago);
+            if (f.planting) q.set("planting", f.planting);
+            const r = await fetch(`/api/voice/bulletin?${q.toString()}`);
             if (!r.ok) {
               const reason: Fallback = r.status === 503 ? "budget" : "error";
               const d = pickDemo();
@@ -258,7 +322,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         setBusy(false);
       }
     },
-    [ago, crop, ensureGraph, fetchDemo, lang, music, pickDemo, region, stopMusic, toLoaded],
+    [crop, ensureGraph, fetchDemo, lang, music, pickDemo, region, stopMusic, toLoaded],
   );
 
   const stop = () => {
@@ -276,11 +340,11 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const band: Band | null = loaded?.band ?? null;
   const fmtDay = (d: string) => new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
   const fmtFull = (d: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
-  const fmtStamp = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: ui === "ko" ? "long" : "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(iso));
-  const nameOf = (o: Opt) => (ui === "ar" ? o.ar : ui === "ko" ? (o.ko ?? o.en ?? o.fr) : ui === "en" ? (o.en ?? o.fr) : o.fr);
+  const fmtStamp = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(iso));
+  const nameOf = (o: Opt) => (isArabic(ui) ? o.ar : ui === "en" ? (o.en ?? o.fr) : o.fr);
   const doseText = (n: NonNullable<Band["next"]>) =>
     n.litersPerTree != null
-      ? `${Math.round(n.litersPerTree)} L / ${ui === "fr" ? "arbre" : ui === "ar" ? "شجرة" : ui === "ko" ? "그루" : "tree"}`
+      ? `${Math.round(n.litersPerTree)} L / ${ui === "fr" ? "arbre" : isArabic(ui) ? "شجرة" : "tree"}`
       : `${Math.round(n.m3PerHa)} m³/ha`;
 
   const current = loaded && idx >= 0 ? loaded.lines[idx] : null;
@@ -292,7 +356,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const spokenLang: VoiceLang = loaded?.lang ?? lang;
   const subLang: VoiceLang = subMode === "en" ? "en" : spokenLang;
   const unvalidated = VOICE_LANGS.find((l) => l.code === spokenLang && !l.validated);
-  const showJust = lang === "ko" || spokenLang === "ko" || ui === "ko";
+  const showJust = lang === "ko" || spokenLang === "ko";
   const subText = (l: { text: string; en: string }) => (subMode === "en" ? l.en : l.text);
 
   const notes = useMemo(() => {
@@ -312,106 +376,90 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const isDemo = loaded?.source === "demo";
   const tag = playing ? (isDemo ? t.rec : t.onAir) : t.idle;
+  const toggleBtn = (on: boolean) =>
+    `min-h-14 rounded-xl border-4 px-5 py-3 text-lg font-bold ${on ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#4b7a62] bg-[#1b3b2b] text-[#ffffff]"}`;
 
   return (
-    <div dir={ui === "ar" ? "rtl" : "ltr"} className="min-h-screen bg-[#0d2118] text-[#f2ead8]">
+    <div dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#0b1d15] text-lg leading-relaxed text-[#f7f1e1]">
       <div className="mx-auto max-w-4xl px-4 py-5">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <Link href="/" className="text-sm text-[#e7c36a] underline-offset-4 hover:underline">
-              {ui === "ar" ? "→" : "←"} {t.back}
-            </Link>
-            <h1 className="mt-1 text-2xl font-bold">{t.title}</h1>
-            <p className="text-sm text-[#cdbf9f]">{t.tagline}</p>
-          </div>
-          <label className="text-sm">
-            <span className="me-2 text-[#cdbf9f]">{t.uiLang}</span>
-            <select value={ui} onChange={(e) => setUi(e.target.value as UiLang)} className="rounded-md border border-[#3b5a4a] bg-[#16301f] px-2 py-2">
-              <option value="en">English</option>
-              <option value="fr">Français</option>
-              <option value="ar">العربية</option>
-              <option value="ko">한국어</option>
-            </select>
-          </label>
-        </header>
+        <h1 className="sr-only">{t.title}</h1>
 
-        {/* plateau */}
-        <div dir="ltr" className="overflow-hidden rounded-2xl border-4 border-[#2e4a3a] bg-black shadow-2xl">
-          <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-b from-[#1c4a37] via-[#16382a] to-[#0f271c]">
-            {/* décor : grandes roues d'irrigation en filigrane */}
-            <svg viewBox="0 0 400 225" className="absolute inset-0 h-full w-full opacity-20" aria-hidden>
-              <g fill="none" stroke="#e7c36a" strokeWidth="1.2">
-                <circle cx="330" cy="80" r="70" />
-                <circle cx="330" cy="80" r="52" />
-                <path d="M330 10V150M260 80H400M281 31L379 129M281 129L379 31" />
-                <circle cx="60" cy="190" r="45" />
-                <path d="M60 145V235M15 190H105" />
-              </g>
-            </svg>
-            <div className="absolute inset-x-0 bottom-[22%] top-3 flex justify-center sm:bottom-[24%]">
+        {/* plateau : le présentateur et les sous-titres */}
+        <div dir="ltr" className="overflow-hidden rounded-2xl border-4 border-[#3b6350] bg-black shadow-2xl">
+          <div className="relative aspect-[5/6] w-full overflow-hidden bg-gradient-to-b from-[#1f5340] via-[#173d2d] to-[#10291e] sm:aspect-video">
+            <div className="absolute inset-x-0 bottom-[26%] top-16 flex justify-center sm:bottom-[26%] sm:top-3">
               <Presenter svgRef={svgRef} />
             </div>
-            <div className="absolute start-3 top-3 rounded bg-black/50 px-2 py-1 text-xs font-bold tracking-wider text-[#e7c36a]">SAKIA · BULLETIN</div>
+            <div className="absolute start-3 top-3 rounded bg-black/70 px-2.5 py-1 text-base font-bold tracking-wider text-[#f0c75e]">SAKIA · BULLETIN</div>
             <div
-              className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2 py-1 text-xs font-bold tracking-wider ${
-                playing ? (isDemo ? "bg-[#7a5a14] text-white" : "bg-[#b3261e] text-white") : "bg-black/50 text-[#cdbf9f]"
+              className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2.5 py-1 text-base font-bold tracking-wider ${
+                playing ? (isDemo ? "bg-[#f0c75e] text-[#0b1d15]" : "bg-[#c4281f] text-white") : "bg-black/70 text-[#f7f1e1]"
               }`}
             >
-              <span className={`h-2 w-2 rounded-full ${playing ? "animate-pulse bg-white" : "bg-[#6f7f75]"}`} />
+              <span className={`h-2.5 w-2.5 rounded-full ${playing ? "animate-pulse bg-current" : "bg-[#9fb8a8]"}`} />
               {tag}
             </div>
             {/* sous-titres */}
-            <div className="absolute inset-x-2 bottom-2 flex min-h-[20%] items-center justify-center">
+            <div className="absolute inset-x-2 bottom-3 flex min-h-[22%] items-center justify-center">
               <p
-                dir={rtlOf(subLang) ? "rtl" : "ltr"} lang={htmlLangOf(subLang)}
+                dir={rtlOf(subLang) ? "rtl" : "ltr"}
+                lang={htmlLangOf(subLang)}
                 aria-live="polite"
-                className={`max-w-[95%] rounded-md px-3 py-1.5 text-center text-[clamp(0.8rem,2.6vw,1.35rem)] font-medium leading-snug ${
-                  current?.id === "unsure" ? "border-2 border-[#ffb454] bg-[#4a2a0c] font-bold text-[#ffe0b0]" : "bg-black/70 text-white"
+                className={`max-w-[96%] rounded-lg px-4 py-2 text-center text-[clamp(1.1rem,3.6vw,1.75rem)] font-semibold leading-snug ${
+                  current?.id === "unsure" ? "border-4 border-[#ffb454] bg-[#5a2d08] text-[#fff1d6]" : "bg-black/80 text-white"
                 }`}
               >
                 {current?.id === "unsure" && "⚠ "}
                 {current ? subText(current) : loaded ? "…" : t.pressListen}
               </p>
             </div>
-            <div className="absolute inset-x-0 bottom-0 h-1 bg-black/40">
-              <div className="h-full bg-[#e7c36a]" style={{ width: `${progress * 100}%` }} />
+            <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/60">
+              <div className="h-full bg-[#f0c75e]" style={{ width: `${progress * 100}%` }} />
             </div>
           </div>
 
-          {/* bandeau de données : tout vient du plan */}
-          <div className="grid grid-cols-2 gap-px bg-[#e7c36a]/30 text-sm sm:grid-cols-4" dir={ui === "ar" ? "rtl" : "ltr"}>
-            {band ? (
-              <>
-                <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : `${band.rainMm.toFixed(0)} mm`} />
-                <Cell label={t.tmax} value={band.tmaxMax != null ? `${Math.round(band.tmaxMax)} °C` : "—"} />
-                <Cell label={t.stress} value={band.outOfSeason || noAdvice ? "—" : t.stressLevels[band.stressRisk]} />
-                <Cell
-                  label={t.nextIrrigation}
-                  alert={noAdvice}
-                  value={noAdvice ? t.askCell : band.outOfSeason ? t.outOfSeason : band.next ? `${fmtDay(band.next.date)} · ${doseText(band.next)}` : t.noIrrigation}
-                />
-              </>
-            ) : (
-              <div className="col-span-2 bg-[#12281d] px-3 py-3 text-[#cdbf9f] sm:col-span-4">{t.pressListen}</div>
-            )}
-          </div>
+          {/* bandeau de données : tout vient du plan ; il n'apparaît qu'une fois le bulletin lu */}
+          {band && (
+            <div className="grid grid-cols-2 gap-px bg-[#f0c75e]/50 text-base sm:grid-cols-4" dir={rtl ? "rtl" : "ltr"}>
+              <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : `${band.rainMm.toFixed(0)} mm`} />
+              <Cell label={t.tmax} value={band.tmaxMax != null ? `${Math.round(band.tmaxMax)} °C` : "—"} />
+              <Cell label={t.stress} value={band.outOfSeason || noAdvice ? "—" : t.stressLevels[band.stressRisk]} />
+              <Cell
+                label={t.nextIrrigation}
+                alert={noAdvice}
+                value={noAdvice ? t.askCell : band.outOfSeason ? t.outOfSeason : band.next ? `${fmtDay(band.next.date)} · ${doseText(band.next)}` : t.noIrrigation}
+              />
+            </div>
+          )}
         </div>
 
-        {/* garde-fou « pas sûr : demandez à une personne » : en évidence, avant tout le reste */}
+        {/* UN gros bouton */}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => (playing ? stop() : start("auto"))}
+          className="mt-5 min-h-20 w-full rounded-2xl bg-[#f0c75e] px-6 py-4 text-3xl font-bold text-[#0b1d15] shadow-lg disabled:opacity-60 sm:text-4xl"
+        >
+          {busy ? t.loading : playing ? `■ ${t.stop}` : `▶ ${t.listen}`}
+        </button>
+
+        {error && <p role="alert" className="mt-4 rounded-xl border-4 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-lg font-semibold text-[#ffe8dd]">{error}</p>}
+
+        {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, pluie signalée, provenance, texte non validé */}
         {loaded && askAPerson && (
-          <aside role="alert" className="mt-3 rounded-lg border-2 border-[#ffb454] bg-[#4a2a0c] px-4 py-3 text-[#ffe0b0]">
-            <p className="flex items-center gap-2 text-lg font-bold">
+          <aside role="alert" className="mt-5 rounded-2xl border-4 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
+            <p className="flex items-center gap-2 text-2xl font-bold">
               <span aria-hidden>⚠</span>
               {t.unsureTitle}
             </p>
             {unsureLine && (
-              <p className="mt-1" lang={htmlLangOf(spokenLang)} dir={rtlOf(spokenLang) ? "rtl" : "ltr"}>
+              <p className="mt-2 text-xl" lang={htmlLangOf(spokenLang)} dir={rtlOf(spokenLang) ? "rtl" : "ltr"}>
                 {unsureLine.text}
-                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && <span className="block text-sm opacity-80">{unsureLine.en}</span>}
+                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && <span className="mt-1 block text-lg text-[#ffe3b8]">{unsureLine.en}</span>}
               </p>
             )}
             {reasons.length > 0 && (
-              <ul className="mt-2 list-disc space-y-0.5 ps-5 text-sm">
+              <ul className="mt-3 list-disc space-y-1 ps-6 text-lg">
                 {reasons.map((r) => (
                   <li key={r}>{t.reasons[r]}</li>
                 ))}
@@ -420,14 +468,13 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           </aside>
         )}
 
-        {/* pluie signalée par des agriculteurs : information, pas alarme ; « signalé », jamais « mesuré » */}
         {loaded && band?.localReports && band.localReports.length > 0 && (
-          <aside className="mt-3 rounded-lg border border-[#5fb3c4] bg-[#0f2f36] px-4 py-3 text-sm text-[#d6f1f6]">
-            <p className="flex items-center gap-2 font-semibold">
+          <aside className="mt-5 rounded-2xl border-4 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-lg text-[#f2fcff]">
+            <p className="flex items-center gap-2 text-xl font-bold">
               <span aria-hidden>🌧</span>
               {t.reportsTitle}
             </p>
-            <ul className="mt-1 list-disc space-y-0.5 ps-5">
+            <ul className="mt-2 list-disc space-y-1 ps-6">
               {[...band.localReports]
                 .sort((a, b) => (a.date < b.date ? 1 : -1))
                 .map((r) => {
@@ -444,202 +491,182 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                   );
                 })}
             </ul>
-            <p className="mt-2">{t.reportsNote}</p>
-            {loaded.reportsFictional && <p className="mt-1 font-semibold text-[#ffe9a6]">{t.reportsFictional}</p>}
+            <p className="mt-3 font-semibold">{t.reportsNote}</p>
+            {loaded.reportsFictional && <p className="mt-2 font-bold text-[#fff3c4]">{t.reportsFictional}</p>}
           </aside>
         )}
 
-        {/* messages de provenance : bulletin enregistré clairement annoncé */}
-        <div className="mt-3 space-y-2">
-          {notes.map((n, i) => (
-            <p
-              key={i}
-              className={`rounded-md border px-3 py-2 text-sm ${
-                n.kind === "demo" ? "border-[#e7c36a] bg-[#3a2f10] font-semibold text-[#ffe9a6]" : n.kind === "warn" ? "border-[#c2572b] bg-[#3a1c12] text-[#ffd0bd]" : "border-[#3b5a4a] bg-[#16301f]"
-              }`}
-            >
-              {n.text}
-            </p>
-          ))}
-          {error && <p className="rounded-md border border-[#c2572b] bg-[#3a1c12] px-3 py-2 text-sm text-[#ffd0bd]">{error}</p>}
-          {showJust && (
-            <aside className="flex items-start gap-3 rounded-md border border-[#e7c36a]/60 bg-[#2a3a22] px-3 py-3 text-sm">
-              <span className="text-3xl leading-none" aria-hidden>
-                😊
-              </span>
-              <div>
-                <p className="font-semibold text-[#ffe9a6]">{t.justTitle}</p>
-                <p lang="ko" className="mt-1">
-                  {t.justBody}
-                </p>
-                {t.justGloss && <p className="mt-1 text-[#cdbf9f]">{t.justGloss}</p>}
-              </div>
-            </aside>
-          )}
-        </div>
-
-        {/* commandes */}
-        <section className="mt-4 grid gap-3 rounded-xl border border-[#3b5a4a] bg-[#12281d] p-4 sm:grid-cols-3">
-          <Field label={t.region}>
-            <select value={region} onChange={(e) => setRegion(e.target.value)} className="w-full rounded-md border border-[#3b5a4a] bg-[#16301f] px-2 py-3">
-              {regions.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {nameOf(r)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t.crop}>
-            <select value={crop} onChange={(e) => setCrop(e.target.value)} className="w-full rounded-md border border-[#3b5a4a] bg-[#16301f] px-2 py-3">
-              {crops.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {nameOf(c)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t.agoLabel}>
-            <select value={ago} onChange={(e) => setAgo(e.target.value)} className="w-full rounded-md border border-[#3b5a4a] bg-[#16301f] px-2 py-3">
-              <option value="">{t.agoUnknown}</option>
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
-                <option key={n} value={String(n)}>
-                  {n === 0 ? t.agoToday : n === 1 ? t.agoOne : t.agoDays.replace("{n}", String(n))}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <div className="sm:col-span-3">
-          <Field label={t.voice}>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {VOICE_LANGS.map((v) => (
-                <button
-                  key={v.code}
-                  type="button"
-                  onClick={() => setLang(v.code)}
-                  aria-pressed={lang === v.code}
-                  lang={v.htmlLang}
-                  className={`rounded-md border px-2 py-2 ${lang === v.code ? "border-[#e7c36a] bg-[#e7c36a] font-bold text-[#0d2118]" : "border-[#3b5a4a] bg-[#16301f]"}`}
-                >
-                  <span className="block">{v.native}</span>
-                  <span lang="en" className="block text-[0.7rem] font-normal opacity-80">
-                    {v.english}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Field>
+        {loaded && (
+          <div className="mt-5 space-y-3">
+            {notes.map((n, i) => (
+              <p
+                key={i}
+                className={`rounded-xl border-4 px-4 py-3 text-lg ${
+                  n.kind === "demo"
+                    ? "border-[#f0c75e] bg-[#4a3a08] font-bold text-[#fff3c4]"
+                    : n.kind === "warn"
+                      ? "border-[#ff9a7a] bg-[#5a1f10] font-semibold text-[#ffe8dd]"
+                      : "border-[#4b7a62] bg-[#173d2d] text-[#f7f1e1]"
+                }`}
+              >
+                {n.text}
+              </p>
+            ))}
+            {unvalidated && (
+              <p className="rounded-xl border-4 border-[#f0c75e] bg-[#4a3a08] px-4 py-3 text-lg font-semibold text-[#fff3c4]">
+                {unvalidated.code === "aeb" ? t.darijaNote : unvalidated.code === "ar" ? t.arabicNote : t.koreanNote}
+              </p>
+            )}
           </div>
+        )}
 
-          <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => (playing ? stop() : start("auto"))}
-              className="min-w-40 rounded-lg bg-[#e7c36a] px-6 py-4 text-lg font-bold text-[#0d2118] disabled:opacity-60"
-            >
-              {busy ? t.loading : playing ? t.stop : `▶ ${t.listen}`}
-            </button>
-            <button type="button" onClick={() => setMuted((m) => !m)} aria-pressed={muted} className="rounded-lg border border-[#3b5a4a] bg-[#16301f] px-4 py-4">
-              {muted ? `🔇 ${t.soundOff}` : `🔊 ${t.soundOn}`}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (music) stopMusic(300);
-                setMusic(!music);
-              }}
-              aria-pressed={music}
-              className="rounded-lg border border-[#3b5a4a] bg-[#16301f] px-4 py-4"
-            >
-              {music ? `🎵 ${t.musicOn}` : `🎵 ${t.musicOff}`}
-            </button>
-            <div className={`flex items-center gap-2 text-sm ${spokenLang === "en" ? "hidden" : ""}`}>
-              <span className="text-[#cdbf9f]">{t.subtitles}</span>
+        {/* « Il a plu » : proposé une fois que la personne a entendu la pluie du bulletin */}
+        {loaded && <RainReportButton regionId={region} regionName={nameOf(regions.find((r) => r.id === region) ?? regions[0])} voiceLang={lang} muted={muted} t={t} />}
+
+        {/* OPTIONS : tout le reste, replié */}
+        <details className="group mt-6 rounded-2xl border-4 border-[#4b7a62] bg-[#12281d]">
+          <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between px-5 py-3 text-2xl font-bold text-[#ffffff]">
+            <span>⚙ {t.options}</span>
+            <span aria-hidden className="text-3xl transition-transform group-open:rotate-180">
+              ▾
+            </span>
+          </summary>
+          <div className="space-y-6 border-t-4 border-[#4b7a62] px-5 py-5">
+            <fieldset>
+              <legend className="mb-2 text-xl font-bold">{t.voice}</legend>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                {VOICE_LANGS.map((v) => (
+                  <button key={v.code} type="button" onClick={() => chooseVoice(v.code)} aria-pressed={lang === v.code} lang={v.htmlLang} className={`${toggleBtn(lang === v.code)} flex flex-col items-center px-2`}>
+                    <span>{v.native}</span>
+                    <span lang="en" className="text-base font-semibold">
+                      {v.english}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-xl font-bold">
+                <span className="mb-2 block">{t.region}</span>
+                <select value={region} onChange={(e) => setRegion(e.target.value)} className="min-h-14 w-full rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-3 text-lg font-semibold text-[#ffffff]">
+                  {regions.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {nameOf(r)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xl font-bold">
+                <span className="mb-2 block">{t.crop}</span>
+                <select value={crop} onChange={(e) => setCrop(e.target.value)} className="min-h-14 w-full rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-3 text-lg font-semibold text-[#ffffff]">
+                  {crops.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {nameOf(c)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={() => setMuted((m) => !m)} aria-pressed={muted} className={toggleBtn(false)}>
+                {muted ? `🔇 ${t.soundOff}` : `🔊 ${t.soundOn}`}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (music) stopMusic(300);
+                  setMusic(!music);
+                }}
+                aria-pressed={music}
+                className={toggleBtn(false)}
+              >
+                {music ? `🎵 ${t.musicOn}` : `🎵 ${t.musicOff}`}
+              </button>
+              <span className="text-lg font-bold">{t.subtitles}</span>
               {(["en", "spoken"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setSubMode(m)}
-                  aria-pressed={subMode === m}
-                  className={`rounded-md border px-3 py-3 ${subMode === m ? "border-[#e7c36a] bg-[#e7c36a] font-bold text-[#0d2118]" : "border-[#3b5a4a] bg-[#16301f]"}`}
-                >
+                <button key={m} type="button" onClick={() => setSubMode(m)} aria-pressed={subMode === m} className={toggleBtn(subMode === m)}>
                   {m === "en" ? t.subEn : t.subSpoken}
                 </button>
               ))}
             </div>
-          </div>
-          <audio
-            ref={audioRef}
-            className="hidden"
-            onPlay={() => {
-              setPlaying(true);
-              musicRef.current?.duck();
-            }}
-            onPause={() => setPlaying(false)}
-            onEnded={() => {
-              setPlaying(false);
-              // la musique remonte un instant, puis s'éteint
-              const m = musicRef.current;
-              m?.swell();
-              window.setTimeout(() => {
-                m?.stop(1200);
-                if (musicRef.current === m) musicRef.current = null;
-              }, 2500);
-            }}
-          />
-        </section>
 
-        {/* texte complet : lisible avec le son coupé */}
-        {loaded && (
-          <section className="mt-4 rounded-xl border border-[#3b5a4a] bg-[#12281d] p-4">
-            <ol ref={listRef} className="max-h-48 space-y-1 overflow-y-auto" dir={rtlOf(subLang) ? "rtl" : "ltr"} lang={htmlLangOf(subLang)}>
-              {loaded.lines.map((l, i) => (
-                <li key={l.id} className={`rounded px-2 py-1 ${i === idx ? "bg-[#e7c36a] font-semibold text-[#0d2118]" : "text-[#cdbf9f]"}`}>
-                  {subText(l)}
-                </li>
-              ))}
-            </ol>
-            <p className="mt-2 text-xs text-[#9fb2a6]">{t.audioSize.replace("{kb}", String(loaded.sizeKb))}</p>
-          </section>
-        )}
+            {loaded && (
+              <div>
+                <h2 className="mb-2 text-xl font-bold">{t.fullText}</h2>
+                <ol ref={listRef} className="max-h-72 space-y-1 overflow-y-auto rounded-xl bg-[#173d2d] p-2" dir={rtlOf(subLang) ? "rtl" : "ltr"}>
+                  {loaded.lines.map((l, i) => (
+                    <li key={l.id} lang={htmlLangOf(subLang)} className={`rounded-lg px-3 py-2 text-lg ${i === idx ? "bg-[#f0c75e] font-bold text-[#0b1d15]" : "text-[#f7f1e1]"}`}>
+                      {subText(l)}
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-2 text-base text-[#e3dcc6]">{t.audioSize.replace("{kb}", String(loaded.sizeKb))}</p>
+              </div>
+            )}
 
-        {/* « Il a plu » : un agriculteur signale la pluie chez lui ; avec 2 personnes d'accord elle remplace la prévision */}
-        <RainReportButton regionId={region} t={t} regionName={nameOf(regions.find((r) => r.id === region) ?? regions[0])} />
+            {demos.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold">{t.demosTitle}</h2>
+                <p className="mb-3 text-lg text-[#e3dcc6]">{t.demosHint}</p>
+                <div className="flex flex-wrap gap-3">
+                  {demos.map((d) => (
+                    <button key={d.id} type="button" disabled={busy} onClick={() => start(d.id)} className="min-h-14 rounded-xl border-4 border-[#4b7a62] bg-[#1b3b2b] px-4 py-3 text-start text-lg font-semibold text-[#ffffff] disabled:opacity-60">
+                      ▶ {d.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* bulletins enregistrés */}
-        {demos.length > 0 && (
-          <section className="mt-4 rounded-xl border border-[#3b5a4a] bg-[#12281d] p-4">
-            <h2 className="font-semibold">{t.demosTitle}</h2>
-            <p className="mb-2 text-sm text-[#cdbf9f]">{t.demosHint}</p>
-            <div className="flex flex-wrap gap-2">
-              {demos.map((d) => (
-                <button
-                  key={d.id}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => start(d.id)}
-                  className="rounded-md border border-[#3b5a4a] bg-[#16301f] px-3 py-3 text-start text-sm disabled:opacity-60"
-                >
-                  ▶ {d.title}
-                </button>
-              ))}
+            {showJust && (
+              <aside className="flex items-start gap-3 rounded-xl border-4 border-[#f0c75e] bg-[#2a3a22] px-4 py-3 text-lg text-[#f7f1e1]">
+                <span className="text-4xl leading-none" aria-hidden>
+                  😊
+                </span>
+                <div>
+                  <p className="text-xl font-bold text-[#fff3c4]">{t.justTitle}</p>
+                  <p lang="ko" className="mt-1">
+                    {t.justBody}
+                  </p>
+                  {t.justGloss && <p className="mt-1 text-[#e3dcc6]">{t.justGloss}</p>}
+                </div>
+              </aside>
+            )}
+
+            <div className="space-y-3 text-lg">
+              <h2 className="text-xl font-bold">{t.inclusionTitle}</h2>
+              <p className="text-[#e9e2cd]">{t.inclusion}</p>
+              <h2 className="pt-2 text-xl font-bold">{t.whyTitle}</h2>
+              <p className="text-[#e9e2cd]">{t.why}</p>
+              {loaded?.voiceName && (
+                <p className="text-[#e9e2cd]">{loaded.voiceValidated ? `${t.voiceOf}: ${loaded.voiceName}` : t.voiceNote.replace("{name}", loaded.voiceName)}</p>
+              )}
+              <p className="text-[#e9e2cd]">{t.indicative}</p>
             </div>
-          </section>
-        )}
+          </div>
+        </details>
 
-        <section className="mt-4 rounded-xl border border-[#3b5a4a] bg-[#12281d] p-4 text-sm leading-relaxed">
-          <h2 className="font-semibold">{t.inclusionTitle}</h2>
-          <p className="mt-1 text-[#cdbf9f]">{t.inclusion}</p>
-          <h2 className="mt-4 font-semibold">{t.whyTitle}</h2>
-          <p className="mt-1 text-[#cdbf9f]">{t.why}</p>
-          {unvalidated && <p className="mt-3 text-[#ffe9a6]">{unvalidated.code === "aeb" ? t.darijaNote : unvalidated.code === "ar" ? t.arabicNote : t.koreanNote}</p>}
-          {loaded?.voiceName && (
-            <p className="mt-2 text-[#9fb2a6]">
-              {loaded.voiceValidated ? `${t.voiceOf}: ${loaded.voiceName}` : t.voiceNote.replace("{name}", loaded.voiceName)}
-            </p>
-          )}
-          <p className="mt-2 text-[#9fb2a6]">{t.indicative}</p>
-        </section>
+        <audio
+          ref={audioRef}
+          className="hidden"
+          onPlay={() => {
+            setPlaying(true);
+            musicRef.current?.duck();
+          }}
+          onPause={() => setPlaying(false)}
+          onEnded={() => {
+            setPlaying(false);
+            // la musique remonte un instant, puis s'éteint
+            const m = musicRef.current;
+            m?.swell();
+            window.setTimeout(() => {
+              m?.stop(1200);
+              if (musicRef.current === m) musicRef.current = null;
+            }, 2500);
+          }}
+        />
       </div>
     </div>
   );
@@ -647,18 +674,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
 function Cell({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
   return (
-    <div className="bg-[#12281d] px-3 py-2">
-      <div className="text-[0.7rem] uppercase tracking-wide text-[#cdbf9f]">{label}</div>
-      <div className={`font-semibold ${alert ? "text-[#ffb454]" : "text-[#ffe9a6]"}`}>{alert && "⚠ "}{value}</div>
+    <div className="bg-[#12281d] px-4 py-3">
+      <div className="text-base font-bold uppercase tracking-wide text-[#e3dcc6]">{label}</div>
+      <div className={`text-lg font-bold ${alert ? "text-[#ffb454]" : "text-[#fff3c4]"}`}>
+        {alert && "⚠ "}
+        {value}
+      </div>
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block text-sm">
-      <span className="mb-1 block text-[#cdbf9f]">{label}</span>
-      {children}
-    </label>
   );
 }

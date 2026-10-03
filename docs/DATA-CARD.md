@@ -47,7 +47,7 @@ We do **not** use any trained model of our own: no training data, no synthetic d
 
 ## D. Privacy, consent, bias, human oversight
 
-- **Personal data:** a Telegram chat identifier plus language, region, crop and a few settings; rain reports carry only a salted hash. No name, phone number, location or IP address is stored.
+- **Personal data:** a Telegram chat identifier plus language, region, crop and a few settings; rain reports carry only a salted hash. No name, phone number, location or IP address is stored. Daily spending limits on the paid voice service are counted per visitor under a salted hash of the address (never the address itself), which is the only trace of a visit.
 - **Voice:** our code does not save farmers' audio in our database. Speech is processed by ElevenLabs under its own terms; **its retention setting still has to be confirmed**. The voice agent should be preceded by a short notice that the microphone is used by a third-party service (to be added).
 - **Processors:** ElevenLabs (voice), Supabase (database), Vercel (hosting), Telegram (chat), Open-Meteo (weather: only the coordinates of a governorate capital are sent).
 - **Bias:** crop coefficients and the weather model are not tuned to Tunisia; speech tools work better in French than in Tunisian Arabic, so people who speak only dialect may be understood less well; the model underestimates heavy rain; farmers without any phone signal are not reached by any of our channels.
@@ -75,7 +75,7 @@ Bias = Open-Meteo minus station. Sources: NOAA GHCN-D station of Kairouan (TSE00
 |---|---|
 | Backtest: 11 seasons, 18 crops, advised vs fixed seasonal schedule | **Done** — water pumped 3 to 27 % lower depending on the crop, almost no stress days (simulation) |
 | Weather source against Tunisian stations | **Done** (section E) |
-| Sizes: forecast 1.9 KB per region, plan 1,921 bytes raw / 445 bytes compressed, audio ≈ 4 KB per second | **Done** |
+| Sizes: forecast 1.9 KB per region, plan 1,921 bytes raw / 445 bytes compressed, audio ≈ 4 KB per second; spoken advice for the home button 75–90 KB (≈ 20 s), prepared each morning, loaded in the background | **Done** (measured on the local server; production measurement still to be added) |
 | Offline recomputation | **Done in Chrome with the server stopped**; phone airplane mode **not yet** |
 | Understanding of typed phrases (French, Arabic, Arabizi) | Done on **phrases written by us, not by farmers** — not an accuracy claim |
 | **Speech recognition on real recordings (Tunisian dialect, French)** | **Not done yet** — to be measured and published as it is |

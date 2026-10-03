@@ -56,3 +56,13 @@ export const SAMPLE_TEXT: Record<"fr" | "ar" | "aeb" | "en" | "ko", string> = {
 
 // Drapeau « signalements fictifs » : voir flags.ts (partagé avec le navigateur).
 export { REPORTS_ARE_FICTIONAL } from "./flags";
+
+// Remerciement dit à voix haute quand une personne signale la pluie (fichiers public/audio/thanks-<langue>.mp3, générés une
+// fois par scripts/voice-thanks.ts). Pour celles et ceux qui ne lisent pas. Textes darija, arabe standard et coréen à faire valider.
+export const THANKS_TEXT: Record<"aeb" | "fr" | "ar" | "en" | "ko", string> = {
+  aeb: "يعيشك! بفضلك جيرانك يعرفو قدّاش نزلت الشتا.",
+  fr: "Merci ! Grâce à vous, vos voisins savent combien il a plu.",
+  ar: "شكرا لك! بفضلك يعرف جيرانك كم هطل من المطر.",
+  en: "Thank you! Thanks to you, your neighbours know how much it rained.",
+  ko: "감사합니다! 덕분에 이웃들이 비가 얼마나 왔는지 알 수 있어요.",
+};

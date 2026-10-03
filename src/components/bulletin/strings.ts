@@ -5,9 +5,10 @@ import type { Plan } from "@/lib/plan";
 
 export type ConfidenceReason = Plan["confidence"]["reasons"][number];
 
-export type UiLang = "en" | "fr" | "ar" | "ko";
+// aeb = darija tunisienne : l'en-tête du site (boutons FR / EN / TN / AR) la choisit ; le coréen n'a plus de sélecteur
+export type UiLang = "en" | "fr" | "ar" | "aeb" | "ko";
 
-export const LOCALES: Record<UiLang, string> = { en: "en-GB", fr: "fr-FR", ar: "ar-TN-u-nu-latn", ko: "ko-KR" };
+export const LOCALES: Record<UiLang, string> = { en: "en-GB", fr: "fr-FR", ar: "ar-TN-u-nu-latn", aeb: "ar-TN-u-nu-latn", ko: "ko-KR" };
 
 export type Strings = {
   title: string;
@@ -88,9 +89,21 @@ export type Strings = {
   rainErrDown: string;
   rainErrInvalid: string;
   rainRule: string;
+  // volet « Options » et texte complet
+  options: string;
+  fullText: string;
+  // récompense : remercier les personnes qui signalent la pluie
+  rewardThanks: string;
+  rewardCountOne: string;
+  rewardCount: string; // {n}
+  rewardTiers: [string, string, string]; // 1, 5 et 15 jours signalés
+  rewardNext: string; // {k} {name}
+  rewardTop: string;
+  rewardImpactUsed: string; // {n}
+  rewardImpactWaiting: string; // {n} {need}
 };
 
-export const STRINGS: Record<UiLang, Strings> = {
+const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
   en: {
     title: "Sakia bulletin",
     tagline: "Today's irrigation bulletin, read aloud, with subtitles",
@@ -174,6 +187,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainErrDown: "Could not save the report right now. Try again later.",
     rainErrInvalid: "The report was not accepted (day too old or invalid).",
     rainRule: "Anonymous: no name, no address. One report per person, per region and per day. When 2 or more different people agree for a day, their middle value replaces the forecast for that day.",
+    options: "Options",
+    fullText: "Full text of the bulletin",
+    rewardThanks: "Thank you, neighbour!",
+    rewardCountOne: "You have helped on 1 day.",
+    rewardCount: "You have helped on {n} different days.",
+    rewardTiers: ["Helper", "Rain watcher", "Rain guardian"],
+    rewardNext: "{k} more day(s) to become “{name}”.",
+    rewardTop: "You are a Rain guardian. Thank you for looking after your neighbours!",
+    rewardImpactUsed: "{n} people agree for that day: the bulletin now uses your region's report.",
+    rewardImpactWaiting: "{n} person reported that day. {need} more and the bulletin will use it.",
   },
   fr: {
     title: "Bulletin Sakia",
@@ -258,6 +281,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainErrDown: "Impossible d'enregistrer le signalement pour le moment. Réessayez plus tard.",
     rainErrInvalid: "Le signalement n'a pas été accepté (jour trop ancien ou invalide).",
     rainRule: "Anonyme : aucun nom, aucune adresse. Un seul signalement par personne, par région et par jour. Quand au moins 2 personnes différentes sont d'accord pour un jour, leur valeur médiane remplace la prévision pour ce jour.",
+    options: "Options",
+    fullText: "Texte complet du bulletin",
+    rewardThanks: "Merci, voisin !",
+    rewardCountOne: "Vous avez aidé 1 jour.",
+    rewardCount: "Vous avez aidé {n} jours différents.",
+    rewardTiers: ["Voisin serviable", "Guetteur de pluie", "Gardien de la pluie"],
+    rewardNext: "Encore {k} jour(s) pour devenir « {name} ».",
+    rewardTop: "Vous êtes Gardien de la pluie. Merci de veiller sur vos voisins !",
+    rewardImpactUsed: "{n} personnes sont d'accord pour ce jour : le bulletin utilise maintenant le signalement de votre région.",
+    rewardImpactWaiting: "{n} personne a signalé ce jour-là. Encore {need} et le bulletin l'utilisera.",
   },
   ar: {
     title: "نشرة ساقية",
@@ -342,6 +375,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainErrDown: "تعذّر حفظ البلاغ الآن. أعيدوا المحاولة لاحقا.",
     rainErrInvalid: "لم يُقبل البلاغ (يوم قديم أو غير صالح).",
     rainRule: "مجهول: لا اسم ولا عنوان. بلاغ واحد لكل شخص ولكل ولاية ولكل يوم. عندما يتفق شخصان مختلفان أو أكثر على يوم ما، تعوّض قيمتهم الوسطى التوقعات لذلك اليوم.",
+    options: "خيارات",
+    fullText: "النص الكامل للنشرة",
+    rewardThanks: "شكرا يا جار!",
+    rewardCountOne: "ساعدتم في يوم واحد.",
+    rewardCount: "ساعدتم في {n} أيام مختلفة.",
+    rewardTiers: ["مساعد", "راصد المطر", "حارس المطر"],
+    rewardNext: "بقي {k} يوم لتصبحوا «{name}».",
+    rewardTop: "أنتم حارس المطر. شكرا لاعتنائكم بجيرانكم!",
+    rewardImpactUsed: "اتفق {n} أشخاص على ذلك اليوم: النشرة تعتمد الآن بلاغ ولايتكم.",
+    rewardImpactWaiting: "أبلغ {n} شخص عن ذلك اليوم. بقي {need} ليعتمده النشرة.",
   },
   ko: {
     title: "사키아 방송",
@@ -426,5 +469,33 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainErrDown: "지금은 신고를 저장할 수 없습니다. 나중에 다시 시도해 주세요.",
     rainErrInvalid: "신고가 받아들여지지 않았습니다(너무 오래된 날짜이거나 올바르지 않음).",
     rainRule: "익명입니다: 이름도 주소도 없습니다. 사람마다, 지역마다, 하루에 한 번만 신고할 수 있습니다. 서로 다른 2명 이상이 같은 날에 동의하면 그 중간값이 그날의 예보를 대신합니다.",
+    options: "옵션",
+    fullText: "방송 전체 텍스트",
+    rewardThanks: "고맙습니다, 이웃님!",
+    rewardCountOne: "1일 동안 도와주셨습니다.",
+    rewardCount: "서로 다른 {n}일 동안 도와주셨습니다.",
+    rewardTiers: ["도우미", "비 관측자", "비 지킴이"],
+    rewardNext: "“{name}”가 되려면 {k}일 남았습니다.",
+    rewardTop: "당신은 비 지킴이입니다. 이웃을 살펴 주셔서 감사합니다!",
+    rewardImpactUsed: "그날은 {n}명이 같은 신고를 했습니다. 이제 방송이 우리 지역의 신고를 사용합니다.",
+    rewardImpactWaiting: "그날은 {n}명이 신고했습니다. {need}명이 더 신고하면 방송이 사용합니다.",
+  },
+};
+
+// Darija tunisienne : on part de l'arabe standard et on remplace les mots les plus visibles par ceux du quotidien.
+// À faire valider par un locuteur tunisien ; tout le reste de l'écran reste en arabe standard simple.
+export const STRINGS: Record<UiLang, Strings> = {
+  ...BASE,
+  aeb: {
+    ...BASE.ar,
+    listen: "اسمع",
+    stop: "وقّف",
+    loading: "نحضّرو في النشرة…",
+    pressListen: "اضغط على «اسمع» باش تبدا النشرة.",
+    soundOn: "الصوت خدّام",
+    soundOff: "الصوت مقطوع",
+    rainBtn: "نزلت الشتا",
+    rainAsk: "قدّاش نزلت الشتا عندكم؟",
+    rewardThanks: "يعيشك يا جار!",
   },
 };

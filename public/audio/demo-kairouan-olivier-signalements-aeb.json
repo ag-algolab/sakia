@@ -4,76 +4,76 @@
    "id": "hello",
    "text": "عسلامة بيكم، ومرحبا بيكم في ساقية.",
    "startMs": 0,
-   "endMs": 2800,
+   "endMs": 2880,
    "en": "Hello everyone, and welcome to Sakia."
   },
   {
    "id": "where",
    "text": "هاذي نشرة السقي متاع ولاية القيروان، والمحصول: الزيتون.",
-   "startMs": 2880,
-   "endMs": 7520,
+   "startMs": 3000,
+   "endMs": 7440,
    "en": "Here is today's irrigation bulletin for Kairouan, crop: Olive."
   },
   {
    "id": "rain",
    "text": "الأسبوع هذا ما فمّاش شتا تنفع الزرع.",
-   "startMs": 7920,
-   "endMs": 10960,
+   "startMs": 7840,
+   "endMs": 10880,
    "en": "No useful rain is expected this week."
   },
   {
    "id": "reports",
-   "text": "البارح، ثلاثة من الفلاحين من الجهة قالو: شتا خفيفة. خذينا بكلامهم بدل التوقعات. هذا كلام فلاحين، موش قياس.",
-   "startMs": 11040,
-   "endMs": 19360,
-   "en": "Yesterday, 3 farmers in the area reported: light rain. We used their report instead of the forecast. It is a report, not a measurement."
+   "text": "البارح، ثلاثة من الفلاحين من الجهة قالو: شتا خفيفة. خذينا بكلام الفلاحين هذا بدل التوقعات. يعيشكم يا جيران القيروان!",
+   "startMs": 10960,
+   "endMs": 20080,
+   "en": "Yesterday, 3 farmers in the area reported: light rain. We used this report by farmers instead of the forecast. Thanks to the neighbours in Kairouan!"
   },
   {
    "id": "hot",
    "text": "الحرارة تنجّم توصل لين خمسة وثلاثين درجة.",
-   "startMs": 19520,
-   "endMs": 22560,
+   "startMs": 20160,
+   "endMs": 23200,
    "en": "Temperatures may reach 35 degrees."
   },
   {
    "id": "advice",
    "text": "نصيحتنا: ما فمّاش لزوم للسقي في السبعة أيام الجاية.",
-   "startMs": 22640,
-   "endMs": 26240,
+   "startMs": 23320,
+   "endMs": 26880,
    "en": "Our advice: no irrigation is needed in the next seven days."
   },
   {
    "id": "stress",
    "text": "خطر العطش على الزرع: قليل.",
-   "startMs": 26320,
-   "endMs": 28640,
+   "startMs": 27040,
+   "endMs": 29200,
    "en": "Water-stress risk: low."
   },
   {
    "id": "soil",
    "text": "هاذي النصيحة لتربة عادية، طميية، وسقي قطرة قطرة. للتفاصيل، اختارو نوع التربة متاعكم في التطبيق.",
-   "startMs": 28720,
-   "endMs": 36160,
+   "startMs": 29280,
+   "endMs": 36800,
    "en": "This advice is for a normal loam soil with drip irrigation. For the details, choose your soil type in the app."
   },
   {
    "id": "caveat",
    "text": "هاذي نصيحة برّك: تثبّتو منها عند المصالح الفلاحية.",
-   "startMs": 36240,
-   "endMs": 39840,
+   "startMs": 36880,
+   "endMs": 40400,
    "en": "This advice is indicative: please check it with your agriculture office."
   },
   {
    "id": "bye",
    "text": "يعطيكم الصحة على الخدمة اللي تعملوها لبلادنا. بالتوفيق للجميع.",
-   "startMs": 39920,
-   "endMs": 44080,
+   "startMs": 40480,
+   "endMs": 44640,
    "en": "Thank you for the service you give to the country. Good luck to all."
   }
  ],
  "audioUrl": "/audio/demo-kairouan-olivier-signalements-aeb.mp3",
  "mime": "audio/mpeg",
- "generatedAt": "2026-10-03T19:24:29.162Z",
+ "generatedAt": "2026-10-03T19:56:10.789Z",
  "lang": "aeb",
  "band": {
   "regionId": "kairouan",

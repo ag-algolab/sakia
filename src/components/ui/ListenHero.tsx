@@ -6,6 +6,7 @@ import { startBedMusic } from "./bedMusic";
 import type { BedMusic } from "./bedMusic";
 import { AlertIcon, DropIcon, HandIcon, NoteIcon, RetryIcon, SpeakerIcon } from "./icons";
 import { useLang } from "./LangProvider";
+import { forgetAdvice, loadAdvice, prefetchAdvice, storedAdvice } from "@/lib/adviceClient";
 import type { Plan } from "@/lib/plan";
 
 // Pensé pour quelqu'un qui ne lit pas : un seul gros bouton, la voix en DARIJA TUNISIENNE, et une réponse en
@@ -19,9 +20,8 @@ const INTRO_MS = 2200; // la musique joue seule un instant avant la voix
 const OUTRO_MS = 1500;
 const FETCH_TIMEOUT_MS = 25000; // au-delà, on renonce : la musique ne doit jamais tourner sans fin en attendant la voix
 const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
-const CACHE_PREFIX = "sakia-voice:";
-const CACHE_MAX_AGE_MS = 12 * 3600 * 1000; // même seuil que le moteur : au-delà de 12 h, plus de rediffusion hors ligne
-const CACHE_KEEP = 3;
+// Le message est le MESSAGE COURT (/api/advice, mp3 de 50 à 100 Ko, préparé à l'avance), chargé d'avance dès que le conseil
+// s'affiche, et gardé sur l'appareil 12 h au plus (même seuil que le moteur) pour être rejoué sans connexion : src/lib/adviceClient.ts.
 
 export type VoiceQuery = {
   region: string;
@@ -38,32 +38,12 @@ export type VoiceQuery = {
 const VOICE_SUPPORTS_SOIL_SYSTEM = true; // la route lit et valide soil, system et planting comme /api/plan (poste Bulletin)
 
 type State = "idle" | "loading" | "playing" | "error";
-type Cached = { savedAt: number; mime: string; audioBase64: string };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-function readCache(k: string): Cached | null {
-  try {
-    const c = JSON.parse(localStorage.getItem(CACHE_PREFIX + k) ?? "null") as Cached | null;
-    return c && typeof c.audioBase64 === "string" && typeof c.savedAt === "number" ? c : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(k: string, c: Cached) {
-  try {
-    // on ne garde que les derniers bulletins : l'espace du navigateur est petit
-    const mine = Object.keys(localStorage)
-      .filter((x) => x.startsWith(CACHE_PREFIX) && x !== CACHE_PREFIX + k)
-      .map((x) => ({ x, at: (JSON.parse(localStorage.getItem(x) ?? "{}") as Partial<Cached>).savedAt ?? 0 }))
-      .sort((a, b) => a.at - b.at);
-    while (mine.length >= CACHE_KEEP) localStorage.removeItem(mine.shift()!.x);
-    localStorage.setItem(CACHE_PREFIX + k, JSON.stringify(c));
-  } catch {
-    // stockage plein ou bloqué : tant pis, le bulletin se joue quand même
-  }
-}
+// Son vide de 44 octets, joué dès l'appui : sur iPhone, un lecteur n'est « débloqué » que s'il démarre pendant le geste de la
+// personne, pas après une attente réseau ou l'introduction musicale. On remplace ensuite sa source par le vrai message.
+const SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
 
 export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: Plan | null }) {
   const { t, fmtNum } = useLang();
@@ -75,7 +55,16 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   const musicRef = useRef<BedMusic | null>(null);
   const capRef = useRef<number | null>(null);
   const runRef = useRef(0); // numéro de lecture : une lecture abandonnée ne doit pas relancer le son
+  const blobUrlRef = useRef<string | null>(null);
   const key = JSON.stringify(query);
+  const hasPlan = plan != null;
+  // ce que dit l'écran : une copie gardée n'est rejouée que si elle dit la même chose (niveau de fiabilité et jour du plan)
+  const expect = plan ? { level: plan.confidence.level, today: plan.today } : null;
+
+  const releaseBlob = useCallback(() => {
+    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    blobUrlRef.current = null;
+  }, []);
 
   useEffect(() => {
     try {
@@ -83,16 +72,25 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     } catch {}
   }, []);
 
+  // Dès que le conseil est à l'écran, on charge le message en arrière-plan (s'il est déjà préparé côté serveur) : l'appui
+  // sur le bouton joue alors tout de suite. Petit délai : on ne charge pas pendant que la personne change de choix.
+  useEffect(() => {
+    if (!hasPlan) return;
+    const id = window.setTimeout(() => prefetchAdvice(JSON.parse(key) as VoiceQuery), 700);
+    return () => window.clearTimeout(id);
+  }, [key, hasPlan]);
+
   const stop = useCallback(() => {
     runRef.current++;
     if (capRef.current != null) window.clearTimeout(capRef.current);
     abortRef.current?.abort();
     audioRef.current?.pause();
     audioRef.current = null;
+    releaseBlob();
     musicRef.current?.stop(400);
     musicRef.current = null;
     setState("idle");
-  }, []);
+  }, [releaseBlob]);
 
   // Si la personne change région, culture ou date : le son en cours ne correspond plus, on l'arrête.
   useEffect(() => {
@@ -103,8 +101,9 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
       abortRef.current?.abort();
       audioRef.current?.pause();
       musicRef.current?.stop(100);
+      releaseBlob();
     };
-  }, [key, stop]);
+  }, [key, stop, releaseBlob]);
 
   const toggleMusic = () => {
     const next = !musicOn;
@@ -127,6 +126,9 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     setCachedAgeH(null);
     const began = Date.now();
     if (musicOn) musicRef.current = startBedMusic(); // dans le geste de la personne, sinon le navigateur refuse
+    const player = new Audio(SILENT); // débloque la lecture (voir SILENT)
+    audioRef.current = player;
+    void player.play().catch(() => undefined);
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     let timedOut = false;
@@ -140,28 +142,16 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     }, MUSIC_MAX_MS);
     capRef.current = cap;
 
-    let payload: { audioBase64: string; mime: string } | null = null;
+    let payload: Blob | null = null;
     try {
-      const q = new URLSearchParams({ region: query.region, crop: query.crop, lang: "aeb" });
-      if (query.ago !== "") q.set("ago", query.ago);
-      if (query.asOf) q.set("asOf", query.asOf);
-      if (VOICE_SUPPORTS_SOIL_SYSTEM) {
-        q.set("soil", query.soil);
-        q.set("system", query.system);
-        if (query.planting) q.set("planting", query.planting);
-      }
-      const res = await fetch(`/api/voice/bulletin?${q}`, { signal: ctrl.signal });
-      if (!res.ok) throw new Error(String(res.status));
-      const body = (await res.json()) as { audioBase64: string; mime: string };
-      payload = body;
-      writeCache(key, { savedAt: Date.now(), mime: body.mime, audioBase64: body.audioBase64 });
+      payload = await loadAdvice(query, expect, ctrl.signal); // déjà chargé d'avance dans la plupart des cas : instantané
     } catch (e) {
       if (!alive() || ((e as Error).name === "AbortError" && !timedOut)) return;
-      // pas de réseau, ou plus de crédits de voix : on rejoue le dernier bulletin de CETTE demande, s'il est récent
-      const c = readCache(key);
-      if (c && Date.now() - c.savedAt <= CACHE_MAX_AGE_MS) {
-        payload = c;
-        setCachedAgeH((Date.now() - c.savedAt) / 3600000);
+      // pas de réseau, ou plus de crédits de voix : on rejoue le dernier message de CETTE demande, s'il est récent
+      const c = await storedAdvice(query, expect);
+      if (c) {
+        payload = c.blob;
+        setCachedAgeH(c.ageMs / 3600000);
       }
     }
     window.clearTimeout(timeout);
@@ -174,10 +164,14 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     }
 
     try {
-      const audio = new Audio(`data:${payload.mime};base64,${payload.audioBase64}`);
+      releaseBlob();
+      blobUrlRef.current = URL.createObjectURL(payload);
+      const audio = audioRef.current ?? new Audio();
+      audio.src = blobUrlRef.current;
       audioRef.current = audio;
       audio.onended = () => {
         if (!alive()) return;
+        releaseBlob();
         musicRef.current?.swell();
         const m = musicRef.current;
         setState("idle");
@@ -188,6 +182,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
       };
       audio.onerror = () => {
         if (!alive()) return;
+        void forgetAdvice(query); // fichier illisible : on ne le rejouera pas pendant 12 h
         musicRef.current?.stop(300);
         musicRef.current = null;
         setState("error");

@@ -129,6 +129,9 @@ const MAX_CHARS = 1500;
             const says = { fr: /signalement d'agriculteurs/, en: /report by farmers/, ar: /بلاغ الفلاحين/, aeb: /كلام الفلاحين/, ko: /농민 신고/ }[l.code];
             if (!says.test(text)) fail(`${tag} : ne dit pas que c'est un signalement d'agriculteurs : « ${text} »`);
             if (/mesur|measur|قياس|측정/.test(text)) fail(`${tag} : parle de mesure : « ${text} »`);
+            // la mention : on remercie les voisins de la région
+            const thanks = { fr: /Merci aux voisins de Kairouan/, en: /Thanks to the neighbours in Kairouan/, ar: /شكرا لجيران القيروان/, aeb: /يعيشكم يا جيران القيروان/, ko: /카이루안 이웃 여러분, 감사합니다/ }[l.code];
+            if (!thanks.test(text)) fail(`${tag} : la mention des voisins de la région manque : « ${text} »`);
           }
         }
       }

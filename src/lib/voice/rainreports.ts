@@ -9,8 +9,10 @@
 import type { BulletinLine } from "../messages";
 import type { Plan } from "../plan";
 import { levelFromMm } from "../rainLevels";
+import { getRegion } from "../regions";
 import type { RainLevel } from "../rainLevels";
 import type { VoiceLang } from "./langs";
+import { REGION_KO } from "./ko";
 import { arabicNumber } from "./numbers-ar";
 
 type Report = NonNullable<Plan["localReports"]>[number];
@@ -36,13 +38,23 @@ const LEVEL: Record<VoiceLang, Record<RainLevel, string>> = {
 
 const KO_COUNT = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열"]; // « 두 명 », pas « 이 명 »
 
-const CLOSING: Record<VoiceLang, string> = {
-  fr: "Nous avons retenu ce signalement d'agriculteurs à la place de la prévision.",
-  en: "We used this report by farmers instead of the forecast.",
-  ar: "أخذنا ببلاغ الفلاحين هذا بدل التوقعات.",
-  aeb: "خذينا بكلام الفلاحين هذا بدل التوقعات.",
-  ko: "예보 대신 이 농민 신고를 반영했습니다.",
+// Phrase de fin : le signalement remplace la prévision, puis la MENTION : on remercie les voisins de la région. Elle n'est dite
+// que lorsqu'il y a vraiment des signalements retenus (jamais un remerciement sans raison).
+const CLOSING: Record<VoiceLang, (region: string) => string> = {
+  fr: (r) => `Nous avons retenu ce signalement d'agriculteurs à la place de la prévision. Merci aux voisins de ${r} !`,
+  en: (r) => `We used this report by farmers instead of the forecast. Thanks to the neighbours in ${r}!`,
+  ar: (r) => `أخذنا ببلاغ الفلاحين هذا بدل التوقعات. شكرا لجيران ${r}!`,
+  aeb: (r) => `خذينا بكلام الفلاحين هذا بدل التوقعات. يعيشكم يا جيران ${r}!`,
+  ko: (r) => `예보 대신 이 농민 신고를 반영했습니다. ${r} 이웃 여러분, 감사합니다!`,
 };
+
+// Nom de la région dans la langue du bulletin (l'anglais utilise le nom français, comme messages.ts).
+function regionName(lang: VoiceLang, regionId: string): string {
+  if (lang === "ko") return REGION_KO[regionId] ?? regionId;
+  const r = getRegion(regionId);
+  if (!r) return regionId;
+  return lang === "ar" || lang === "aeb" ? r.nameAr : r.nameFr;
+}
 
 function daysBetween(today: string, date: string): number {
   return Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${date}T00:00:00Z`)) / 86400000);
@@ -63,14 +75,14 @@ function sentence(lang: VoiceLang, rel: string, n: number, level: string): strin
   }
 }
 
-export function reportsLineText(lang: VoiceLang, today: string, reports: Report[]): string {
+export function reportsLineText(lang: VoiceLang, today: string, reports: Report[], regionId: string): string {
   const recent = [...reports].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, MAX_DAYS_SPOKEN);
   const parts = recent.map((r) => {
     const back = Math.min(3, Math.max(0, daysBetween(today, r.date)));
     const level = r.level ?? levelFromMm(r.medianMm);
     return sentence(lang, REL[lang][back], r.n, LEVEL[lang][level]);
   });
-  return [...parts, CLOSING[lang]].join(" ");
+  return [...parts, CLOSING[lang](regionName(lang, regionId))].join(" ");
 }
 
 // Insère la ligne « reports » juste après la ligne « rain », seulement quand le plan a un conseil d'irrigation et des
@@ -80,6 +92,6 @@ export function withReportsLine(lines: BulletinLine[], lang: VoiceLang, plan: Pl
   if (plan.status !== "ok" || reports.length === 0) return lines;
   const at = lines.findIndex((l) => l.id === "rain");
   if (at < 0) return lines;
-  const line: BulletinLine = { id: "reports", text: reportsLineText(lang, plan.today, reports) };
+  const line: BulletinLine = { id: "reports", text: reportsLineText(lang, plan.today, reports, plan.regionId) };
   return [...lines.slice(0, at + 1), line, ...lines.slice(at + 1)];
 }

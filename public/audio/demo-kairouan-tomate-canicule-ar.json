@@ -94,7 +94,9 @@
    "reasons": [
     "unknown_last_irrigation"
    ],
-   "notes": []
+   "notes": [
+    "extreme_heat"
+   ]
   }
  },
  "source": "demo",

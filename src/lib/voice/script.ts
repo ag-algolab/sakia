@@ -24,5 +24,5 @@ export function bulletinScriptFor(plan: Plan, lang: VoiceLang, choice?: Partial<
   if (plan.confidence.level !== "none") return lines;
   const unsure = lines.filter((l) => l.id === "unsure");
   if (unsure.length === 0) throw new Error("plan sans conseil mais sans ligne « pas sûr » : script incohérent");
-  return unsure;
+  return unsure.slice(0, 1); // une seule fois : bulletinScript (messages.ts) l'ajoute aujourd'hui deux fois au niveau « none »
 }
