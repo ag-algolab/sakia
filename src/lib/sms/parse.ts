@@ -5,7 +5,7 @@
 import { CROPS } from "@/lib/crops";
 import { REGIONS } from "@/lib/regions";
 import type { Lang } from "@/lib/messages";
-import { AMBIGUOUS_CROP_ALIASES, CROP_ALIASES, KEYWORDS, LANGUAGE_WORDS, RAIN_LEVEL_WORDS, RAIN_WORDS, REGION_ALIASES, YESTERDAY_WORDS } from "./lexicon";
+import { AMBIGUOUS_CROP_ALIASES, BEFORE_WORDS, CROP_ALIASES, DAY_WORDS, KEYWORDS, LANGUAGE_WORDS, RAIN_LEVEL_WORDS, RAIN_WORDS, REGION_ALIASES, TODAY_WORDS, YESTERDAY_WORDS } from "./lexicon";
 import type { KeywordKind } from "./lexicon";
 
 export type Parsed =
@@ -14,7 +14,9 @@ export type Parsed =
   | { kind: "stop" }
   | { kind: "help" }
   | { kind: "language"; lang?: Lang } // sans langue : on affiche le choix
-  | { kind: "plan"; cropId?: string; regionId?: string; ambiguousCrops?: string[] }
+  // `ago` : jours écoulés depuis le dernier arrosage (0 à 7) quand le message le dit : « olivier kairouan hier », « tomate kairouan 3j »
+  | { kind: "plan"; cropId?: string; regionId?: string; ambiguousCrops?: string[]; ago?: number }
+  | { kind: "ago"; days: number } // seulement le dernier arrosage (« hier », « 3j ») : réponse à « dernier arrosage ? »
   // rapport de pluie : « PLUIE 10 », « مطر 10 », « shta 10 kairouan », « pluie beaucoup hier » ; sans quantité (`mm` et `level` absents) on la demande
   | { kind: "rain"; mm?: number; level?: "none" | "light" | "heavy" | "very_heavy"; regionId?: string; dayOffset: 0 | -1 }
   | { kind: "unknown" };
@@ -195,6 +197,25 @@ function extractNumber(raw: string): number | undefined {
   return undefined;
 }
 
+// Dernier arrosage dit dans le message, en jours écoulés (0 à 7, plafonné comme le moteur) : « hier » (1), « avant-hier » (2),
+// « aujourd'hui » (0), « 3j », « 3 jours », « 3 days », « 3 ayem », « قبل 3 ايام », « يومين ». `raw` = mots nettoyés mais PAS canonisés :
+// « 5j » ne doit pas devenir « khj » comme un mot d'arabizi (canonLatin lit 5 et 7 comme des lettres). Un nombre seul n'est jamais
+// un nombre de jours (« olivier kairouan 3 » ne dit rien), il faut un mot de jour : c'est ce qui évite de confondre avec une réponse de menu.
+export function extractAgo(raw: string[]): number | undefined {
+  const canon = raw.map(canonToken);
+  const cap = (n: number) => Math.min(7, n);
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === "اليوم" || matchWord(canon[i], TODAY_WORDS, 5, false)) return 0;
+    if (matchWord(canon[i], YESTERDAY_WORDS, 5, false)) return i > 0 && matchWord(canon[i - 1], BEFORE_WORDS, 3, false) ? 2 : 1;
+    if (raw[i] === "يومين") return 2;
+    if (raw[i] === "يوم" && raw[i - 1] === "قبل") return 1; // « il y a un jour »
+    const attached = /^(\d{1,2})(?:j|jr|jrs|jour|jours|d|day|days)$/.exec(raw[i]); // « 3j », « 3d »
+    if (attached) return cap(Number(attached[1]));
+    if (/^\d{1,2}$/.test(raw[i]) && i + 1 < raw.length && matchWord(canon[i + 1], DAY_WORDS, 3, false)) return cap(Number(raw[i])); // « 3 jours »
+  }
+  return undefined;
+}
+
 // ---------- analyse ----------
 
 // Alphabet dominant du message : sert à répondre en arabe à quelqu'un qui écrit seulement en arabe.
@@ -213,7 +234,9 @@ export function parseSms(text: string): Parsed {
   const rawTokens = normalizeTokens(raw);
   const tokens = rawTokens.map(canonToken);
   if (tokens.length === 0) return { kind: "unknown" };
-  if (tokens.length === 1 && /^\d$/.test(tokens[0])) return { kind: "choice", n: Number(tokens[0]) };
+  // Un chiffre seul répond à un menu. On le lit dans les mots NON canonisés : canonLatin lit « 9 » comme la lettre k (9ayrawan -> kayrawan),
+  // et un « 9 » seul ne serait jamais reconnu (la réponse « 9 : je ne sais pas » de la question sur le dernier arrosage).
+  if (rawTokens.length === 1 && /^\d$/.test(rawTokens[0])) return { kind: "choice", n: Number(rawTokens[0]) };
 
   const { crop, region } = findEntities(tokens, rawTokens);
   const used = new Set<number>();
@@ -253,6 +276,10 @@ export function parseSms(text: string): Parsed {
     }
   }
 
+  // Dernier arrosage : cherché dans les mots du message, mais seulement ici (un message de pluie a déjà répondu plus haut :
+  // « pluie hier 5 kairouan » parle de la pluie d'hier, pas d'un arrosage).
+  const ago = extractAgo(rawTokens);
+
   if (crop || region) {
     const ids = crop?.entry.ids;
     return {
@@ -260,12 +287,14 @@ export function parseSms(text: string): Parsed {
       cropId: ids && ids.length === 1 ? ids[0] : undefined,
       regionId: region?.entry.ids[0],
       ambiguousCrops: ids && ids.length > 1 ? ids : undefined,
+      ...(ago !== undefined ? { ago } : {}),
     };
   }
 
   if (keywords.has("help")) return { kind: "help" };
   if (keywords.has("language")) return { kind: "language", lang: langs.size === 1 ? [...langs][0] : undefined };
   if (langs.size === 1 && rest.length === tokens.length && tokens.length === 1) return { kind: "language", lang: [...langs][0] };
-  if (keywords.has("plan")) return { kind: "plan" };
+  if (keywords.has("plan")) return { kind: "plan", ...(ago !== undefined ? { ago } : {}) };
+  if (ago !== undefined) return { kind: "ago", days: ago };
   return { kind: "unknown" };
 }

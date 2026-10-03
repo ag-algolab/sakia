@@ -4,6 +4,7 @@
 
 import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
+import { AGO_ASK } from "@/lib/messages";
 import type { Lang } from "@/lib/messages";
 
 type T = Record<Lang, string>;
@@ -20,10 +21,12 @@ export function regionName(id: string, lang: Lang): string {
 
 export const R = {
   help: {
-    fr: "Sakia : envoyez culture + région, ex. olivier kairouan. PLAN = dernier plan, PLUIE 10 = pluie tombée, LANGUE, STOP = effacer. *123# = menu.",
-    en: "Sakia: send crop + region, e.g. olive kairouan. PLAN = last plan, PLUIE 10 = rain that fell, LANGUE, STOP = erase. *123# = menu.",
-    ar: "ساقية: أرسل المحصول والولاية، مثال: زيتون القيروان. خطة = آخر خطة، مطر 10 = الإبلاغ عن المطر، لغة = اللغة، ايقاف = مسح. *123# قائمة",
+    fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, PLUIE 10, LANGUE, STOP = effacer. *123# = menu.",
+    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, PLUIE 10, LANGUE, STOP = erase. *123# = menu.",
+    ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، مطر 10، لغة، ايقاف = مسح. *123# قائمة",
   } as T,
+  // Réponse à la question « dernier arrosage ? » quand le chiffre n'est pas l'un de ceux proposés.
+  askAgo: AGO_ASK as T,
   menu: {
     fr: "Sakia\n1. Plan 7 jours\n2. Changer culture\n3. Langue",
     en: "Sakia\n1. 7-day plan\n2. Change crop\n3. Language",

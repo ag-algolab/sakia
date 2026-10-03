@@ -91,3 +91,16 @@ export const RAIN_LEVEL_WORDS: Record<"none" | "light" | "heavy" | "very_heavy",
 };
 
 export const YESTERDAY_WORDS = ["hier", "yesterday", "lbare7", "lbarah", "lbarha", "البارح", "البارحة", "امس"];
+
+// ---------- dernier arrosage (« olivier kairouan hier », « tomate kairouan 3j », « زيتون القيروان قبل 3 ايام ») ----------
+// Sert à répondre « quand avez-vous arrosé ? » dans le même SMS que la culture. « hier » : YESTERDAY_WORDS, ci-dessus.
+// À FAIRE VALIDER par un Tunisien : « lyoum » (aujourd'hui), « ayem » (jours), « 9bal » (avant).
+// « اليوم » est comparé tel quel (voir extractAgo) : sans « ال », « يوم » veut seulement dire « jour ».
+
+export const TODAY_WORDS = ["aujourdhui", "ajourdhui", "today", "lyoum", "lyom", "elyoum"];
+
+// Mot qui suit un nombre : « 3 jours », « 3 days », « 3 ayem », « 3 ايام ».
+export const DAY_WORDS = ["j", "jr", "jrs", "jour", "jours", "d", "day", "days", "ayem", "ayam", "iyem", "yem", "يوم", "ايام"];
+
+// Mot qui, devant « hier », en fait « avant-hier » : « avant hier », « day before yesterday », « قبل البارح », « اول امس ».
+export const BEFORE_WORDS = ["avant", "before", "9bal", "qbal", "kbal", "قبل", "اول"];

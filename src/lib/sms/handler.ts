@@ -3,12 +3,17 @@
 // ne font que lui passer (from, text) et renvoyer `reply`.
 //
 // État de la conversation : en mémoire du serveur, par identifiant `from`, sans aucun stockage durable.
-// Il contient seulement la langue, la dernière culture / région et l'étape de menu ; il expire après 6 h d'inactivité,
-// STOP l'efface tout de suite. Sur un hébergement sans mémoire partagée (plusieurs instances), il peut repartir de zéro :
-// un message complet (« olivier kairouan ») marche toujours.
+// Il contient seulement la langue, la dernière culture / région, le jour du dernier arrosage dit par la personne et l'étape
+// de menu ; il expire après 6 h d'inactivité, STOP l'efface tout de suite. Sur un hébergement sans mémoire partagée (plusieurs
+// instances), il peut repartir de zéro : un message complet (« olivier kairouan hier ») marche toujours.
+//
+// Dernier arrosage : le moteur ne peut pas être sûr sans lui (« pas sûr : demandez au technicien »). Par SMS, la personne le dit
+// dans le message (« olivier kairouan hier », « 3j ») ou répond à la question posée dans le SMS du plan (un chiffre de 1 à 4,
+// mêmes tranches que la ligne vocale). Il ne vaut que pour la culture et la région en cours : en changer l'oublie, comme sur Telegram.
 
 import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
+import { AGO_CHOICES } from "@/lib/ivr/menu";
 import { buildPlan } from "@/lib/plan";
 import type { Plan } from "@/lib/plan";
 import { planSms } from "@/lib/messages";
@@ -22,13 +27,14 @@ import { LEVEL_MM, MIN_REPORTERS, loadReports, reporterHash, saveReport, summari
 import type { ReportRow } from "@/lib/reports";
 import { todayInTunisia } from "@/lib/weather";
 
-type Menu = "main" | "lang";
+type Menu = "main" | "lang" | "ago"; // « ago » : la réponse attendue est un chiffre de 1 à 4 (dernier arrosage)
 
 type Session = {
   lang: Lang;
   langExplicit: boolean; // vrai dès que la personne a choisi sa langue (LANGUE ou menu)
   cropId?: string;
   regionId?: string;
+  irrigatedOn?: string; // AAAA-MM-JJ (Tunisie) : jour du dernier arrosage, dit par la personne pour cette culture et cette région
   menu?: Menu;
   lastSeen: number;
 };
@@ -50,7 +56,7 @@ function cleanFrom(from: unknown): string {
 }
 
 // La session n'est gardée que si elle contient quelque chose à retenir : un message sans suite (aide, inconnu) ne remplit pas la mémoire.
-const hasState = (s: Session) => s.langExplicit || s.lang !== "fr" || !!s.cropId || !!s.regionId || !!s.menu;
+const hasState = (s: Session) => s.langExplicit || s.lang !== "fr" || !!s.cropId || !!s.regionId || !!s.irrigatedOn || !!s.menu;
 
 function loadSession(from: string, now: number): Session {
   for (const [k, s] of sessions) if (now - s.lastSeen > SESSION_TTL_MS) sessions.delete(k);
@@ -110,16 +116,17 @@ export function resetSmsSessions() {
 
 // ---------- plan, avec un petit cache pour ne pas interroger la météo à chaque SMS ----------
 
-export type PlanSource = (regionId: string, cropId: string) => Promise<Plan>;
+// `ago` : jours écoulés depuis le dernier arrosage (0 à 7), ou absent quand la personne ne l'a pas dit.
+export type PlanSource = (regionId: string, cropId: string, ago?: number) => Promise<Plan>;
 
 const PLAN_TTL_MS = 10 * 60 * 1000;
 const planCache = new Map<string, { at: number; plan: Plan }>();
 
-export const defaultPlanSource: PlanSource = async (regionId, cropId) => {
-  const key = `${regionId}|${cropId}`;
+export const defaultPlanSource: PlanSource = async (regionId, cropId, ago) => {
+  const key = `${regionId}|${cropId}|${ago ?? "?"}`;
   const hit = planCache.get(key);
   if (hit && Date.now() - hit.at < PLAN_TTL_MS) return hit.plan;
-  const plan = await buildPlan({ regionId, cropId });
+  const plan = await buildPlan({ regionId, cropId, lastIrrigationDaysAgo: ago });
   if (planCache.size > 200) planCache.clear();
   planCache.set(key, { at: Date.now(), plan });
   return plan;
@@ -133,12 +140,25 @@ function finish(text: string, lang: Lang): string {
   return fitGsm(text, 160);
 }
 
-async function planReply(s: Session, getPlan: PlanSource): Promise<string> {
+// Jours écoulés depuis le dernier arrosage dit par la personne (0 à 7, plafond du moteur), ou undefined si elle ne l'a pas dit.
+// Calculé à chaque demande depuis le JOUR de l'arrosage : « aujourd'hui » dit à 23 h vaut « hier » à 1 h.
+function agoOf(s: Session): number | undefined {
+  if (!s.irrigatedOn) return undefined;
+  const days = Math.round((Date.parse(todayInTunisia()) - Date.parse(s.irrigatedOn)) / 86400000);
+  return Math.min(7, Math.max(0, days));
+}
+
+// `askAgo` : poser la question « dernier arrosage ? » quand le moteur en a besoin. Faux seulement quand la personne vient de
+// répondre « je ne sais pas » (9) : on lui donne le plan avec son avertissement, sans la questionner de nouveau.
+async function planReply(s: Session, getPlan: PlanSource, askAgo = true): Promise<string> {
   if (!s.cropId && !s.regionId) return R.askBoth[s.lang];
   if (!s.regionId) return askRegion(s.cropId!, s.lang);
   if (!s.cropId) return askCrop(s.regionId, s.lang);
   try {
-    return planSms(await getPlan(s.regionId, s.cropId), s.lang);
+    const plan = await getPlan(s.regionId, s.cropId, agoOf(s));
+    const ask = askAgo && plan.confidence.level !== "none" && plan.confidence.reasons.includes("unknown_last_irrigation");
+    if (ask) s.menu = "ago"; // le prochain chiffre (1 à 4) répond à la question
+    return planSms(plan, s.lang, { askAgo: ask });
   } catch {
     return R.unavailable[s.lang]; // la météo ne répond pas : on ne montre pas l'erreur technique
   }
@@ -217,7 +237,19 @@ export async function handleIncoming(
       break;
     }
     case "choice": {
-      if (menu === "main" && parsed.n === 1) reply = await planReply(s, getPlan);
+      if (menu === "ago") {
+        // réponse à « dernier arrosage ? » : 1 aujourd'hui, 2 hier ou avant-hier, 3 il y a 3 à 5 jours, 4 plus de 5 jours (9 : je ne sais pas)
+        const pick = AGO_CHOICES.find((c) => c.key === String(parsed.n));
+        if (!pick) {
+          s.menu = "ago";
+          reply = R.askAgo[s.lang]; // un autre chiffre : on repose la question
+        } else if (pick.ago === null) {
+          reply = await planReply(s, getPlan, false);
+        } else {
+          s.irrigatedOn = addDays(todayInTunisia(), -pick.ago);
+          reply = await planReply(s, getPlan);
+        }
+      } else if (menu === "main" && parsed.n === 1) reply = await planReply(s, getPlan);
       else if (menu === "main" && parsed.n === 2) reply = R.askBoth[s.lang];
       else if (menu === "main" && parsed.n === 3) {
         s.menu = "lang";
@@ -251,8 +283,23 @@ export async function handleIncoming(
         reply = askWhichCrop(parsed.ambiguousCrops, s.lang);
         break;
       }
-      if (parsed.cropId && getCrop(parsed.cropId)) s.cropId = parsed.cropId;
-      if (parsed.regionId && getRegion(parsed.regionId)) s.regionId = parsed.regionId;
+      const cropId = parsed.cropId && getCrop(parsed.cropId) ? parsed.cropId : undefined;
+      const regionId = parsed.regionId && getRegion(parsed.regionId) ? parsed.regionId : undefined;
+      // un autre champ (autre culture ou autre région) : le dernier arrosage dit plus tôt ne vaut plus pour lui
+      if ((cropId && s.cropId && cropId !== s.cropId) || (regionId && s.regionId && regionId !== s.regionId)) s.irrigatedOn = undefined;
+      if (cropId) s.cropId = cropId;
+      if (regionId) s.regionId = regionId;
+      if (parsed.ago !== undefined) s.irrigatedOn = addDays(todayInTunisia(), -parsed.ago); // « olivier kairouan hier »
+      reply = await planReply(s, getPlan);
+      break;
+    }
+    case "ago": {
+      // seulement « hier », « 3j »... : il faut déjà savoir de quelle culture et de quelle région on parle
+      if (!s.cropId || !s.regionId) {
+        reply = R.askBoth[s.lang];
+        break;
+      }
+      s.irrigatedOn = addDays(todayInTunisia(), -parsed.days);
       reply = await planReply(s, getPlan);
       break;
     }

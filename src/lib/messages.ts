@@ -91,16 +91,35 @@ const STRESS: Record<Lang, Record<Plan["summary"]["stressRisk"], string>> = {
   en: { faible: "low", moyen: "medium", eleve: "high" },
 };
 
+// Question « dernier arrosage ? », un chiffre en réponse. Mêmes quatre tranches que la ligne vocale et Telegram (aujourd'hui,
+// 1 à 2 jours, 3 à 5 jours, plus de 5 jours) ; le sens de chaque chiffre est dans src/lib/sms/handler.ts (AGO_CHOICES).
+// Aucun point dans le texte : fitGsm raccourcit par phrases. À FAIRE VALIDER par un locuteur tunisien (arabe).
+export const AGO_ASK: Record<Lang, string> = {
+  fr: "Arrosé quand ? 1 auj 2 1-2j 3 3-5j 4 +5j",
+  en: "Last irrigation? 1 today 2 1-2d 3 3-5d 4 over 5d",
+  ar: "آخر سقي؟ 1 اليوم 2 1-2 يوم 3 3-5 أيام 4 أكثر من 5",
+};
+
 // SMS : une seule phrase courte (viser 160 caractères en français et anglais ; l'arabe compte pour 70 par SMS).
-export function planSms(plan: Plan, lang: Lang = "fr"): string {
+// `askAgo` : le dernier arrosage n'est pas connu et le moteur en a besoin, on pose la question dans le même SMS.
+export function planSms(plan: Plan, lang: Lang = "fr", opts: { askAgo?: boolean } = {}): string {
   const n = names(plan, lang);
   // aucun conseil quand les données ne le permettent pas
   if (plan.confidence.level === "none") return `Sakia ${n.region} : ${ASK_SHORT[lang]}`;
-  const base = planSmsCore(plan, lang, n);
-  return plan.confidence.askAPerson ? `${base} ${ASK_SHORT[lang]}` : base;
+  // La question remplace la ligne « N irrigations sur 7 jours » (elle changera avec la réponse) et passe AVANT la phrase « pas sûr »,
+  // qui reste la DERNIÈRE : si le SMS devait être raccourci (fitGsm, 160 caractères), c'est la question qui saute, jamais l'avertissement.
+  const askAgo = !!opts.askAgo && plan.confidence.reasons.includes("unknown_last_irrigation");
+  const base = planSmsCore(plan, lang, n, askAgo);
+  const question = askAgo ? ` ${AGO_ASK[lang]}.` : "";
+  return plan.confidence.askAPerson ? `${base}${question} ${ASK_SHORT[lang]}` : `${base}${question}`;
 }
 
-function planSmsCore(plan: Plan, lang: Lang, n: ReturnType<typeof names>): string {
+// Mode compact (`brief`, quand le SMS porte aussi la question « dernier arrosage ? ») : nom de culture court (« Orangers et agrumes » ->
+// « Orangers », « Piment / poivron » -> « Piment »), pas de ligne « N irrigations sur 7 jours », phrase « pas d'irrigation » raccourcie.
+// Il faut que la question ET « Pas sûr : demandez au technicien (CRDA) » tiennent dans 160 caractères GSM (src/lib/sms/check.ts le vérifie
+// sur les 24 régions x 18 cultures).
+function planSmsCore(plan: Plan, lang: Lang, n: ReturnType<typeof names>, brief = false): string {
+  const crop = brief ? n.crop.split(/\s*\/\s*|\s+(?:et|and)\s+/)[0] : n.crop;
   if (plan.status === "hors_vegetation") {
     if (lang === "ar") return `ساقية ${n.region}: ${n.crop} ليس في موسم النمو الآن. لا سقي.`;
     if (lang === "en") return `Sakia ${n.region}: ${n.crop} is out of season. No irrigation.`;
@@ -108,15 +127,15 @@ function planSmsCore(plan: Plan, lang: Lang, n: ReturnType<typeof names>): strin
   }
   const first = plan.days.find((d) => d.action === "irriguer");
   if (!first) {
-    if (lang === "ar") return `ساقية ${n.region}: ${n.crop}. لا حاجة للسقي خلال 7 أيام.`;
-    if (lang === "en") return `Sakia ${n.region}: ${n.crop}. No irrigation needed in the next 7 days.`;
-    return `Sakia ${n.region} : ${n.crop}. Pas d'irrigation nécessaire dans les 7 jours.`;
+    if (lang === "ar") return `ساقية ${n.region}: ${crop}. ${brief ? "لا سقي خلال 7 أيام." : "لا حاجة للسقي خلال 7 أيام."}`;
+    if (lang === "en") return `Sakia ${n.region}: ${crop}. ${brief ? "No irrigation in the next 7 days." : "No irrigation needed in the next 7 days."}`;
+    return `Sakia ${n.region} : ${crop}. ${brief ? "Pas d'irrigation dans les 7 jours." : "Pas d'irrigation nécessaire dans les 7 jours."}`;
   }
   const when = shortDay(first.date, lang);
   const count = plan.summary.irrigationCount;
-  if (lang === "ar") return `ساقية ${n.region}: ${n.crop}. اسقِ ${when}: ${dose(first, lang)}. ${count} سقيات في 7 أيام.`;
-  if (lang === "en") return `Sakia ${n.region}: ${n.crop}. Irrigate ${when}: ${dose(first, lang)}. ${count} in 7 days.`;
-  return `Sakia ${n.region} : ${n.crop}. Irriguer ${when} : ${dose(first, lang)}. ${count} irrigation(s) sur 7 jours.`;
+  if (lang === "ar") return `ساقية ${n.region}: ${crop}. اسقِ ${when}: ${dose(first, lang)}.${brief ? "" : ` ${count} سقيات في 7 أيام.`}`;
+  if (lang === "en") return `Sakia ${n.region}: ${crop}. Irrigate ${when}: ${dose(first, lang)}.${brief ? "" : ` ${count} in 7 days.`}`;
+  return `Sakia ${n.region} : ${crop}. Irriguer ${when} : ${dose(first, lang)}.${brief ? "" : ` ${count} irrigation(s) sur 7 jours.`}`;
 }
 
 // Message plus complet (Telegram, page web) : plusieurs lignes.
