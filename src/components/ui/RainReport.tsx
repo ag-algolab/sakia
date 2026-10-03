@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { todayInTunisia } from "@/components/phone/usePlan";
 import { LEVEL_LABEL, MIN_REPORTERS, RAIN_LEVELS } from "@/lib/rainLevels";
 import type { RainLevel } from "@/lib/rainLevels";
+import { withReporter } from "@/lib/reporterToken";
 import { useLang } from "./LangProvider";
 import { Reveal } from "./motion";
 import { SunIcon } from "./icons";
@@ -17,7 +18,6 @@ import { SunIcon } from "./icons";
 // Les signalements montrés dans la démonstration sont fictifs : le dire. Passer à false quand de vrais agriculteurs signalent.
 export const REPORTS_ARE_DEMO = true;
 
-const REPORTER_KEY = "sakia-reporter";
 const QUEUE_KEY = "sakia-report-queue";
 const MAX_AGE_DAYS = 3; // le serveur n'accepte que aujourd'hui et les 3 derniers jours
 
@@ -27,20 +27,6 @@ const RANGE: Record<RainLevel, string> = { none: "0", very_light: "< 2", light: 
 type Queued = { regionId: string; level: RainLevel; day: string; at: number };
 type Summary = { date: string; n: number; medianMm: number; level?: RainLevel }[];
 type Result = "ok" | "rate" | "down" | "invalid" | "network";
-
-// Identifiant anonyme gardé dans l'appareil (au moins 8 caractères), jamais affiché. Le serveur n'en garde qu'une empreinte salée.
-function reporterId(): string {
-  try {
-    let id = localStorage.getItem(REPORTER_KEY);
-    if (!id || id.length < 8) {
-      id = `web:${crypto.randomUUID().replace(/-/g, "")}`;
-      localStorage.setItem(REPORTER_KEY, id);
-    }
-    return id;
-  } catch {
-    return `web:${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-  }
-}
 
 function readQueue(): Queued[] {
   try {
@@ -64,11 +50,16 @@ function dayMinus(today: string, n: number): string {
 
 async function post(item: { regionId: string; level: RainLevel; day: string }): Promise<Result> {
   try {
-    const res = await fetch("/api/reports", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ regionId: item.regionId, level: item.level, day: item.day, reporter: reporterId() }),
-    });
+    // L'identité envoyée est celle que le SERVEUR a émise pour cet appareil (src/lib/reporterToken.ts) : il refuse les autres.
+    const res = await withReporter((reporter) =>
+      fetch("/api/reports", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ regionId: item.regionId, level: item.level, day: item.day, reporter }),
+      }),
+    );
+    // pas d'identité signée : serveur injoignable (« network »), identités du jour épuisées (« rate ») ou service en panne (« down »)
+    if ("error" in res) return res.error;
     if (res.ok) return "ok";
     if (res.status === 429) return "rate";
     if (res.status === 503) return "down";
@@ -254,7 +245,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
               <span className="grid h-7 w-7 place-items-center rounded-full bg-sakia-green text-white" style={{ animation: "sk-pop .5s both" }}>
                 ✓
               </span>
-              {t("rainSent")}
+              {t("rainSent", { min: fmtNum(minReporters) })}
             </p>
           )}
           {status === "queued" && (

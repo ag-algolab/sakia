@@ -70,6 +70,9 @@ export async function saveReport(
       reporter_hash: reporterHash(reporterToken),
     }),
   });
+  // Le cache de lecture (60 s) ne doit pas masquer le signalement qui vient d'être enregistré : sans cela, la personne
+  // qui vient d'envoyer le sien lit « aucun signalement » pendant une minute.
+  if (res.ok) memo.clear();
   return res.ok;
 }
 

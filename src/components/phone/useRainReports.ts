@@ -3,16 +3,16 @@
 // Rapports de pluie avec ENVOI DIFFÉRÉ (« store-and-forward ») : le signalement est d'abord gardé dans l'appareil, puis envoyé
 // à POST /api/reports dès que le serveur répond. Sans réseau il reste « en attente » et part tout seul au retour du réseau.
 // Garde-fous : un seul rapport par jour et par région dans la file (le dernier remplace), jamais de nom ni d'adresse :
-// l'identifiant envoyé est un nombre aléatoire créé sur cet appareil.
+// l'identifiant envoyé est une identité anonyme émise et signée par le serveur, gardée dans cet appareil (src/lib/reporterToken.ts).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { addDays } from "@/lib/planCore";
 import type { RainLevel } from "@/lib/rainLevels";
+import { withReporter } from "@/lib/reporterToken";
 import { setReachable } from "./offline";
 import { todayInTunisia } from "./usePlan";
 
 const QUEUE = "sakia.reports.queue.v1";
-const WHO = "sakia.reporter.v1";
 const KEEP = 20;
 const RETRY_MS = 20 * 1000;
 
@@ -28,19 +28,6 @@ export type ReportEntry = {
 };
 
 const randomId = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, "0")).join("");
-
-function reporterId(): string {
-  try {
-    let id = localStorage.getItem(WHO);
-    if (!id) {
-      id = `br:${randomId()}`;
-      localStorage.setItem(WHO, id);
-    }
-    return id;
-  } catch {
-    return `br:${randomId()}`; // stockage bloqué : un identifiant pour cette page seulement
-  }
-}
 
 function readQueue(): ReportEntry[] {
   try {
@@ -86,12 +73,22 @@ export function useRainReports() {
       for (let e = ref.current.find((x) => x.status === "pending"); e; e = ref.current.find((x) => x.status === "pending")) {
         let res: Response;
         try {
-          res = await fetch("/api/reports", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ regionId: e.regionId, level: e.level, day: e.day, reporter: reporterId() }),
-            signal: AbortSignal.timeout(15000),
-          });
+          // L'identité envoyée est celle que le SERVEUR a émise pour cet appareil : il refuse toute autre.
+          const sent = await withReporter((reporter) =>
+            fetch("/api/reports", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ regionId: e.regionId, level: e.level, day: e.day, reporter }),
+              signal: AbortSignal.timeout(15000),
+            }),
+          );
+          if ("error" in sent) {
+            // pas d'identité signée : le rapport attend (réseau coupé, identités du jour épuisées ou service en panne)
+            if (sent.error === "network") setReachable(false);
+            else patch(e.id, { note: sent.error === "rate" ? "trop de rapports pour le moment" : "enregistrement impossible pour le moment" });
+            break;
+          }
+          res = sent;
         } catch {
           setReachable(false); // le serveur ne répond pas : le rapport attend
           break;
