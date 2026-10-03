@@ -22,7 +22,7 @@
 | Spoken bulletin (drawn avatar, ElevenLabs voice, English subtitles) | **Real** audio; demo bulletins are recorded |
 | Voice line (keypad call) and SMS | **Simulated in the browser.** Real telephony is not possible in the time (see limits) |
 | Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
-| Farmers' rain reports ("solidarity") | Server side done; channels in progress. **Demo reports are fictitious and labelled as such** |
+| Farmers' rain reports ("solidarity") | Server side and all four channels written: web (home, bulletin and phone pages), Telegram, SMS and voice line (the last two simulated). The plan uses a day's reports once 3 different people agree. **No real farmer has reported yet; demo reports are fictitious and labelled as such** |
 
 ## What the AI does — and where it deliberately does not
 

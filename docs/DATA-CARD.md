@@ -44,7 +44,7 @@ We do **not** use any trained model of our own: no training data, no synthetic d
 - No farmer registry, no market prices, no water salinity, no real irrigation calendar of the administration (the "fixed schedule" in the backtest is a benchmark we built, not the State's).
 - Relative yield is estimated only for the 9 crops with a published Ky, never for trees.
 - **Speech recognition of the Tunisian dialect has not been measured on real farmers**; the dialect text is not validated by a native speaker.
-- The weather source was checked against Tunisian stations at **Kairouan and one station 47 km away**, over limited periods (section E), not across the country.
+- The weather source was checked against Tunisian stations at **Kairouan (temperature, rain) and at two other stations (evapotranspiration: Oueslatia, 47 km away, and Zaghouan)**, over limited periods (section E), not across the country.
 
 ## D. Privacy, consent, bias, human oversight
 
@@ -70,7 +70,7 @@ Bias = Open-Meteo minus station. Sources: NOAA GHCN-D station of Kairouan (TSE00
 
 **Reproducibility.** The analysis scripts are **not included in this repository**; the figures can be recomputed from the cited public datasets and are to be treated as our own unpublished analysis until the scripts are added.
 
-**What we conclude.** At Kairouan the weather source is **good** for evapotranspiration (within a few percent) and temperature (0.6 °C). A study in Morocco (ERA5-Land versus six stations, Tensift basin, https://pmc.ncbi.nlm.nih.gov/articles/PMC12586499/) found underestimation of 2–37 %: we do **not** find that here. The **measured weakness is heavy rain**, which is exactly what farmers' rain reports correct, with deliberately cautious values. A local correction factor for evapotranspiration is **not defensible today**: the gap changes sign from one station to another and the only complete series near Kairouan dates from 2019–2020. At least a year of measurements is needed; **that is the roadmap, not a promise.** Other open Tunisian station data is uneven: frozen series, no rain, no evapotranspiration, private datasets, missing coordinates.
+**What we conclude.** Around Kairouan the weather source is **good** for evapotranspiration (within a few percent, measured at two other stations: Oueslatia, 47 km away, and Zaghouan) and for temperature (0.6 °C, measured at Kairouan). A study in Morocco (ERA5-Land versus six stations, Tensift basin, https://pmc.ncbi.nlm.nih.gov/articles/PMC12586499/) found underestimation of 2–37 %: we do **not** find that here. The **measured weakness is heavy rain**, which is exactly what farmers' rain reports correct, with deliberately cautious values. A local correction factor for evapotranspiration is **not defensible today**: the gap changes sign from one station to another and the only complete series near Kairouan dates from 2019–2020. At least a year of measurements is needed; **that is the roadmap, not a promise.** Other open Tunisian station data is uneven: frozen series, no rain, no evapotranspiration, private datasets, missing coordinates.
 
 ## F. Evaluations: done and not done
 
