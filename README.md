@@ -64,6 +64,7 @@ The trade-off we accept: fewer questions means less precision. Sakia uses defaul
 - **The device people own:** a basic phone through a call or an SMS, handled by the server; a smartphone through Telegram or the installable app.
 - **Local evidence:** the problem statement relies on Tunisian figures (literacy, aquifer, the SMS pilot) and the weather source was checked against Tunisian stations.
 - **Humans in the loop:** farmers correct the weather through rain reports, and a technician is always the fallback.
+- **Our method, and the test that shows why it matters:** use free global data, check it against local reality (Tunisian stations, farmers' own reports), write the test before running it, train a small model per climate, publish what fails, keep a person in the loop. We applied it to a small learned model: trained around Kairouan it carries over to the Tunisian steppe and to Morocco, and **fails in the Sahel** (see [`ml/`](ml/README.md) and the `/lab` page). An AI is not "global": it has a climate, a language, a phone and people. Each new regime needs its own small model, which this pipeline trains in about 90 minutes from free data.
 
 ## Weak connection, measured (4 October 2026)
 
