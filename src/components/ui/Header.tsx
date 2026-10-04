@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/backtest", key: "navProof" },
   { href: "/bulletin", key: "navBulletin" },
   { href: "/phone", key: "navPhone" },
+  { href: "/telegram", key: "navTelegram" },
   { href: "/about", key: "navAbout" },
 ];
 

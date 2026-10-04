@@ -19,8 +19,9 @@
 | Offline: the plan is recomputed in the browser from the last saved forecast | **Real**, checked in Chrome with the server stopped. Not yet checked in a phone's airplane mode |
 | Web app (installable) | **Real** |
 | Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot |
+| Telegram bot in the browser (`/telegram`) | **Simulated Telegram, real bot code**: the page runs the same bot logic on our server with a fake Telegram, so the demo needs no Telegram account. Nothing is sent to Telegram and nothing is stored; the voice is off (the bot answers with the text of the bulletin) |
 | Spoken bulletin (drawn avatar, ElevenLabs voice, English subtitles) | **Real** audio; demo bulletins are recorded |
-| Voice line (keypad call) and SMS | **Simulated in the browser.** Real telephony is not possible in the time (see limits) |
+| Voice line (keypad call) and SMS | **Simulated in the browser.** On the simulated keypad phone the morning SMS arrives by itself and the farmer answers with the keys; the call is a button on the same page. Real telephony is not possible in the time (see limits) |
 | Sakia-ML research model (CatBoost, 43 KB) | **Real**, tested in public, **shadow mode**: it changes no advice. Protocol, results and failures in `ml/`; live demo on `/lab` |
 | Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
 | Farmers' rain reports ("solidarity") | Server side done; channels in progress. **Demo reports are fictitious and labelled as such** |
