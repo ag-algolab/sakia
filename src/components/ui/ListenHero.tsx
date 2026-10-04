@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { startBedMusic } from "./bedMusic";
 import type { BedMusic } from "./bedMusic";
-import { AlertIcon, DropIcon, HandIcon, NoteIcon, RetryIcon, SpeakerIcon } from "./icons";
+import { AlertIcon, DropIcon, HandIcon, LockIcon, RetryIcon, SpeakerIcon } from "./icons";
 import { useLang } from "./LangProvider";
 import { forgetAdvice, loadAdvice, prefetchAdvice, storedAdvice } from "@/lib/adviceClient";
 import type { Plan } from "@/lib/plan";
@@ -13,10 +13,11 @@ import type { Plan } from "@/lib/plan";
 // pictogrammes (goutte = arroser, main = attendre, point d'exclamation = demander à une personne).
 // Le bouton est toujours en darija, quelle que soit la langue choisie pour l'écran.
 // Le navigateur interdit de lancer un son sans geste : d'où le bouton, pas de lecture automatique.
-// Une petite musique de fond (bedMusic.ts) accompagne la voix, très basse, pour que la voix seule n'endorme pas.
+// Une petite musique de fond (bedMusic.ts) accompagne TOUJOURS la voix, très basse, pour que la voix seule n'endorme pas.
+// Elle est AUTOMATIQUE, comme à la télé : un bulletin météo ne demande pas « avec ou sans musique ». Aucun réglage.
 
 const BIG_LABEL = "اسمع النصيحة"; // « écoute le conseil » en darija
-const INTRO_MS = 2200; // la musique joue seule un instant avant la voix
+const INTRO_MS = 1500; // la musique joue seule un instant (le jingle) avant la voix
 const OUTRO_MS = 1500;
 const FETCH_TIMEOUT_MS = 25000; // au-delà, on renonce : la musique ne doit jamais tourner sans fin en attendant la voix
 const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
@@ -45,11 +46,22 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // personne, pas après une attente réseau ou l'introduction musicale. On remplace ensuite sa source par le vrai message.
 const SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
 
-export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: Plan | null }) {
+// `locked` : la région et la culture ne sont pas encore choisies. On n'écoute pas un conseil pour une région qu'on n'a pas dite :
+// le bouton est grisé, un appui renvoie vers le questionnaire (onLockedTap).
+export default function ListenHero({
+  query,
+  plan,
+  locked = false,
+  onLockedTap,
+}: {
+  query: VoiceQuery;
+  plan: Plan | null;
+  locked?: boolean;
+  onLockedTap?: () => void;
+}) {
   const { t, fmtNum } = useLang();
   const [state, setState] = useState<State>("idle");
   const [cachedAgeH, setCachedAgeH] = useState<number | null>(null);
-  const [musicOn, setMusicOn] = useState(false); // éteinte par défaut
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const musicRef = useRef<BedMusic | null>(null);
@@ -64,13 +76,6 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
   const releaseBlob = useCallback(() => {
     if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     blobUrlRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- préférence lue dans le stockage de l'appareil APRÈS l'hydratation, volontaire
-      setMusicOn(localStorage.getItem("sakia-music") === "on");
-    } catch {}
   }, []);
 
   // Dès que le conseil est à l'écran, on charge le message en arrière-plan (s'il est déjà préparé côté serveur) : l'appui
@@ -93,37 +98,26 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     setState("idle");
   }, [releaseBlob]);
 
-  // Si la personne change région, culture ou date : le son en cours ne correspond plus, on l'arrête.
-  useEffect(() => {
-    // changement de demande : on coupe le son en cours et on oublie l'âge de la copie gardée (remise à zéro volontaire)
-    /* eslint-disable react-hooks/set-state-in-effect */
-    stop();
-    setCachedAgeH(null);
-    /* eslint-enable react-hooks/set-state-in-effect */
-    return () => {
-      // runRef n'est pas un nœud du DOM : on veut bien invalider la lecture EN COURS au démontage, pas une copie ancienne
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Si la personne change région, culture ou date, la page remonte ce composant (sa clé est la demande) : le son en cours ne
+  // correspond plus, on l'arrête ici, au démontage. Ces références sont des compteurs et des lecteurs, pas des nœuds du DOM :
+  // c'est bien leur valeur d'à ce moment-là qu'on veut.
+  useEffect(
+    () => () => {
       runRef.current++;
+      if (capRef.current != null) window.clearTimeout(capRef.current);
       abortRef.current?.abort();
       audioRef.current?.pause();
       musicRef.current?.stop(100);
       releaseBlob();
-    };
-  }, [key, stop, releaseBlob]);
-
-  const toggleMusic = () => {
-    const next = !musicOn;
-    setMusicOn(next);
-    try {
-      localStorage.setItem("sakia-music", next ? "on" : "off");
-    } catch {}
-    if (!next) {
-      musicRef.current?.stop(300);
-      musicRef.current = null;
-    }
-  };
+    },
+    [releaseBlob],
+  );
 
   const onClick = async () => {
+    if (locked) {
+      onLockedTap?.();
+      return;
+    }
     if (state === "playing") return stop();
     if (state === "loading") return;
     const run = ++runRef.current;
@@ -131,7 +125,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
     setState("loading");
     setCachedAgeH(null);
     const began = Date.now();
-    if (musicOn) musicRef.current = startBedMusic(); // dans le geste de la personne, sinon le navigateur refuse
+    musicRef.current = startBedMusic(); // automatique ; dans le geste de la personne, sinon le navigateur refuse
     const player = new Audio(SILENT); // débloque la lecture (voir SILENT)
     audioRef.current = player;
     void player.play().catch(() => undefined);
@@ -173,28 +167,34 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
       releaseBlob();
       blobUrlRef.current = URL.createObjectURL(payload);
       const audio = audioRef.current ?? new Audio();
-      // un élément <audio> du navigateur que ce composant possède, pas un état React : on lui donne sa source
-      // eslint-disable-next-line react-hooks/immutability
-      audio.src = blobUrlRef.current;
+      audio.setAttribute("src", blobUrlRef.current);
       audioRef.current = audio;
-      audio.onended = () => {
-        if (!alive()) return;
-        releaseBlob();
-        musicRef.current?.swell();
-        const m = musicRef.current;
-        setState("idle");
-        window.setTimeout(() => {
-          if (musicRef.current === m) musicRef.current = null;
-          m?.stop(1000);
-        }, OUTRO_MS);
-      };
-      audio.onerror = () => {
-        if (!alive()) return;
-        void forgetAdvice(query); // fichier illisible : on ne le rejouera pas pendant 12 h
-        musicRef.current?.stop(300);
-        musicRef.current = null;
-        setState("error");
-      };
+      audio.addEventListener(
+        "ended",
+        () => {
+          if (!alive()) return;
+          releaseBlob();
+          musicRef.current?.swell();
+          const m = musicRef.current;
+          setState("idle");
+          window.setTimeout(() => {
+            if (musicRef.current === m) musicRef.current = null;
+            m?.stop(1000);
+          }, OUTRO_MS);
+        },
+        { once: true },
+      );
+      audio.addEventListener(
+        "error",
+        () => {
+          if (!alive()) return;
+          void forgetAdvice(query); // fichier illisible : on ne le rejouera pas pendant 12 h
+          musicRef.current?.stop(300);
+          musicRef.current = null;
+          setState("error");
+        },
+        { once: true },
+      );
       // la musique joue seule un instant, puis la voix démarre et la musique descend
       if (musicRef.current) {
         const wait = INTRO_MS - (Date.now() - began);
@@ -221,6 +221,7 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 
   return (
     <section
+      id="listen"
       aria-label={t("listenCaption")}
       className="rounded-3xl bg-white p-4 text-sakia-ink shadow-[0_18px_40px_-12px_rgba(10,40,25,0.45)] ring-1 ring-black/5"
     >
@@ -229,18 +230,27 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         onClick={onClick}
         aria-pressed={playing}
         aria-busy={busy}
+        aria-disabled={locked}
         className="sk-press group flex w-full flex-col items-center gap-3 rounded-2xl px-2 py-2"
       >
         <span aria-hidden className="relative grid h-28 w-28 place-items-center sm:h-32 sm:w-32">
           {/* ondes : elles invitent à appuyer, et pulsent plus vite quand la voix parle */}
-          <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" />
-          <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" style={{ animationDelay: "1.3s" }} />
+          {!locked && (
+            <>
+              <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" />
+              <span className="sk-ripple absolute inset-0 rounded-full bg-sakia-green/30" style={{ animationDelay: "1.3s" }} />
+            </>
+          )}
           <span
-            className={`relative grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br sm:h-28 sm:w-28 from-[#4aa263] via-sakia-green to-sakia-green-deep text-white shadow-[0_10px_24px_-6px_rgba(18,53,36,0.7)] ring-4 ring-white ${
-              busy ? "motion-safe:animate-pulse" : ""
-            }`}
+            className={`relative grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br sm:h-28 sm:w-28 text-white ring-4 ring-white ${
+              locked
+                ? "from-[#a5b0a9] via-[#8a968f] to-[#6c7872]"
+                : "from-[#4aa263] via-sakia-green to-sakia-green-deep shadow-[0_10px_24px_-6px_rgba(18,53,36,0.7)]"
+            } ${busy ? "motion-safe:animate-pulse" : ""}`}
           >
-            {playing ? (
+            {locked ? (
+              <LockIcon className="h-12 w-12 sm:h-14 sm:w-14" />
+            ) : playing ? (
               <span className="flex h-12 items-end gap-1.5">
                 {[0, 0.18, 0.36, 0.1, 0.27].map((d, i) => (
                   <span key={i} className="sk-eq block w-2 origin-bottom rounded-full bg-white" style={{ height: "100%", animationDelay: `${d}s` }} />
@@ -258,24 +268,15 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         <span dir="rtl" lang="ar-TN" className="font-display text-3xl font-extrabold leading-tight text-sakia-green-deep sm:text-4xl">
           {BIG_LABEL}
         </span>
-        <span className="max-w-xs text-center text-sm font-semibold leading-snug text-sakia-brown">{t("listenCaption")}</span>
+        <span className={`max-w-xs text-center text-sm font-semibold leading-snug ${locked ? "text-sakia-alert" : "text-sakia-brown"}`}>
+          {locked ? t("lockedListen") : t("listenCaption")}
+        </span>
       </button>
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-sakia-sand-dark/60 pt-3">
-        <button
-          type="button"
-          onClick={toggleMusic}
-          aria-pressed={musicOn}
-          aria-label={t("musicLabel")}
-          title={t("musicLabel")}
-          className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ${
-            musicOn ? "bg-sakia-green-light text-sakia-green-deep" : "bg-sakia-sand text-sakia-brown line-through"
-          }`}
-        >
-          <NoteIcon className="h-5 w-5" />
-          {t("musicLabel")}
-        </button>
-        <Link href="/bulletin" className="min-h-11 content-center text-sm font-semibold text-sakia-water underline underline-offset-2">
+      {!locked && (
+        <>
+      <div className="mt-2 flex items-center justify-center border-t border-sakia-sand-dark/60 pt-2">
+        <Link href="/bulletin" className="min-h-11 content-center text-base font-bold text-sakia-water-deep underline underline-offset-2">
           {t("listenFull")}
         </Link>
       </div>
@@ -307,6 +308,9 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
         </p>
       )}
 
+        </>
+      )}
+
       {plan && <Verdict plan={plan} />}
     </section>
   );
@@ -317,26 +321,34 @@ export default function ListenHero({ query, plan }: { query: VoiceQuery; plan: P
 function Verdict({ plan }: { plan: Plan }) {
   const { t, fmtDate } = useLang();
   const none = plan.confidence.level === "none";
-  const irrigateSoon = plan.days.some((d) => d.action === "irriguer");
+  // Le titre répond à « et aujourd'hui ? » : arroser aujourd'hui, ou attendre jusqu'à tel jour, ou rien cette semaine.
+  const today = plan.days[0]?.action === "irriguer";
+  const next = plan.days.find((d) => d.action === "irriguer");
   const tone = none
     ? "bg-sakia-alert-light text-sakia-alert"
-    : irrigateSoon
+    : today
       ? "bg-sakia-water-light text-sakia-water-deep"
       : "bg-sakia-sand text-sakia-brown";
-  const text = none ? t("askPersonShort") : irrigateSoon ? t("irrigate") : t("wait");
+  const text = none
+    ? t("askPersonShort")
+    : today
+      ? t("verdictToday")
+      : next
+        ? t("verdictLater", { day: fmtDate(next.date) })
+        : t("noWateringTitle");
   return (
     <div className="mt-4">
       <div className={`flex items-center gap-4 rounded-2xl p-3 ${tone}`}>
         <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white/70">
           {none ? (
             <AlertIcon className="h-9 w-9" />
-          ) : irrigateSoon ? (
+          ) : today ? (
             <DropIcon className="sk-sway h-10 w-10" />
           ) : (
             <HandIcon className="h-9 w-9" />
           )}
         </span>
-        <p className="font-display text-2xl font-extrabold leading-tight">{text}</p>
+        <p className="font-display text-xl font-extrabold leading-tight sm:text-2xl">{text}</p>
         {plan.confidence.askAPerson && !none && (
           <span title={t("askPersonShort")} className="ms-auto grid h-12 w-12 place-items-center rounded-full bg-sakia-alert-light text-sakia-alert">
             <AlertIcon className="h-7 w-7" title={t("askPersonShort")} />
@@ -351,10 +363,10 @@ function Verdict({ plan }: { plan: Plan }) {
               <li
                 key={d.date}
                 className={`rounded-xl py-1.5 ${
-                  irr ? "bg-sakia-water text-white" : i === 0 ? "bg-sakia-green text-white" : "bg-sakia-sand text-sakia-brown"
+                  irr ? "bg-sakia-water-deep text-white" : i === 0 ? "bg-sakia-green text-white" : "bg-sakia-sand text-sakia-brown"
                 }`}
               >
-                <span className="block text-[11px] font-semibold leading-tight">{fmtDate(d.date, { weekday: "short" })}</span>
+                <span className="block text-xs font-semibold leading-tight">{fmtDate(d.date, { weekday: "short" })}</span>
                 <span className="mt-0.5 grid h-7 place-items-center">
                   {irr ? <DropIcon className="h-6 w-6" /> : <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />}
                 </span>

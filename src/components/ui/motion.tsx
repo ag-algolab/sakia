@@ -24,14 +24,15 @@ export function useInView<T extends Element>(threshold = 0.15): [React.RefObject
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
-      // très vieux navigateur : pas d'observation possible, on montre tout de suite (repli volontaire)
+      // navigateur très ancien : tout s'affiche tout de suite
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSeen(true);
       return;
     }
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
+        // « vu » = dans l'écran, ou déjà dépassé par le haut (la personne a sauté plus bas : rien ne doit rester caché derrière elle)
+        if (entries.some((e) => e.isIntersecting || e.boundingClientRect.top < 0)) {
           setSeen(true);
           io.disconnect();
         }
@@ -87,8 +88,9 @@ export function CountUp({
   const [ref, seen] = useInView<HTMLSpanElement>(0.3);
   const [shown, setShown] = useState<number>(value);
   useEffect(() => {
+    // Le compteur se synchronise avec l'entrée dans l'écran (système extérieur) : il montre la valeur finale tant qu'il n'est pas
+    // vu (page sans JavaScript, animations réduites), puis repart de 0.
     if (!seen || reducedMotion() || !Number.isFinite(value)) {
-      // pas encore à l'écran, ou « réduire les animations » : la valeur finale s'affiche tout de suite (volontaire)
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShown(value);
       return;

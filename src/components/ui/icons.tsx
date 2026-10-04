@@ -1,7 +1,7 @@
 // Pictogrammes dessinés à la main (SVG), tous en `currentColor`. Pensés pour être compris sans lire :
 // goutte = arroser, main = attendre, point d'exclamation = demander à une personne.
 
-type P = { className?: string; title?: string };
+type P = { className?: string; title?: string; style?: React.CSSProperties };
 
 const base = (p: P) => ({
   viewBox: "0 0 24 24",
@@ -11,6 +11,7 @@ const base = (p: P) => ({
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   className: p.className,
+  style: p.style,
   role: p.title ? ("img" as const) : undefined,
   "aria-hidden": p.title ? undefined : true,
   "aria-label": p.title,
@@ -102,5 +103,83 @@ export const WaterBarIcon = (p: P) => (
   <svg {...base(p)}>
     <path d="M3 17c2.2-2.4 4.4-2.4 6.6 0s4.4 2.4 6.6 0 4.4-2.4 4.8-.4" />
     <path d="M3 12c2.2-2.4 4.4-2.4 6.6 0s4.4 2.4 6.6 0 4.4-2.4 4.8-.4" />
+  </svg>
+);
+
+export const QuestionIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9.5" />
+    <path d="M9.2 9.4a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.2-2.8 4.1" />
+    <path d="M12 17.8v.1" />
+  </svg>
+);
+
+export const PinIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 21.5s7-6.1 7-11.7a7 7 0 1 0-14 0c0 5.6 7 11.7 7 11.7z" fill="currentColor" fillOpacity=".15" />
+    <circle cx="12" cy="9.8" r="2.6" />
+  </svg>
+);
+
+export const SproutIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 21v-9" />
+    <path d="M12 13c-4.5 0-7-2.6-7-6.5 4.2 0 7 2.4 7 6.5z" fill="currentColor" fillOpacity=".2" />
+    <path d="M12 11.2c0-3.7 2.4-6.2 7-6.2 0 3.7-2.6 6.2-7 6.2z" fill="currentColor" fillOpacity=".2" />
+  </svg>
+);
+
+export const LockIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="currentColor" fillOpacity=".15" />
+    <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    <path d="M12 14.6v2.4" />
+  </svg>
+);
+
+export const PhoneIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M6.6 3.5h2.7l1.4 4-1.8 1.3a11 11 0 0 0 5.8 5.8l1.3-1.8 4 1.4v2.7a2 2 0 0 1-2.1 2A15.5 15.5 0 0 1 4.6 5.6a2 2 0 0 1 2-2.1z" fill="currentColor" fillOpacity=".15" />
+  </svg>
+);
+
+export const SmsIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 20 17H10.5L6 20.5V17H4A1.5 1.5 0 0 1 2.5 15.5V7A1.5 1.5 0 0 1 4 5.5z" fill="currentColor" fillOpacity=".15" />
+    <path d="M7 10h10M7 13h6" />
+  </svg>
+);
+
+export const SendIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M21 3.5 3 10.8l6.3 2.3 2.3 6.2L21 3.5z" fill="currentColor" fillOpacity=".15" />
+    <path d="M9.3 13.1 21 3.5" />
+  </svg>
+);
+
+export const GlobeIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9.5" />
+    <path d="M2.5 12h19M12 2.5c2.6 2.7 3.9 5.9 3.9 9.5s-1.3 6.8-3.9 9.5c-2.6-2.7-3.9-5.9-3.9-9.5s1.3-6.8 3.9-9.5z" />
+  </svg>
+);
+
+export const DownloadIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="currentColor" fillOpacity=".12" />
+    <path d="M12 7v7M8.8 11.2 12 14.4l3.2-3.2M10 18.5h4" />
+  </svg>
+);
+
+export const CheckIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4.5 12.8 9.6 18 19.5 6.5" />
+  </svg>
+);
+
+export const BellIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15L6 16.5z" fill="currentColor" fillOpacity=".15" />
+    <path d="M10 21a2.2 2.2 0 0 0 4 0" />
   </svg>
 );

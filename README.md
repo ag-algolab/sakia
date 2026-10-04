@@ -21,6 +21,7 @@
 | Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot |
 | Spoken bulletin (drawn avatar, ElevenLabs voice, English subtitles) | **Real** audio; demo bulletins are recorded |
 | Voice line (keypad call) and SMS | **Simulated in the browser.** Real telephony is not possible in the time (see limits) |
+| Sakia-ML research model (CatBoost, 43 KB) | **Real**, tested in public, **shadow mode**: it changes no advice. Protocol, results and failures in `ml/`; live demo on `/lab` |
 | Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
 | Farmers' rain reports ("solidarity") | Server side done; channels in progress. **Demo reports are fictitious and labelled as such** |
 
@@ -35,7 +36,18 @@ The irrigation numbers come from a **deterministic FAO-56 water balance, on purp
 | **Works offline** | the engine (the plan is recomputed in the browser), the cached plan, the recorded and the last-loaded audio |
 | **Needs the network** | live speech recognition, live speech synthesis, fresh weather |
 
-We do **not** train a model, and nothing is tuned on local data yet. Our local-data contribution is **farmers' own rain reports**; calibrating the weather source against Tunisian stations is the roadmap (see the data card).
+**The advice itself uses no trained model.** Separately, we trained and tested a small research model in public (next section), in shadow mode: it changes no advice. Our other local-data contribution is **farmers' own rain reports**; calibrating the weather source against Tunisian stations is the roadmap (see the data card).
+
+## Research: Sakia-ML, a satellite-trained second opinion (shadow mode)
+
+Can a small learned model add anything to the physics? We trained a **43 KB CatBoost model** (106 symmetric trees, 12 KB compressed, replayed in the browser with no server) on free satellite evapotranspiration (NASA MODIS MOD16A2GF) of Kairouan cropland, with the same weather source as the engine. **The protocol was written before the full run and every change is logged; results are published as they are.** Try it live on the **/lab** page.
+
+- **Modest gain:** on held-out years 2024–2025 the model is closer to the satellite than a monthly calendar (error about 9 % lower, interval excludes zero over 14 weather cells) and than a crude FAO-56-style water balance (about 23 % lower). Nothing in spring, when cereals green up.
+- **Published failures:** month as a categorical feature adds nothing; a hybrid (physics + learned correction) is no better; **the pre-registered rule for using model disagreement as a "not sure" signal was not met**, so it is information only.
+- **Does it travel?** Applied unchanged to Sidi Bouzid (Tunisia) and the Haouz (Morocco) it beats each region's own calendar; **it fails in the Sahel (Gezira, Sudan)**. The pipeline is global (MODIS, Open-Meteo and ESA WorldCover cover Africa) and a new region needs about 90 minutes of free data, but **a model trained in one climate regime does not carry to another**: each regime needs its own small model.
+- **What it does not show:** that the model improves irrigation advice. The satellite label is itself a model product, the Kairouan sample contains no irrigated pixel, and we only claim "closer to the satellite", never "more accurate".
+
+Everything is in [`ml/`](ml/README.md): protocol, amendment log, code, every number (`ml/results/metrics.json`) and the model (`ml/results/m1_compact.json`).
 
 **Guardrails.** When the data is not enough — weather older than 12 h, last irrigation unknown, coefficients estimated by analogy, forecast not covering the week — Sakia says **"I am not sure: ask an agricultural technician (CRDA)"**; with weather older than 48 h it gives **no advice**. The web and Telegram plan messages carry *"Indicative advice, calculated from the forecast weather (it can change). The decision is yours."* (the spoken forms carry a shorter caveat; the one-sentence SMS plan carries none, only the "not sure" flag when it applies). A person always decides. Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings (data card, section D).
 
