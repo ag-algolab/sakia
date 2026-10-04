@@ -13,6 +13,7 @@ import { Reveal } from "@/components/ui/motion";
 import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfile, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
 import type { Profile } from "@/components/ui/profile";
 import SpeedBand from "@/components/ui/SpeedBand";
+import { irrigationSeasonOf, outOfIrrigationSeason } from "@/components/ui/season";
 import StatBand from "@/components/ui/StatBand";
 import WeekView from "@/components/ui/WeekView";
 import { usePlan } from "@/components/phone/usePlan";
@@ -304,6 +305,7 @@ export default function Home() {
               </div>
             ) : (
               <>
+                <SeasonNote plan={plan} />
                 <Summary plan={plan} />
                 <Notes confidence={plan.confidence} />
                 <WeekView plan={plan} />
@@ -391,6 +393,21 @@ function Notes({ confidence }: { confidence: Confidence }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+// La culture est encore en végétation mais hors de sa saison d'arrosage (la vigne en octobre, après la vendange) : le moteur ne prévoit
+// alors AUCUN arrosage (irrigationSeason, src/lib/crops.ts). On le dit, sinon « pas d'arrosage cette semaine » laisserait croire que
+// c'est le sol qui suffit.
+function SeasonNote({ plan }: { plan: Plan }) {
+  const { t, fmtDate } = useLang();
+  const season = irrigationSeasonOf(plan.cropId);
+  if (!season || plan.status === "hors_vegetation" || !outOfIrrigationSeason(plan.cropId, plan.today)) return null;
+  const monthName = (m: number) => fmtDate(`2026-${String(m).padStart(2, "0")}-15`, { month: "long" });
+  return (
+    <p role="note" className="rounded-2xl border border-sakia-sand-dark bg-sakia-sand p-4 text-base font-semibold text-sakia-brown">
+      {t("outOfSeason", { from: monthName(season.from), to: monthName(season.to) })}
+    </p>
   );
 }
 

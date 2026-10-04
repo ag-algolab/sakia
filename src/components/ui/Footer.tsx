@@ -49,14 +49,14 @@ export default function Footer() {
             </Link>
           </nav>
           <nav aria-label={t("footerNavChannels")} className="flex flex-col">
-            <Link href="/bulletin" className={link}>
-              {t("navBulletin")}
-            </Link>
             <Link href="/call" className={link}>
               {t("door_call")}
             </Link>
             <Link href="/phone" className={link}>
               {t("door_sms")}
+            </Link>
+            <Link href="/telegram" className={link}>
+              {t("navTelegram")}
             </Link>
             <Link href="/about" className={link}>
               {t("navAbout")}

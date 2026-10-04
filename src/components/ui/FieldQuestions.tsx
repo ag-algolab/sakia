@@ -22,6 +22,8 @@ import RegionPicker from "./RegionPicker";
 // Sol, système d'arrosage et date de semis (cultures annuelles seulement) sont repliés : des valeurs par défaut suffisent.
 // Une fois les réponses données et gardées sur l'appareil, le questionnaire se replie en une ligne de résumé.
 
+const EXAMPLE_AGO = "3"; // dernier arrosage de l'exemple : il y a 3 jours
+
 function Q({
   n,
   title,
@@ -231,11 +233,16 @@ export default function FieldQuestions({
       </details>
 
       {!complete && <p className="mt-4 text-sm font-bold text-sakia-alert">{t("fieldRequired")}</p>}
-      {/* pour qui veut juste voir (le jury, un technicien) : un exemple en un geste. Rien n'est prérempli : la personne le choisit. */}
+      {/* pour qui veut juste voir (le jury, un technicien) : un exemple en un geste. Rien n'est prérempli : la personne le choisit.
+          L'exemple doit montrer un VRAI conseil d'arrosage : la culture de saison (le piment en octobre, racines courtes : il boit vite)
+          arrosée il y a 3 jours, donc un arrosage dans les prochains jours (et pas « pas sûr », faute de dernier arrosage). */}
       {!profile.region && !profile.crop && exampleCrop && exampleRegion && (
         <button
           type="button"
-          onClick={() => onProfile({ region: exampleRegion.id, crop: exampleCrop.id, planting: "" })}
+          onClick={() => {
+            onProfile({ region: exampleRegion.id, crop: exampleCrop.id, planting: "" });
+            onAgo(EXAMPLE_AGO);
+          }}
           className="sk-press mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-sakia-green px-4 py-2 text-center text-base font-bold text-sakia-green-deep"
         >
           <CropArt id={exampleCrop.id} className="h-7 w-7 shrink-0" />
