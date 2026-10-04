@@ -149,7 +149,7 @@ export type Strings = {
 
 export const STRINGS: Record<UiLang, Strings> = {
   fr: {
-    truth: "Fonctionne sans internet après un premier chargement ; ne remplace pas le réseau mobile.",
+    truth: "Fonctionne sans internet après un premier chargement (vérifié dans Chrome, serveur arrêté ; pas encore en mode avion sur un téléphone) ; ne remplace pas le réseau mobile.",
     offline: "Hors connexion",
     lastPlan: "dernier plan mis à jour",
     noPlan: "aucun plan enregistré sur cet appareil",
@@ -199,7 +199,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} phrases comprises sur ${total}`,
     measuredCaveat: "Phrases écrites à la main par l'équipe, pas recueillies auprès d'agriculteurs : ce n'est pas une mesure sur le terrain.",
     rainTitle: "Signaler la pluie tombée chez vous",
-    rainIntro: "Il a plu ? Dites-le en un geste. Quand au moins 3 personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse : un identifiant anonyme gardé dans cet appareil.",
+    rainIntro: "Il a plu ? Dites-le en un geste. Quand au moins 3 personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse IP dans notre base : seulement une empreinte salée d'un identifiant gardé dans cet appareil (pseudonyme, pas anonyme).",
     rainDemo: "Démonstration : les rapports affichés ici sont fictifs. Ce sont des signalements d'agriculteurs, pas des mesures.",
     rainDayLabel: "Quel jour ?",
     rainPending: "en attente : part dès que le réseau revient",
@@ -283,7 +283,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     planNeedChoice: "Choisissez d'abord une région et une culture dans l'inscription, plus haut.",
   },
   ar: {
-    truth: "تعمل بدون إنترنت بعد التحميل الأول، ولا تعوّض شبكة الهاتف.",
+    truth: "تعمل بدون إنترنت بعد التحميل الأول (جُرّبت في Chrome مع إيقاف الخادم، ولم تُجرَّب بعد في وضع الطيران على هاتف)، ولا تعوّض شبكة الهاتف.",
     offline: "بدون اتصال",
     lastPlan: "آخر تحديث للخطة",
     noPlan: "لا توجد خطة محفوظة على هذا الجهاز",
@@ -333,7 +333,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} جملة مفهومة من ${total}`,
     measuredCaveat: "جمل كتبها الفريق يدويا، لم تُجمع من فلاحين: ليس قياسا ميدانيا.",
     rainTitle: "أبلغ عن المطر الذي نزل عندك",
-    rainIntro: "هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ ثلاثة أشخاص مختلفين على الأقل في الولاية عن نفس اليوم، تحل قيمتهم الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان: معرّف مجهول محفوظ في هذا الجهاز.",
+    rainIntro: "هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ ثلاثة أشخاص مختلفين على الأقل في الولاية عن نفس اليوم، تحل قيمتهم الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان IP في قاعدة بياناتنا: فقط بصمة رقمية مملّحة لمعرّف محفوظ في هذا الجهاز (اسم مستعار، وليس مجهولا).",
     rainDemo: "عرض تجريبي: التقارير المعروضة هنا وهمية. هي تقارير من فلاحين وليست قياسات.",
     rainDayLabel: "أي يوم؟",
     rainPending: "في الانتظار: تُرسل فور عودة الشبكة",
@@ -417,7 +417,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     planNeedChoice: "اختر أولا الولاية والمحصول في الاشتراك أعلاه.",
   },
   en: {
-    truth: "Works without internet after a first load; it does not replace the mobile network.",
+    truth: "Works without internet after a first load (checked in Chrome with the server stopped; not yet in a phone's airplane mode); it does not replace the mobile network.",
     offline: "Offline",
     lastPlan: "last plan updated",
     noPlan: "no plan saved on this device",
@@ -467,7 +467,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     measured: (ok, total) => `${ok} of ${total} sentences understood`,
     measuredCaveat: "Sentences written by hand by the team, not collected from farmers: this is not a field measurement.",
     rainTitle: "Report the rain that fell at your place",
-    rainIntro: "Did it rain? Tell us in one tap. When at least 3 different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name, no address: an anonymous identifier kept on this device.",
+    rainIntro: "Did it rain? Tell us in one tap. When at least 3 different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name and no IP address in our database: only a salted hash of an identifier kept on this device (pseudonymous, not anonymous).",
     rainDemo: "Demonstration: the reports shown here are fictitious. They are farmers' reports, not measurements.",
     rainDayLabel: "Which day?",
     rainPending: "waiting: sent as soon as the network is back",

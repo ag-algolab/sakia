@@ -8,7 +8,7 @@ import { agentId } from "@/lib/voiceagent/api";
 export const metadata: Metadata = {
   title: "Sakia · Voice agent",
   description:
-    "Talk to an AI voice agent in Tunisian Darija, Arabic or French: it understands the crop, region and last irrigation, then reads the advice computed by the irrigation engine word for word.",
+    "Talk to an AI voice agent in Arabic, Tunisian Darija (not validated) or French: it works out the crop, region and last irrigation, then is instructed to read the advice computed by the irrigation engine word for word.",
 };
 
 export const dynamic = "force-dynamic";
