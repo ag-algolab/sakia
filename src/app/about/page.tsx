@@ -49,7 +49,7 @@ const FACTS: { icon: React.ReactNode; title: string; body: string; href?: string
   {
     icon: <CheckIcon className="h-6 w-6" />,
     title: "Real or simulated",
-    body: "Telegram, the web and the app are real. Call and SMS are simulated. The water savings are a simulation, not a field trial.",
+    body: "Telegram, the web and the app are real. Call and SMS are simulated. The water savings come from a simulation of past seasons.",
   },
 ];
 

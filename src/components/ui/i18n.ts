@@ -88,7 +88,6 @@ const fr: Dict = {
   asmBtKc: "Coefficients de culture FAO-56 lus tels quels.",
   indicative: "Conseil indicatif, à valider par l'administration agricole.",
   proofTitle: "La preuve : {n} saisons de météo observée rejouées",
-  proofBanner: "Saisons passées rejouées sur ordinateur, comme si la météo avait été connue d'avance. Pas mesuré dans de vrais champs.",
   waterSaved: "d'eau pompée en moins",
   waterSavedSub: "par saison, en moyenne",
   stressDays: "Jours où la culture avait soif",
@@ -96,7 +95,7 @@ const fr: Dict = {
   fixedLabel: "Façon habituelle",
   adaptiveLabel: "Avec Sakia",
   relYield: "Rendement relatif estimé",
-  relYieldSub: "estimation par modèle, pas une mesure",
+  relYieldSub: "estimé avec le modèle FAO-33",
   chartTitle: "Eau pompée par saison (mm)",
   seasons: "saisons",
   noSeasons: "Aucune saison complète disponible pour cette culture.",
@@ -220,7 +219,7 @@ const fr: Dict = {
   tankFull: "Plein",
   tankLine: "Arroser",
   proofHeadline: "Même météo. Moins d'eau pompée.",
-  proofSub: "De 2015 à aujourd'hui, rejoué deux fois : arroser tous les 7 jours, ou suivre Sakia.",
+  proofSub: "Simulation sur la météo de 2015 à aujourd'hui : arroser tous les 7 jours, ou suivre Sakia.",
   plantStress: "{n} jours de soif par saison",
   plantNone: "Presque aucun jour de soif (simulation)",
   yesterday: "hier",
@@ -237,6 +236,8 @@ const fr: Dict = {
   outOfSeason: "Hors de la saison d'arrosage de cette culture ({from} à {to}) : Sakia ne prévoit aucun arrosage.",
   statWaterSecond: "et {n} % d'eau pompée en moins",
   verdictOffSeason: "Pas d'arrosage : hors de la saison d'arrosage",
+  proofMethod: "Méthode : chaque saison depuis 2015 a été simulée sur la météo réellement observée (archive ERA5, Open-Meteo), comme si Sakia l'avait connue d'avance. Hypothèse raisonnable : la décision de chaque jour n'a besoin que de la météo du jour, la partie la plus fiable d'une prévision.",
+  proofMethodLink: "Méthode",
 };
 
 const en: Dict = {
@@ -316,7 +317,6 @@ const en: Dict = {
   asmBtKc: "FAO-56 crop coefficients used as published.",
   indicative: "Indicative advice, to be validated by the agricultural administration.",
   proofTitle: "The proof: {n} seasons of observed weather replayed",
-  proofBanner: "Past seasons replayed on a computer, as if the weather had been known in advance. Not measured in real fields.",
   waterSaved: "less water pumped",
   waterSavedSub: "per season, on average",
   stressDays: "Days when the crop was thirsty",
@@ -324,7 +324,7 @@ const en: Dict = {
   fixedLabel: "Usual way",
   adaptiveLabel: "With Sakia",
   relYield: "Estimated relative yield",
-  relYieldSub: "model estimate, not a measurement",
+  relYieldSub: "estimated with the FAO-33 model",
   chartTitle: "Water pumped per season (mm)",
   seasons: "seasons",
   noSeasons: "No complete season available for this crop.",
@@ -447,7 +447,7 @@ const en: Dict = {
   tankFull: "Full",
   tankLine: "Water now",
   proofHeadline: "Same weather. Less water pumped.",
-  proofSub: "2015 to today, replayed twice: watering every 7 days, or with Sakia.",
+  proofSub: "Simulation on the weather from 2015 to today: watering every 7 days, or with Sakia.",
   plantStress: "{n} thirsty days per season",
   plantNone: "Almost no thirsty days (simulation)",
   yesterday: "yesterday",
@@ -464,6 +464,8 @@ const en: Dict = {
   outOfSeason: "Outside this crop's irrigation season ({from} to {to}): Sakia plans no watering.",
   statWaterSecond: "and {n} % less water pumped",
   verdictOffSeason: "No watering: outside the irrigation season",
+  proofMethod: "Method: every season since 2015 was simulated on the weather that really happened (ERA5 archive, Open-Meteo), as if Sakia had known it in advance. A reasonable hypothesis: each day's decision only needs that day's weather, the most reliable part of a forecast.",
+  proofMethodLink: "Method",
 };
 
 // Arabe littéraire (standard) : c'est ce que les Tunisiens lisent à l'écran. La voix du bulletin lit aussi de l'arabe littéraire (poste Bulletin).
@@ -544,7 +546,6 @@ const ar: Dict = {
   asmBtKc: "معاملات المحصول FAO-56 كما هي.",
   indicative: "نصيحة إرشادية، تحتاج إلى مصادقة الإدارة الفلاحية.",
   proofTitle: "الدليل: {n} مواسم من الطقس المرصود أُعيد تشغيلها",
-  proofBanner: "مواسم سابقة أُعيدت على الحاسوب، كأن الطقس كان معروفا مسبقا. ليست قياسا في حقول حقيقية.",
   waterSaved: "ماء مضخوخ أقل",
   waterSavedSub: "بالمعدل في الموسم",
   stressDays: "أيام عطش المحصول",
@@ -552,7 +553,7 @@ const ar: Dict = {
   fixedLabel: "الطريقة المعتادة",
   adaptiveLabel: "مع ساقية",
   relYield: "المردود النسبي التقديري",
-  relYieldSub: "تقدير بالنموذج، وليس قياساً",
+  relYieldSub: "مقدَّر بنموذج FAO-33",
   chartTitle: "الماء المضخّ في كل موسم (مم)",
   seasons: "مواسم",
   noSeasons: "لا يوجد موسم كامل لهذا المحصول.",
@@ -675,7 +676,7 @@ const ar: Dict = {
   tankFull: "ممتلئ",
   tankLine: "اسقوا الآن",
   proofHeadline: "الطقس نفسه. ماء مضخّ أقل.",
-  proofSub: "من 2015 إلى اليوم: السقي كل أسبوع، أو اتباع «ساقية».",
+  proofSub: "محاكاة على طقس 2015 إلى اليوم: السقي كل أسبوع، أو اتباع «ساقية».",
   plantStress: "{n} أيام عطش في الموسم",
   plantNone: "تكاد تنعدم أيام العطش (محاكاة)",
   yesterday: "أمس",
@@ -692,6 +693,8 @@ const ar: Dict = {
   outOfSeason: "خارج موسم سقي هذا المحصول (من {from} إلى {to}): لا تبرمج ساقية أي سقي.",
   statWaterSecond: "و{n} % ماء مضخوخ أقل",
   verdictOffSeason: "لا سقي: خارج موسم السقي",
+  proofMethod: "المنهجية: حوكي كل موسم منذ 2015 على الطقس الذي حدث فعلا (أرشيف ERA5، Open-Meteo)، كأن ساقية كانت تعرفه مسبقا. فرضية معقولة: قرار كل يوم لا يحتاج إلا إلى طقس ذلك اليوم، وهو الجزء الأكثر موثوقية في التوقعات.",
+  proofMethodLink: "المنهجية",
 };
 
 // Darija tunisienne, écrite en lettres arabes. Formes tunisiennes (وقتاش، قدّاش، توا، برشا، موش، فمّا، شتا)
@@ -774,7 +777,6 @@ const aeb: Dict = {
   asmBtKc: "معاملات الزرعة FAO-56 كيما هي.",
   indicative: "نصيحة للاسترشاد برك: تثبّت منها عند الفنّي الفلاحي (CRDA).",
   proofTitle: "الدليل: {n} مواسم طقس صار فعلا عاودناهم",
-  proofBanner: "مواسم فاتت عاودناها في الكمبيوتر، كأنّ الطقس كان معروف من قبل. موش قياس في غيطان حقيقية.",
   waterSaved: "ماء أقلّ تضخّو",
   waterSavedSub: "المعدّل في الموسم",
   stressDays: "نهارات الزرعة فيها عطشانة",
@@ -782,7 +784,7 @@ const aeb: Dict = {
   fixedLabel: "الطريقة العادية",
   adaptiveLabel: "مع ساقية",
   relYield: "المردود النسبي (تقدير)",
-  relYieldSub: "تقدير بالنموذج، موش قياس",
+  relYieldSub: "مقدّر بنموذج FAO-33",
   chartTitle: "الماء اللي تضخّ في كل موسم (مم)",
   seasons: "مواسم",
   noSeasons: "ما فمّاش موسم كامل للزرعة هاذي.",
@@ -906,7 +908,7 @@ const aeb: Dict = {
   tankFull: "مليان",
   tankLine: "اسقي توا",
   proofHeadline: "نفس الطقس. ماء أقلّ تضخّو.",
-  proofSub: "من 2015 لليوم: السقي كل أسبوع، ولا اتباع ساقية.",
+  proofSub: "محاكاة على طقس 2015 لليوم: السقي كل أسبوع، ولا اتباع ساقية.",
   plantStress: "{n} أيام عطش في الموسم",
   plantNone: "تقريبا ما فمّاش أيام عطش (محاكاة)",
   yesterday: "البارح",
@@ -922,6 +924,8 @@ const aeb: Dict = {
   outOfSeason: "برّا موسم السقي متاع الزرعة هاذي (من {from} لـ {to}): ساقية ما تبرمج حتى سقية.",
   statWaterSecond: "و{n} % ماء أقلّ تضخّو",
   verdictOffSeason: "ما فمّاش سقي: برّا موسم السقي",
+  proofMethod: "الطريقة: كل موسم من 2015 عاودناه على الطقس اللي صار فعلا (أرشيف ERA5، Open-Meteo)، كأنّ ساقية كانت تعرفو من قبل. فرضية معقولة: قرار كل نهار يلزمو كان طقس النهار هاذاكا، وهو أصح جزء في التوقّعات.",
+  proofMethodLink: "الطريقة",
 };
 
 export const DICTS: Record<Lang, Dict> = { fr, en, ar, aeb };

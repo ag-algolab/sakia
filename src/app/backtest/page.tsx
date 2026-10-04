@@ -90,17 +90,19 @@ export default function BacktestPage() {
   return (
     // Un seul repère <main> pour toute la page (bandeau et titre compris) : un lecteur d'écran saute directement au contenu.
     <main className="sk-type flex flex-1 flex-col">
-      {/* Bandeau permanent : toujours visible, jamais masqué par un état de chargement. */}
-      <div role="note" className="bg-sakia-alert-light px-4 py-3 text-center text-base font-extrabold text-sakia-alert">
-        {t("proofBanner")}
-      </div>
-
-      {/* ---------- en-tête : un titre, une phrase, sur toute la largeur (la réserve « simulation » est dans le bandeau du haut) ---------- */}
+      {/* ---------- en-tête : un titre, une phrase qui dit « simulation », un astérisque vers la méthode en bas de page.
+          Décision d'Anthony (4 oct.) : pas de bandeau rouge en haut (il cassait la confiance) ; on présente ce qui est fait, avec
+          son hypothèse, en deux lignes tout en bas. ---------- */}
       <section className="sk-hero-sky relative overflow-hidden px-4 pb-16 pt-7 text-white sm:pb-20">
         <div aria-hidden className="pointer-events-none absolute -end-10 top-4 h-44 w-44 rounded-full bg-sakia-sun/25 blur-3xl" />
         <div className="relative mx-auto max-w-5xl">
           <h1 className="font-display text-balance text-4xl font-bold leading-[1.05] sm:text-5xl">{t("proofHeadline")}</h1>
-          <p className="mt-3 text-pretty text-base leading-snug text-white/90 sm:text-lg">{t("proofSub")}</p>
+          <p className="mt-3 text-pretty text-base leading-snug text-white/90 sm:text-lg">
+            {t("proofSub")}
+            <a href="#method" aria-label={t("proofMethodLink")} className="ms-0.5 inline-block px-1 font-bold text-sakia-sun no-underline">
+              *
+            </a>
+          </p>
         </div>
       </section>
 
@@ -231,6 +233,12 @@ export default function BacktestPage() {
             <Assumptions items={data.assumptions} />
           </div>
         )}
+
+        {/* la méthode, en deux lignes, tout en bas (renvoi de l'astérisque du titre) */}
+        <p id="method" className="scroll-mt-4 text-sm leading-relaxed text-sakia-brown">
+          <span aria-hidden className="font-bold text-sakia-ink">* </span>
+          {t("proofMethod")}
+        </p>
 
         <Link href="/" className="sk-press flex min-h-14 items-center justify-center rounded-2xl bg-sakia-green px-4 text-lg font-bold text-white shadow-md">
           {t("seeAdvice")}

@@ -206,3 +206,15 @@ Coupes de phrases existantes (rien d'inventé, sauf la ligne « محاكاة » 
 - `statWaterSecond` (aeb) : و{n} % ماء أقلّ تضخّو
 - `verdictOffSeason` (ar) : لا سقي: خارج موسم السقي
 - `verdictOffSeason` (aeb) : ما فمّاش سقي: برّا موسم السقي
+
+
+## Page Preuve sans bandeau rouge (4 oct., 08 h) : `src/components/ui/i18n.ts` (4 clés)
+
+- `proofSub` (ar) : محاكاة على طقس 2015 إلى اليوم: السقي كل أسبوع، أو اتباع «ساقية».
+- `proofSub` (aeb) : محاكاة على طقس 2015 لليوم: السقي كل أسبوع، ولا اتباع ساقية.
+- `relYieldSub` (ar) : مقدَّر بنموذج FAO-33
+- `relYieldSub` (aeb) : مقدّر بنموذج FAO-33
+- `proofMethod` (ar) : المنهجية: حوكي كل موسم منذ 2015 على الطقس الذي حدث فعلا (أرشيف ERA5، Open-Meteo)، كأن ساقية كانت تعرفه مسبقا. فرضية معقولة: قرار كل يوم لا يحتاج إلا إلى طقس ذلك اليوم، وهو الجزء الأكثر موثوقية في التوقعات.
+- `proofMethod` (aeb) : الطريقة: كل موسم من 2015 عاودناه على الطقس اللي صار فعلا (أرشيف ERA5، Open-Meteo)، كأنّ ساقية كانت تعرفو من قبل. فرضية معقولة: قرار كل نهار يلزمو كان طقس النهار هاذاكا، وهو أصح جزء في التوقّعات.
+- `proofMethodLink` (ar) : المنهجية
+- `proofMethodLink` (aeb) : الطريقة
