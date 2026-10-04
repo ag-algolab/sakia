@@ -90,7 +90,6 @@ export type Strings = {
   simBadge: string;
   seeSms: string;
   seeSmsNote: string;
-  needChoiceHint: string;
   simCall: string;
   simCallNote: string;
   simulatedDetail: string;
@@ -229,7 +228,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     simBadge: "Téléphone simulé",
     seeSms: "Voir le SMS de 6 h du matin",
     seeSmsNote: "Calculé maintenant, avec la météo du jour.",
-    needChoiceHint: "Choisissez d'abord une région et une culture.",
     simCall: "Simuler un appel",
     simCallNote: "La ligne vocale simulée : on écoute le conseil et on choisit avec les touches.",
     simulatedDetail:
@@ -363,7 +361,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     simBadge: "هاتف محاكى",
     seeSms: "شاهد رسالة السادسة صباحا",
     seeSmsNote: "محسوبة الآن بطقس اليوم.",
-    needChoiceHint: "اختر أولا الولاية والمحصول.",
     simCall: "محاكاة مكالمة",
     simCallNote: "الخط الصوتي التجريبي: تستمع إلى النصيحة وتختار بالأزرار.",
     simulatedDetail:
@@ -497,7 +494,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     simBadge: "Simulated phone",
     seeSms: "See the 6 a.m. SMS",
     seeSmsNote: "Worked out now, with today's weather.",
-    needChoiceHint: "First choose a region and a crop.",
     simCall: "Simulate a call",
     simCallNote: "The simulated voice line: you listen to the advice and choose with the keys.",
     simulatedDetail:

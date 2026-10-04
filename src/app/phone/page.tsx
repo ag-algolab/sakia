@@ -3,7 +3,7 @@ import CuriousDetails from "@/components/phone/CuriousDetails";
 import LanguageCoverage from "@/components/phone/LanguageCoverage";
 import OfflinePlan from "@/components/phone/OfflinePlan";
 import PhoneSimulator from "@/components/phone/PhoneSimulator";
-import { ProfileProvider } from "@/components/phone/profile";
+import { PhoneProfileProvider } from "@/components/phone/phoneProfile";
 import ServiceWorkerRegister from "@/components/phone/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
 export default function PhonePage() {
   return (
     <main className="flex-1">
-      <ProfileProvider>
+      <PhoneProfileProvider>
         <PhoneSimulator />
         <OfflinePlan />
         <LanguageCoverage />
         <CuriousDetails />
-      </ProfileProvider>
+      </PhoneProfileProvider>
       <ServiceWorkerRegister />
     </main>
   );

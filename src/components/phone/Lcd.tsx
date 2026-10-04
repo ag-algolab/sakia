@@ -119,7 +119,7 @@ function Dots() {
 function View({ p }: { p: LcdProps }) {
   const { t, screen, msg } = p;
 
-  if (!p.ready) {
+  if (!p.ready && screen.id !== "ring") {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
         <div className="text-[2.25rem] font-bold leading-none tabular-nums">{p.clock}</div>

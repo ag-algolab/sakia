@@ -4,11 +4,11 @@
 // (FeaturePhone). La personne n'écrit rien : elle choisit, le SMS arrive, elle répond avec les touches, ou « appelle » la ligne vocale.
 // L'ancienne saisie à la main (« zitoun kairouan ») reste dans TypedSmsDemo, repliée en bas de page pour les curieux.
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
 import FeaturePhone from "./FeaturePhone";
 import type { SmsFeed } from "./FeaturePhone";
-import { useProfile } from "./profile";
+import { usePhoneProfile } from "./phoneProfile";
 import SignupPanel from "./SignupPanel";
 import { STRINGS } from "./strings";
 import { useUiLang } from "./useUiLang";
@@ -24,16 +24,14 @@ function SmsSource({ regionId, cropId, children }: { regionId: string; cropId: s
 export default function PhoneSimulator() {
   const lang = useUiLang();
   const t = STRINGS[lang];
-  const { profile, ready } = useProfile();
+  const { profile, ready } = usePhoneProfile();
   const [showErrors, setShowErrors] = useState(false);
-  const regionRef = useRef<HTMLSelectElement>(null);
-  const cropRef = useRef<HTMLSelectElement>(null);
 
-  // Un bouton est pressé alors qu'il manque un choix : on le dit et on place le curseur sur la première liste à remplir.
+  // Un bouton est pressé alors qu'il manque un choix : on le dit et on place le curseur sur le premier choix à faire.
   const needChoice = useCallback(() => {
     setShowErrors(true);
-    (profile.regionId ? cropRef : regionRef).current?.focus();
-  }, [profile.regionId]);
+    document.querySelector<HTMLElement>(profile.region ? "#phone-crop-q button" : "#phone-region-q button")?.focus();
+  }, [profile.region]);
 
   return (
     <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-8">
@@ -44,13 +42,13 @@ export default function PhoneSimulator() {
       </p>
 
       <div className="mt-6">
-        <SignupPanel lang={lang} showErrors={showErrors} regionRef={regionRef} cropRef={cropRef} />
+        <SignupPanel lang={lang} showErrors={showErrors} />
       </div>
 
       <div className="mt-6">
         {ready ? (
-          <SmsSource regionId={profile.regionId} cropId={profile.cropId}>
-            {(feed) => <FeaturePhone lang={lang} regionId={profile.regionId} cropId={profile.cropId} feed={feed} onNeedChoice={needChoice} />}
+          <SmsSource regionId={profile.region} cropId={profile.crop}>
+            {(feed) => <FeaturePhone lang={lang} regionId={profile.region} cropId={profile.crop} feed={feed} onNeedChoice={needChoice} />}
           </SmsSource>
         ) : (
           <FeaturePhone lang={lang} regionId="" cropId="" feed={null} onNeedChoice={needChoice} />

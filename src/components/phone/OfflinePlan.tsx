@@ -9,7 +9,7 @@ import { CROPS } from "@/lib/crops";
 import { planMessage, planSms } from "@/lib/messages";
 import { REGIONS } from "@/lib/regions";
 import { smsInfo } from "@/lib/sms/encoding";
-import { useProfile } from "./profile";
+import { usePhoneProfile } from "./phoneProfile";
 import RainReport from "./RainReport";
 import { asSent } from "./smsKeys";
 import { STRINGS, formatAge } from "./strings";
@@ -17,9 +17,9 @@ import type { UiLang } from "./strings";
 import { useUiLang } from "./useUiLang";
 import { usePlan } from "./usePlan";
 
-function PlanBody({ lang, regionId, cropId, ago }: { lang: UiLang; regionId: string; cropId: string; ago: string }) {
+function PlanBody({ lang, regionId, cropId }: { lang: UiLang; regionId: string; cropId: string }) {
   const t = STRINGS[lang];
-  const { setAgo } = useProfile();
+  const { ago, setAgo } = usePhoneProfile();
   const state = usePlan({ regionId, cropId, lastIrrigationDaysAgo: ago === "" ? undefined : Number(ago) });
   // Le SMS ne connaît pas le dernier arrosage : son aperçu est calculé sans lui, comme le fait le service SMS.
   const smsState = usePlan({ regionId, cropId });
@@ -39,7 +39,7 @@ function PlanBody({ lang, regionId, cropId, ago }: { lang: UiLang; regionId: str
           {t.regionLabel} : {regionName} · {t.cropLabel} : {cropName}{" "}
           <button
             type="button"
-            onClick={() => document.getElementById("phone-region")?.focus()}
+            onClick={() => document.querySelector<HTMLElement>("#phone-region-q button")?.focus()}
             className="ms-2 inline-flex min-h-11 items-center px-1 text-base font-semibold text-sakia-water-deep underline"
           >
             {t.changeChoice}
@@ -125,7 +125,7 @@ function PlanBody({ lang, regionId, cropId, ago }: { lang: UiLang; regionId: str
 export default function OfflinePlan() {
   const lang = useUiLang();
   const t = STRINGS[lang];
-  const { profile, ready } = useProfile();
+  const { profile, ready } = usePhoneProfile();
 
   return (
     <section dir={lang === "ar" ? "rtl" : "ltr"} aria-labelledby="plan-title" className="mx-auto w-full max-w-5xl px-4 pb-10">
@@ -134,7 +134,7 @@ export default function OfflinePlan() {
       </h2>
       <p className="mt-1 text-base text-sakia-brown">{t.planIntro}</p>
       {ready ? (
-        <PlanBody lang={lang} regionId={profile.regionId} cropId={profile.cropId} ago={profile.ago} />
+        <PlanBody lang={lang} regionId={profile.region} cropId={profile.crop} />
       ) : (
         <p role="status" className="mt-4 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base font-semibold text-sakia-alert">
           {t.planNeedChoice}

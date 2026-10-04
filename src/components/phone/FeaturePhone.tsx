@@ -122,6 +122,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
   const msgsRef = useRef<Msg[]>([]);
   const startedFor = useRef("");
   const waiting = useRef(false); // le SMS attend que la météo arrive
+  const inCall = useRef(false); // l'appel simulé sonne : l'arrivée automatique du SMS ne doit pas le couper
   const retry = useRef<{ kind: "reply"; text: string; isStop: boolean } | { kind: "lang"; to: SmsLang } | null>(null); // « Réessayer » rejoue le dernier envoi
   const live = useRef({ t, lang, smsLang, regionId, cropId, ready, feed, now, sim, onNeedChoice });
   useEffect(() => {
@@ -232,7 +233,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
     if (!ready) return;
     const sig = `${regionId}|${cropId}`;
     const id = window.setTimeout(() => {
-      if (startedFor.current !== sig) startMorningRef.current();
+      if (startedFor.current !== sig && !inCall.current) startMorningRef.current();
     }, AUTO_ARRIVAL_MS);
     return () => window.clearTimeout(id);
   }, [ready, regionId, cropId]);
@@ -342,6 +343,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
     if (busy.current) return;
     clearTimers();
     waiting.current = false;
+    inCall.current = true;
     setScreen({ id: "ring", phase: "ringing" });
     setAnnounce(live.current.t.lcdRinging);
     later(() => answerCall(), RING_MS);
@@ -350,6 +352,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
   const hangUp = useCallback(() => {
     clearTimers();
     waiting.current = false;
+    inCall.current = false;
     setScreen({ id: "idle" });
   }, [clearTimers]);
 
@@ -462,7 +465,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
     }
   };
 
-  const shownScreen: Screen = ready ? screen : { id: "idle" };
+  const shownScreen: Screen = ready || screen.id === "ring" ? screen : { id: "idle" };
   const shownMsg = "msgId" in shownScreen ? (msgs.find((m) => m.id === shownScreen.msgId) ?? null) : null;
   const keys = keysFor(shownScreen, t, lang);
   const keyLabel = (k: string) => keys.find((x) => x.key === k)?.label ?? "";
@@ -492,7 +495,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
             <button
               type="button"
               onClick={startMorning}
-              aria-describedby={ready ? undefined : "phone-need-choice"}
+              aria-describedby={ready ? undefined : "signup-status"}
               className={`${primary} ${ready ? "bg-sakia-green text-white hover:bg-sakia-green-deep" : "border-2 border-sakia-brown bg-sakia-sand text-sakia-ink"}`}
             >
               <Envelope className="h-5 w-auto shrink-0" />
@@ -508,11 +511,6 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
             <p className="mt-2 text-sm leading-snug text-sakia-brown">{t.simCallNote}</p>
           </div>
         </div>
-        {!ready && (
-          <p id="phone-need-choice" className="mt-3 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base font-semibold text-sakia-alert">
-            {t.needChoiceHint}
-          </p>
-        )}
       </div>
 
       {/* ---------- le téléphone ---------- */}
