@@ -60,6 +60,12 @@ function hintsFor(state: CallState | null, ui: UiLang): { key: string; label: st
   }
 }
 
+// Taille en mégaoctets : « 2.1 MB » en anglais, « 2,1 Mo » en français (l'arabe garde « Mo » : pas d'abréviation arabe nouvelle à faire valider).
+const megabytes = (kb: number, ui: UiLang): string => {
+  const n = (kb / 1024).toFixed(1);
+  return ui === "en" ? `${n} MB` : ui === "fr" ? `${n.replace(".", ",")} Mo` : `${n} Mo`;
+};
+
 const mmss = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, "0")}`;
 
 function BannerView({ banner, ui, demos }: { banner: Banner; ui: UiLang; demos: DemoItem[] }) {
@@ -396,7 +402,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-sakia-sand-dark bg-white p-4">
           <h2 className="text-lg font-bold text-sakia-green">{t("prepTitle")}</h2>
-          <p className="mt-1 text-base">{t("prepText", { n: offlineUrls.length, size: `${(offlineKb / 1024).toFixed(1)} Mo` })}</p>
+          <p className="mt-1 text-base">{t("prepText", { n: offlineUrls.length, size: megabytes(offlineKb, ui) })}</p>
           <button
             type="button"
             onClick={runPrep}
