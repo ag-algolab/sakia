@@ -6,9 +6,8 @@ import type { UiLang } from "./strings";
 type Dict = Record<string, string>;
 
 const en: Dict = {
-  title: "Talk to Sakia (voice agent)",
-  intro:
-    "Speak in Arabic or French: “I have wheat in Kairouan”. An AI agent understands which crop, which region and when you last irrigated. It does not calculate anything: it calls our irrigation engine and is instructed to read the answer word for word (an instruction, not something we enforce). For anything else it says “ask a technician”.",
+  title: "Talk to Sakia",
+  intro: "Say your crop and your region, in English, French or Arabic.",
   whyAi:
     "This is where AI earns its place: a spreadsheet or an SMS menu cannot understand a farmer who speaks Arabic, French or a mix of both. The irrigation calculation itself stays deterministic, so it can be checked.",
   langOrder:
@@ -23,11 +22,12 @@ const en: Dict = {
   ended: "Conversation ended",
   maxCall: "A conversation lasts 2 minutes at most.",
   typeLabel: "Or type your sentence",
-  typePlaceholder: "عندي القمح في القيروان / J'ai du blé à Kairouan",
+  typePlaceholder: "I grow olives in Kairouan",
   send: "Send",
   you: "You",
   agent: "Sakia",
   understoodTitle: "What the agent understood",
+  moreTitle: "How it works",
   fieldSaved: "Your field is saved: {crop} · {region}.",
   seePlan: "See my plan",
   crop: "Crop",
@@ -46,16 +46,14 @@ const en: Dict = {
   measuredTitle: "How well does it understand? (measured, not promised)",
   measured:
     "{passed} of {n} written test phrases handled correctly (Arabic, Tunisian Arabic, French, mixes, off-topic questions). Crop and region found: {both}. Answer read word for word: {verbatim}. Median time to call the engine: {ms} ms. These phrases were written by us and typed, not spoken: real farmers' speech will be harder.",
-  limits:
-    "Limits: speech recognition of the Tunisian dialect is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. Whether the spoken Tunisian dialect is understood has not been evaluated; the answer is read in simple standard Arabic or in French.",
+  limits: "Limits: speech recognition of the Tunisian dialect is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. The answer is read in English, simple standard Arabic or French.",
   backToKeypad: "Back to the keypad phone",
   noAgent: "The voice agent has not been created.",
 };
 
 const fr: Dict = {
-  title: "Parler à Sakia (agent vocal)",
-  intro:
-    "Parlez en arabe ou en français : « j'ai du blé à Kairouan ». Un agent d'intelligence artificielle comprend la culture, la région et la date du dernier arrosage. Il ne calcule rien : il appelle notre moteur d'irrigation et a pour consigne de lire la réponse mot pour mot (une consigne, pas une garantie technique). Pour tout le reste, il dit « demandez à un technicien ».",
+  title: "Parler à Sakia",
+  intro: "Dites votre culture et votre région, en anglais, français ou arabe.",
   whyAi:
     "C'est ici que l'IA sert vraiment : un tableur ou un menu de SMS ne comprend pas un agriculteur qui parle arabe, français ou un mélange des deux. Le calcul d'irrigation, lui, reste déterministe, donc vérifiable.",
   langOrder:
@@ -70,11 +68,12 @@ const fr: Dict = {
   ended: "Conversation terminée",
   maxCall: "Une conversation dure 2 minutes au plus.",
   typeLabel: "Ou tapez votre phrase",
-  typePlaceholder: "عندي القمح في القيروان / J'ai du blé à Kairouan",
+  typePlaceholder: "J'ai des oliviers à Kairouan",
   send: "Envoyer",
   you: "Vous",
   agent: "Sakia",
   understoodTitle: "Ce que l'agent a compris",
+  moreTitle: "Comment ça marche",
   fieldSaved: "Votre champ est enregistré : {crop} · {region}.",
   seePlan: "Voir mon plan",
   crop: "Culture",
@@ -93,16 +92,14 @@ const fr: Dict = {
   measuredTitle: "Comprend-il bien ? (mesuré, pas promis)",
   measured:
     "{passed} phrases de test sur {n} traitées correctement (arabe, arabe tunisien, français, mélanges, questions hors sujet). Culture et région trouvées : {both}. Réponse lue mot pour mot : {verbatim}. Délai médian avant l'appel du moteur : {ms} ms. Ces phrases ont été écrites par nous et tapées, pas dites : la parole de vrais agriculteurs sera plus difficile.",
-  limits:
-    "Limites : la reconnaissance vocale du dialecte tunisien n'est pas garantie ; l'agent peut mal comprendre, puis il redemande ou il refuse ; le conseil est indicatif et une personne décide. La compréhension du dialecte tunisien parlé n'a pas été évaluée ; la réponse est lue en arabe standard simple ou en français.",
+  limits: "Limites : la reconnaissance du dialecte tunisien n'est pas garantie ; l'agent peut mal comprendre, il redemande alors ou refuse ; le conseil est indicatif et une personne décide. La réponse est lue en anglais, en arabe standard simple ou en français.",
   backToKeypad: "Retour au téléphone à touches",
   noAgent: "L'agent vocal n'a pas été créé.",
 };
 
 const ar: Dict = {
-  title: "تحدثوا إلى ساقية (وكيل صوتي)",
-  intro:
-    "تكلموا بالدارجة التونسية أو بالعربية أو بالفرنسية: «عندي القمح في القيروان». وكيل ذكاء اصطناعي يفهم المحصول والولاية وتاريخ آخر سقي. لا يحسب شيئا: يستدعي محرك السقي عندنا، وقد أُعطي تعليمة بقراءة الجواب كلمة بكلمة (مجرد تعليمة، وليست ضمانا تقنيا). وفي كل ما عدا ذلك يقول «اسألوا فنيا».",
+  title: "تحدّث مع ساقية",
+  intro: "قولوا المحصول والولاية، بالإنجليزية أو بالفرنسية أو بالعربية.",
   whyAi:
     "هنا يفيد الذكاء الاصطناعي حقا: جدول بيانات أو قائمة رسائل نصية لا تفهم فلاحا يتكلم بالدارجة أو بالفرنسية أو بخليط منهما. أما حساب السقي فيبقى حتميا، ولذلك يمكن التحقق منه.",
   langOrder:
@@ -117,11 +114,12 @@ const ar: Dict = {
   ended: "انتهت المحادثة",
   maxCall: "تدوم المحادثة دقيقتين على الأكثر.",
   typeLabel: "أو اكتبوا جملتكم",
-  typePlaceholder: "عندي القمح في القيروان / J'ai du blé à Kairouan",
+  typePlaceholder: "عندي زيتون في القيروان",
   send: "إرسال",
   you: "أنتم",
   agent: "ساقية",
   understoodTitle: "ما فهمه الوكيل",
+  moreTitle: "كيف يعمل",
   fieldSaved: "تم حفظ حقلكم: {crop} · {region}.",
   seePlan: "عرض خطتي",
   crop: "المحصول",
@@ -140,8 +138,7 @@ const ar: Dict = {
   measuredTitle: "هل يفهم جيدا؟ (قياس وليس وعدا)",
   measured:
     "{passed} من {n} جملة اختبار عولجت بشكل صحيح (عربية، دارجة، فرنسية، خليط، أسئلة خارج الموضوع). المحصول والولاية: {both}. الجواب مقروء كلمة بكلمة: {verbatim}. المدة الوسطى قبل استدعاء المحرك: {ms} مللي ثانية. كتبنا هذه الجمل بأنفسنا وطبعناها، ولم تُنطق: كلام الفلاحين الحقيقيين أصعب.",
-  limits:
-    "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. فهم الدارجة المنطوقة لم يُقيَّم؛ والجواب يُقرأ بعربية فصحى بسيطة أو بالفرنسية.",
+  limits: "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. ويُقرأ الجواب بالإنجليزية أو بعربية فصحى بسيطة أو بالفرنسية.",
   backToKeypad: "العودة إلى الهاتف بالأزرار",
   noAgent: "لم يُنشأ الوكيل الصوتي.",
 };

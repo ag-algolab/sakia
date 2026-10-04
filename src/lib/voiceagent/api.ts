@@ -26,6 +26,8 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 export const createTool = (toolConfig: unknown) => call<{ id: string }>("POST", "/convai/tools", { tool_config: toolConfig });
 export const createAgent = (body: unknown) => call<{ agent_id: string }>("POST", "/convai/agents/create", body);
 export const patchAgent = (agentId: string, body: unknown) => call<unknown>("PATCH", `/convai/agents/${agentId}`, body);
+// met à jour la définition de l'outil (description, paramètres) quand la consigne change de langues
+export const patchTool = (toolId: string, toolConfig: unknown) => call<unknown>("PATCH", `/convai/tools/${toolId}`, { tool_config: toolConfig });
 export const getAgent = (agentId: string) => call<Record<string, unknown>>("GET", `/convai/agents/${agentId}`);
 export const signedUrl = (agentId: string) =>
   call<{ signed_url: string }>("GET", `/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`);

@@ -10,7 +10,7 @@
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { agentFile, createAgent, createTool, patchAgent } from "../src/lib/voiceagent/api";
+import { agentFile, createAgent, createTool, patchAgent, patchTool } from "../src/lib/voiceagent/api";
 import type { AgentFile } from "../src/lib/voiceagent/api";
 import { AGENT_MAX_SECONDS, FIRST_MESSAGE, TOOL_DESCRIPTION, TOOL_NAME, systemPrompt, toolParameters } from "../src/lib/voiceagent/prompt";
 import { SELECTED_VOICE } from "../src/lib/voice/voices";
@@ -51,8 +51,10 @@ function agentConfig(toolId: string) {
     tags: ["sakia", "hack-nation-7"],
     conversation_config: {
       agent: {
-        first_message: FIRST_MESSAGE.ar,
-        language: "ar",
+        // anglais d'abord (décision d'Anthony, 4 oct. : le jury est anglophone) ; l'arabe et le français par préréglage, et
+        // l'outil « language_detection » change de langue dès que la personne parle arabe ou français
+        first_message: FIRST_MESSAGE.en,
+        language: "en",
         prompt: {
           prompt: systemPrompt(),
           llm: LLM,
@@ -72,6 +74,7 @@ function agentConfig(toolId: string) {
       },
       language_presets: {
         fr: { overrides: { agent: { first_message: FIRST_MESSAGE.fr, language: "fr" } } },
+        ar: { overrides: { agent: { first_message: FIRST_MESSAGE.ar, language: "ar" } } },
       },
     },
     platform_settings: {
@@ -98,6 +101,7 @@ function agentConfig(toolId: string) {
   const body = agentConfig(tool.id);
   let agentId: string;
   if (existing && UPDATE) {
+    await patchTool(existing.toolId, toolConfig()); // description de l'outil à jour (langues)
     await patchAgent(existing.agentId, { conversation_config: body.conversation_config, platform_settings: body.platform_settings, name: body.name });
     agentId = existing.agentId;
     console.log("Agent mis à jour.");
