@@ -5,7 +5,7 @@
 import { CROPS } from "@/lib/crops";
 import { REGIONS } from "@/lib/regions";
 import type { Lang } from "@/lib/messages";
-import { AMBIGUOUS_CROP_ALIASES, BEFORE_WORDS, CROP_ALIASES, DAY_WORDS, KEYWORDS, LANGUAGE_WORDS, RAIN_WORDS, REGION_ALIASES, TODAY_WORDS, YESTERDAY_WORDS } from "./lexicon";
+import { AMBIGUOUS_CROP_ALIASES, BEFORE_WORDS, CROP_ALIASES, DAY_WORDS, ENGLISH_HINTS, FRENCH_HINTS, KEYWORDS, LANGUAGE_WORDS, RAIN_WORDS, REGION_ALIASES, TODAY_WORDS, YESTERDAY_WORDS } from "./lexicon";
 import type { KeywordKind } from "./lexicon";
 
 export type Parsed =
@@ -209,6 +209,15 @@ export function scriptOf(text: string): "arabic" | "latin" | "none" {
   const ar = ARABIC.test(text);
   const latin = /[a-zA-Z]/.test(text);
   return ar && !latin ? "arabic" : latin ? "latin" : "none";
+}
+
+// Langue d'un message en lettres latines, d'après ses mots (FRENCH_HINTS, ENGLISH_HINTS) : undefined quand rien ne la dit
+// (arabizi, chiffre seul, nom de région) ou quand les deux langues s'y mêlent.
+export function latinLangOf(text: string): "fr" | "en" | undefined {
+  const tokens = normalizeTokens(text);
+  const fr = tokens.some((t) => FRENCH_HINTS.has(t));
+  const en = tokens.some((t) => ENGLISH_HINTS.has(t));
+  return fr && !en ? "fr" : en && !fr ? "en" : undefined;
 }
 
 export function parseSms(text: string): Parsed {

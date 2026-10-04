@@ -61,7 +61,7 @@ const fr: Strings = {
   help:
     "🌱 Sakia dit quand et combien irriguer pendant 7 jours, à partir de la météo réelle.\n\n" +
     "/plan : le plan des 7 jours\n/bulletin : le bulletin vocal\n/langue : changer de langue\n/stop : arrêter le bulletin quotidien\n/aide : cette aide\n/start : tout reconfigurer\n\n" +
-    "🎙 Vous pouvez aussi envoyer un message vocal ou écrire, par exemple « olivier Kairouan » (français, arabe, arabizi). Le vocal est transcrit par un service externe (ElevenLabs) ; nous ne gardons ni l'audio ni le texte.\n\n" +
+    "🎙 Vous pouvez aussi envoyer un message vocal ou écrire, par exemple « olivier Kairouan » (arabe, arabizi, français). Le vocal est transcrit par un service externe (ElevenLabs) ; nous ne gardons ni l'audio ni le texte.\n\n" +
     "Conseil indicatif, à valider auprès de l'administration agricole régionale.",
   hint: "Utilisez les boutons ci-dessus, ou /aide pour la liste des commandes.",
   error: "Désolé, un problème est survenu. Réessayez dans un instant.",
@@ -98,7 +98,7 @@ const ar: Strings = {
   help:
     "🌱 ساقية تقول لكم متى وكم تسقون خلال 7 أيام، انطلاقا من الطقس الفعلي.\n\n" +
     "/plan : خطة 7 أيام\n/bulletin : النشرة الصوتية\n/langue : تغيير اللغة\n/stop : إيقاف النشرة اليومية\n/aide : هذه المساعدة\n/start : إعادة الإعداد\n\n" +
-    "🎙 يمكنكم أيضا إرسال رسالة صوتية أو الكتابة، مثلا «زيتون القيروان» (بالعربية أو الفرنسية أو الأرابيزي). تتم كتابة الرسالة الصوتية بواسطة خدمة خارجية (ElevenLabs)، ولا نحتفظ بالصوت ولا بالنص.\n\n" +
+    "🎙 يمكنكم أيضا إرسال رسالة صوتية أو الكتابة، مثلا «زيتون القيروان» (بالعربية أو الأرابيزي أو الفرنسية). تتم كتابة الرسالة الصوتية بواسطة خدمة خارجية (ElevenLabs)، ولا نحتفظ بالصوت ولا بالنص.\n\n" +
     "نصيحة إرشادية: يجب التحقق منها لدى المصالح الفلاحية الجهوية.",
   hint: "استعملوا الأزرار أعلاه، أو /aide لقائمة الأوامر.",
   error: "عذرا، حدث خطأ. حاولوا مرة أخرى بعد قليل.",
@@ -135,7 +135,7 @@ const en: Strings = {
   help:
     "🌱 Sakia tells you when and how much to irrigate over 7 days, from real weather data.\n\n" +
     "/plan: the 7-day plan\n/bulletin: the voice bulletin\n/langue: change language\n/stop: stop the daily bulletin\n/aide: this help\n/start: set everything up again\n\n" +
-    "🎙 You can also send a voice message or type, for example “olive Kairouan” (Arabic, French or Arabizi). Voice messages are transcribed by an external service (ElevenLabs); we keep neither the audio nor the text.\n\n" +
+    "🎙 You can also send a voice message or type, for example “olive Kairouan” (Arabic, Arabizi or French). Voice messages are transcribed by an external service (ElevenLabs); we keep neither the audio nor the text.\n\n" +
     "Indicative advice, to be checked with the regional agriculture office.",
   hint: "Use the buttons above, or /aide for the list of commands.",
   error: "Sorry, something went wrong. Please try again in a moment.",
@@ -155,7 +155,7 @@ export function t(lang: Lang): Strings {
 
 // Premier message, avant que la langue soit connue : les trois langues.
 export const WELCOME =
-  "🌱 Sakia\nConseil d'irrigation pour la Tunisie · نصائح الري لتونس · Irrigation advice for Tunisia\n\nFR · العربية · EN";
+  "🌱 Sakia\nIrrigation advice for Tunisia · نصائح الري لتونس · Conseil d'irrigation pour la Tunisie\n\nEN · العربية · FR";
 
 const LOCALE: Record<Lang, string> = { fr: "fr-FR", ar: "ar-TN-u-nu-latn", en: "en-GB" };
 

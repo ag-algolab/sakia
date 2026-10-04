@@ -18,7 +18,7 @@ function read(): UiLang {
   const attr = document.documentElement.lang.slice(0, 2);
   if (isLang(attr)) return attr;
   const nav = navigator.language.slice(0, 2);
-  return isLang(nav) ? nav : "fr";
+  return isLang(nav) ? nav : "en";
 }
 
 export function useUiLang(): UiLang {

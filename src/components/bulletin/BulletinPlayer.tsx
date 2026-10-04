@@ -436,7 +436,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       const key = d.title.replace(VOICE_SUFFIX, "");
       groups.set(key, [...(groups.get(key) ?? []), d]);
     }
-    return [...groups.entries()];
+    // les voix d'un scénario dans l'ordre de la liste des voix (darija, puis anglais, français, arabe standard, coréen)
+    const rank = (code: string) => {
+      const i = VOICE_LANGS.findIndex((l) => l.code === code);
+      return i < 0 ? VOICE_LANGS.length : i;
+    };
+    return [...groups.entries()].map(([title, items]) => [title, [...items].sort((a, b) => rank(a.lang) - rank(b.lang))] as const);
   }, [demos]);
   const band: Band | null = loaded?.band ?? null;
   const fmtDay = (d: string) => new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));

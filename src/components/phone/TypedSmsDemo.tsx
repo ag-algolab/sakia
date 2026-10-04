@@ -21,7 +21,7 @@ type Saved = { sid: string; msgs: Msg[] };
 const STORE = "sakia.phone.v1";
 const MAX_CHARS = 160;
 const MAX_KEPT = 60;
-const EXAMPLES = ["zitoun kairouan", "olivier القيروان", "9amh sfax", "*123#", "AIDE"];
+const EXAMPLES = ["pepper kairouan yesterday", "zitoun kairouan", "9amh sfax", "olivier القيروان", "*123#", "HELP"]; // anglais d'abord (le jury), puis tunisien, puis français
 
 const KEYS: [string, string][] = [
   ["1", ""], ["2", "abc"], ["3", "def"],

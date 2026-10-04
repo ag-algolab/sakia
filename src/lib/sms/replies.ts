@@ -22,7 +22,7 @@ export function regionName(id: string, lang: Lang): string {
 export const R = {
   help: {
     fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, LANGUE, STOP = effacer. *123# = menu.",
-    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, LANGUE, STOP = erase. *123# = menu.",
+    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, LANGUAGE, STOP = erase. *123# = menu.",
     ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، لغة، ايقاف = مسح. *123# قائمة",
   } as T,
   // Réponse à la question « dernier arrosage ? » quand le chiffre n'est pas l'un de ceux proposés.
@@ -32,10 +32,11 @@ export const R = {
     en: "Sakia\n1. 7-day plan\n2. Change crop\n3. Language",
     ar: "ساقية\n1. خطة 7 أيام\n2. تغيير المحصول\n3. اللغة",
   } as T,
+  // Anglais d'abord (le jury), puis l'arabe, puis le français ; handler.ts lit les chiffres dans le même ordre.
   langMenu: {
-    fr: "1. Français\n2. العربية\n3. English",
-    en: "1. Français\n2. العربية\n3. English",
-    ar: "1. Français\n2. العربية\n3. English",
+    fr: "1. English\n2. العربية\n3. Français",
+    en: "1. English\n2. العربية\n3. Français",
+    ar: "1. English\n2. العربية\n3. Français",
   } as T,
   langSet: {
     fr: "Langue : français.",
@@ -49,7 +50,7 @@ export const R = {
   } as T,
   unknown: {
     fr: "Je n'ai pas compris. Exemple : olivier kairouan. Envoyez AIDE pour l'aide.",
-    en: "Sorry, not understood. Example: olive kairouan. Send AIDE for help.",
+    en: "Sorry, not understood. Example: olive kairouan. Send HELP for help.",
     ar: "لم أفهم. مثال: زيتون القيروان. أرسل AIDE للمساعدة.",
   } as T,
   ussdUnknown: {
@@ -59,7 +60,7 @@ export const R = {
   } as T,
   stopped: {
     fr: "Sakia : vos réglages sont effacés. Envoyez AIDE pour recommencer.",
-    en: "Sakia: your settings are erased. Send AIDE to start again.",
+    en: "Sakia: your settings are erased. Send HELP to start again.",
     ar: "ساقية: تم مسح إعداداتك. أرسل AIDE للبدء من جديد.",
   } as T,
   unavailable: {

@@ -36,6 +36,7 @@ type Props = {
 type LogLine = { id: number; dir: "out" | "in"; text: string; auto: boolean };
 
 const TZ = "Africa/Tunis"; // l'heure affichée est celle d'un téléphone en Tunisie
+const LANG_LABEL: Record<SmsLang, string> = { en: "English", ar: "العربية", fr: "Français" }; // chaque langue écrite dans sa langue
 const LOCALE: Record<UiLang, string> = { fr: "fr-FR", en: "en-GB", ar: "ar-TN-u-nu-latn" };
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 const AUTO_ARRIVAL_MS = 2500; // le SMS arrive de lui-même peu après le choix
@@ -77,11 +78,8 @@ function keysFor(screen: Screen, t: Strings): KeyDef[] {
         { key: "3", label: t.kStop },
       ];
     case "lang":
-      return [
-        { key: "1", label: "Français" },
-        { key: "2", label: "العربية" },
-        { key: "3", label: "English" },
-      ];
+      // dans l'ordre de SMS_LANGS (anglais, arabe, français) : la touche N choisit SMS_LANGS[N - 1]
+      return SMS_LANGS.map((l, i) => ({ key: String(i + 1), label: LANG_LABEL[l] }));
     case "stop":
       return [
         { key: "1", label: t.lcdYes },

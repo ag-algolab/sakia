@@ -6,7 +6,7 @@
 import { fitGsm } from "@/lib/sms/encoding";
 
 export type SmsLang = "fr" | "ar" | "en";
-export const SMS_LANGS: SmsLang[] = ["fr", "ar", "en"];
+export const SMS_LANGS: SmsLang[] = ["en", "ar", "fr"]; // ordre du menu des langues : anglais d'abord (le jury), puis l'arabe, puis le français
 
 export const HELP_TEXT: Record<SmsLang, string> = { fr: "AIDE", en: "HELP", ar: "مساعدة" };
 export const STOP_TEXT: Record<SmsLang, string> = { fr: "STOP", en: "STOP", ar: "ايقاف" };

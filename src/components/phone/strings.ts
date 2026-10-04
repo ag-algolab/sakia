@@ -3,7 +3,7 @@
 // Pas de "use client" : utilisable aussi par les pages serveur (page hors connexion).
 
 export type UiLang = "fr" | "ar" | "en";
-export const UI_LANGS: UiLang[] = ["fr", "ar", "en"];
+export const UI_LANGS: UiLang[] = ["en", "ar", "fr"]; // anglais d'abord (le jury), puis l'arabe, puis le français
 
 export type Strings = {
   truth: string; // ce qui est vrai de l'appli hors connexion
@@ -176,7 +176,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     smsPreview: "Ce que recevrait un téléphone basique",
     refresh: "Actualiser",
     languagesTitle: "Langues comprises par le SMS",
-    languagesBody: "Arabe tunisien (écriture arabe et écriture latine « arabizi »), français et anglais, avec tolérance aux fautes de frappe. Le dialecte n'est pas garanti : voici ce qui a été mesuré.",
+    languagesBody: "Anglais, arabe tunisien (écriture arabe et écriture latine « arabizi ») et français, avec tolérance aux fautes de frappe. Le dialecte n'est pas garanti : voici ce qui a été mesuré.",
     measured: (ok, total) => `${ok} phrases comprises sur ${total}`,
     measuredCaveat: "Phrases écrites à la main par l'équipe, pas recueillies auprès d'agriculteurs : ce n'est pas une mesure sur le terrain.",
     signupTitle: "Inscription au SMS du matin",
@@ -231,7 +231,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     kLang: "Langue",
     kStop: "Stop",
     kHelpDesc: "Recevoir le message d'aide du service.",
-    kLangDesc: "Choisir la langue des SMS : français, arabe ou anglais.",
+    kLangDesc: "Choisir la langue des SMS : anglais, arabe ou français.",
     kStopDesc: "Effacer vos réglages et arrêter les SMS.",
     kBackDesc: "Revenir en arrière.",
     logTitle: "Messages échangés avec le serveur",
@@ -242,7 +242,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     logAuto: "automatique : règle la langue des réponses",
     curiousSummary: "Pour les curieux : écrire un SMS en arabizi",
     curiousIntro:
-      "Réservé aux curieux et aux techniciens. Un agriculteur peut aussi écrire lui-même « zitoun kairouan » : le serveur comprend les noms de cultures et de régions écrits à la main (arabe, français, arabizi), avec des fautes de frappe tolérées. Ce n'est pas le parcours principal.",
+      "Réservé aux curieux et aux techniciens. Un agriculteur peut aussi écrire lui-même « zitoun kairouan » : le serveur comprend les noms de cultures et de régions écrits à la main (arabe, arabizi, français), avec des fautes de frappe tolérées. Ce n'est pas le parcours principal.",
     planNeedChoice: "Choisissez d'abord une région et une culture dans l'inscription, plus haut.",
   },
   ar: {
@@ -292,7 +292,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     smsPreview: "ما يصل إلى هاتف بسيط",
     refresh: "تحديث",
     languagesTitle: "اللغات التي تفهمها الرسائل النصية",
-    languagesBody: "العربية التونسية (بالحروف العربية وبالحروف اللاتينية «عربيزي»)، والفرنسية والإنجليزية، مع التسامح مع أخطاء الكتابة. اللهجة غير مضمونة: هذا ما تم قياسه.",
+    languagesBody: "الإنجليزية، والعربية التونسية (بالحروف العربية وبالحروف اللاتينية «عربيزي»)، والفرنسية، مع التسامح مع أخطاء الكتابة. اللهجة غير مضمونة: هذا ما تم قياسه.",
     measured: (ok, total) => `${ok} جملة مفهومة من ${total}`,
     measuredCaveat: "جمل كتبها الفريق يدويا، لم تُجمع من فلاحين: ليس قياسا ميدانيا.",
     signupTitle: "الاشتراك في رسالة الصباح",
@@ -347,7 +347,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     kLang: "اللغة",
     kStop: "إيقاف",
     kHelpDesc: "استقبال رسالة المساعدة من الخدمة.",
-    kLangDesc: "اختيار لغة الرسائل: الفرنسية أو العربية أو الإنجليزية.",
+    kLangDesc: "اختيار لغة الرسائل: الإنجليزية أو العربية أو الفرنسية.",
     kStopDesc: "مسح إعداداتك وإيقاف الرسائل.",
     kBackDesc: "الرجوع إلى الخلف.",
     logTitle: "الرسائل المتبادلة مع الخادم",
@@ -358,7 +358,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     logAuto: "تلقائي: يضبط لغة الردود",
     curiousSummary: "للفضوليين: كتابة رسالة بالعربيزي",
     curiousIntro:
-      "للفضوليين والتقنيين فقط. يمكن للفلاح أيضا أن يكتب بنفسه «زيتون القيروان»: يفهم الخادم أسماء المحاصيل والولايات المكتوبة باليد (بالعربية أو الفرنسية أو العربيزي)، مع التسامح مع أخطاء الكتابة. هذا ليس المسار الرئيسي.",
+      "للفضوليين والتقنيين فقط. يمكن للفلاح أيضا أن يكتب بنفسه «زيتون القيروان»: يفهم الخادم أسماء المحاصيل والولايات المكتوبة باليد (بالعربية أو العربيزي أو الفرنسية)، مع التسامح مع أخطاء الكتابة. هذا ليس المسار الرئيسي.",
     planNeedChoice: "اختر أولا الولاية والمحصول في الاشتراك أعلاه.",
   },
   en: {
@@ -408,7 +408,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     smsPreview: "What a basic phone would receive",
     refresh: "Refresh",
     languagesTitle: "Languages the SMS understands",
-    languagesBody: "Tunisian Arabic (Arabic script and Latin-letter “arabizi”), French and English, tolerating typing mistakes. The dialect is not guaranteed: here is what was measured.",
+    languagesBody: "English, Tunisian Arabic (Arabic script and Latin-letter “arabizi”) and French, tolerating typing mistakes. The dialect is not guaranteed: here is what was measured.",
     measured: (ok, total) => `${ok} of ${total} sentences understood`,
     measuredCaveat: "Sentences written by hand by the team, not collected from farmers: this is not a field measurement.",
     signupTitle: "Sign up for the morning SMS",
@@ -463,7 +463,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     kLang: "Language",
     kStop: "Stop",
     kHelpDesc: "Receive the service's help message.",
-    kLangDesc: "Choose the SMS language: French, Arabic or English.",
+    kLangDesc: "Choose the SMS language: English, Arabic or French.",
     kStopDesc: "Erase your settings and stop the SMS.",
     kBackDesc: "Go back.",
     logTitle: "Messages exchanged with the server",
@@ -474,7 +474,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     logAuto: "automatic: sets the language of the replies",
     curiousSummary: "For the curious: typing an SMS in Arabizi",
     curiousIntro:
-      "For the curious and for technicians. A farmer can also write “zitoun kairouan” by hand: the server understands crop and region names written by hand (Arabic, French, Arabizi), with typing mistakes tolerated. This is not the main path.",
+      "For the curious and for technicians. A farmer can also write “zitoun kairouan” by hand: the server understands crop and region names written by hand (Arabic, Arabizi, French), with typing mistakes tolerated. This is not the main path.",
     planNeedChoice: "First choose a region and a crop in the sign-up above.",
   },
 };

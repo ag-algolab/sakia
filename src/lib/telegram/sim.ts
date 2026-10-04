@@ -195,7 +195,7 @@ export function simAllowed(address: string, now: number = Date.now()): { ok: tru
 
 // Valeurs par défaut des colonnes de la table subscribers (docs/supabase.sql), SAUF la région et la culture : la démonstration
 // ne devine jamais l'une ni l'autre (la vraie table, elle, aurait « Kairouan » et « olivier » par défaut).
-const DEFAULT_ROW = { lang: "fr", soil: "limoneux", system: "goutte", last_irrigation: null, daily_bulletin: true } as const;
+const DEFAULT_ROW = { lang: "en", soil: "limoneux", system: "goutte", last_irrigation: null, daily_bulletin: true } as const;
 
 function memoryStore(seed: Subscriber | null): Store & { row: () => Subscriber | null } {
   let row = seed;

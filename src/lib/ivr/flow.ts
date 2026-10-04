@@ -46,7 +46,9 @@ export type CallEvent =
 export type StepResult = { state: CallState; say: Say[]; end: boolean };
 
 const prompt = (id: PromptId, lang: IvrLang): Say => ({ kind: "prompt", id, lang });
-const bothLangs = (id: PromptId): Say[] => [prompt(id, "fr"), prompt(id, "ar")];
+// Avant le choix de la langue : l'arabe d'abord (voix à accent tunisien), puis le français. Les touches ne changent pas
+// (1 = français, 2 = arabe) : chaque enregistrement dit sa propre touche.
+const bothLangs = (id: PromptId): Say[] => [prompt(id, "ar"), prompt(id, "fr")];
 const inLang = (id: PromptId, s: CallState): Say[] => (s.lang ? [prompt(id, s.lang)] : bothLangs(id));
 
 export function startCall(): StepResult {

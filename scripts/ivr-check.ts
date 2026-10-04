@@ -47,7 +47,7 @@ const ids = (say: Say[]) => say.map((s) => (s.kind === "prompt" ? `${s.id}:${s.l
 // ---------- 1. arbre de dialogue ----------
 function flowChecks() {
   const start = startCall();
-  ok(ids(start.say) === "welcome:fr welcome:ar", `accueil : ${ids(start.say)}`);
+  ok(ids(start.say) === "welcome:ar welcome:fr", `accueil, l arabe d abord : ${ids(start.say)}`);
 
   // parcours complet en français : olivier à Kairouan, arrosé hier ou avant-hier, puis fin
   let r = press(["1", "1", "3", "1", "2"]);
@@ -100,7 +100,7 @@ function flowChecks() {
   r = press(["1", "1", "7"]);
   ok(ids(r.say) === "invalid:fr group:fr" && r.state.node === "group", `touche invalide : ${ids(r.say)}`);
   r = press(["#"]);
-  ok(ids(r.say) === "invalid:fr invalid:ar welcome:fr welcome:ar", `# à l'accueil : ${ids(r.say)}`);
+  ok(ids(r.say) === "invalid:ar invalid:fr welcome:ar welcome:fr", `# à l accueil : ${ids(r.say)}`);
   r = press(["1", "2", "8"]);
   ok(r.state.node === "region_list" && ids(r.say).startsWith("invalid:fr"), "8 n'existe pas dans la liste des régions");
 
@@ -122,7 +122,7 @@ function flowChecks() {
   r = press([{ tick: 1000 }], r);
   ok(r.end && ids(r.say) === "timeout:fr", `fin à 2 minutes : ${ids(r.say)}`);
   r = press([{ tick: MAX_CALL_MS }]);
-  ok(r.end && ids(r.say) === "timeout:fr timeout:ar", `fin à 2 minutes avant le choix de la langue : ${ids(r.say)}`);
+  ok(r.end && ids(r.say) === "timeout:ar timeout:fr", `fin à 2 minutes avant le choix de la langue : ${ids(r.say)}`);
 
   // raccrocher, puis plus rien ne se passe
   r = press(["1", "1"]);

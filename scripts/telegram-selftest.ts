@@ -221,7 +221,8 @@ async function main() {
   const down: Deps = { ...deps, limiter: new RateLimiter(), store: { ...deps.store, get: async () => { throw new Error("base en pause"); } } };
   const sayDown = async (text: string) => { out = []; down.limiter = new RateLimiter(); await handleUpdate({ update_id: ++n, message: { message_id: n, chat, text, date: 0 } }, down); return out; };
   m = await sayDown("olivier kairouan");
-  check(m.length >= 1 && m.some((x) => /Olivier · Kairouan/.test(x.text)) && !m.some((x) => /réessayer|problème|erreur/i.test(x.text)), "base en panne : « olivier kairouan » reçoit quand même son plan");
+  // sans mémoire ni langue de Telegram connue, la réponse vient en anglais (anglais d'abord pour le jury) : « Olive · Kairouan »
+  check(m.length >= 1 && m.some((x) => /(Olive|Olivier) · Kairouan/.test(x.text)) && !m.some((x) => /réessayer|problème|erreur|try again|problem|error/i.test(x.text)), "base en panne : « olivier kairouan » reçoit quand même son plan");
   m = await sayDown("/aide");
   check(m.length === 1 && ["/plan", "/aide"].every((c) => m[0].text.includes(c)), "base en panne : /aide répond");
   m = await sayDown("/plan");

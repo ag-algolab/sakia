@@ -8,8 +8,9 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Sakia",
     short_name: "Sakia",
-    description: "Quand et combien irriguer pendant 7 jours, en français, en arabe et en anglais. Reste utilisable sans internet après un premier chargement.",
-    lang: "fr",
+    // en anglais par défaut (le jury) ; l'appli parle anglais, arabe tunisien et français
+    description: "When and how much to irrigate over the next 7 days, in English, Tunisian Arabic and French. Keeps working without internet after a first load.",
+    lang: "en",
     dir: "auto",
     start_url: "/",
     scope: "/",
@@ -26,9 +27,9 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: "Téléphone SMS",
+        name: "SMS phone",
         short_name: "SMS",
-        description: "Essayer le plan par SMS simulé",
+        description: "Try the plan by simulated SMS",
         url: "/phone",
         icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
