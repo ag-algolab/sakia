@@ -21,15 +21,14 @@ function PlanBody({ lang, regionId, cropId }: { lang: UiLang; regionId: string; 
   const t = STRINGS[lang];
   const { ago, setAgo } = usePhoneProfile();
   const state = usePlan({ regionId, cropId, lastIrrigationDaysAgo: ago === "" ? undefined : Number(ago) });
-  // Le SMS ne connaît pas le dernier arrosage : son aperçu est calculé sans lui, comme le fait le service SMS.
-  const smsState = usePlan({ regionId, cropId });
+  // L'aperçu du SMS part du même plan : le service SMS connaît lui aussi le dernier arrosage (dit dans le message ou en réponse à sa question).
   const { plan } = state;
   const ageText = plan ? formatAge(plan.dataAgeHours * 3600 * 1000, lang) : "";
   const crop = CROPS.find((c) => c.id === cropId);
   const region = REGIONS.find((r) => r.id === regionId);
   const cropName = crop ? (lang === "ar" ? crop.nameAr : lang === "en" ? crop.nameEn : crop.nameFr) : "";
   const regionName = region ? (lang === "ar" ? region.nameAr : region.nameFr) : "";
-  const sms = smsState.plan ? asSent(planSms(smsState.plan, lang), lang) : "";
+  const sms = plan ? asSent(planSms(plan, lang), lang) : "";
   const smsMeta = smsInfo(sms);
 
   return (

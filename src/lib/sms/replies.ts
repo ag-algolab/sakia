@@ -4,6 +4,7 @@
 
 import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
+import { AGO_ASK } from "@/lib/messages";
 import type { Lang } from "@/lib/messages";
 
 type T = Record<Lang, string>;
@@ -20,10 +21,12 @@ export function regionName(id: string, lang: Lang): string {
 
 export const R = {
   help: {
-    fr: "Sakia : envoyez culture + région, ex. olivier kairouan. PLAN = dernier plan, PLUIE 10 = pluie tombée, LANGUE, STOP = effacer. *123# = menu.",
-    en: "Sakia: send crop + region, e.g. olive kairouan. PLAN = last plan, PLUIE 10 = rain that fell, LANGUE, STOP = erase. *123# = menu.",
-    ar: "ساقية: أرسل المحصول والولاية، مثال: زيتون القيروان. خطة = آخر خطة، مطر 10 = الإبلاغ عن المطر، لغة = اللغة، ايقاف = مسح. *123# قائمة",
+    fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, PLUIE 10, LANGUE, STOP = effacer. *123# = menu.",
+    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, PLUIE 10, LANGUE, STOP = erase. *123# = menu.",
+    ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، مطر 10، لغة، ايقاف = مسح. *123# قائمة",
   } as T,
+  // Réponse à la question « dernier arrosage ? » quand le chiffre n'est pas l'un de ceux proposés.
+  askAgo: AGO_ASK as T,
   menu: {
     fr: "Sakia\n1. Plan 7 jours\n2. Changer culture\n3. Langue",
     en: "Sakia\n1. 7-day plan\n2. Change crop\n3. Language",
@@ -131,12 +134,13 @@ export function rainThanks(opts: { regionId: string; kept: number; fromWord: boo
   const when = lang === "ar" ? (yesterday ? "البارحة" : "اليوم") : lang === "en" ? (yesterday ? "yesterday" : "today") : yesterday ? "hier" : "aujourd'hui";
   if (lang === "ar") {
     const head = `شكرا. مطر ${r} ${when}: ${mm} ملم${fromWord ? " (تقدير حذر)" : ""}.`;
-    return n >= need ? `${head} ${n} أشخاص أبلغوا: تم تصحيح المطر في الخطة.` : `${head} تقرير واحد، ويلزم ${need} لتصحيح الخطة.`;
+    const reports = n === 1 ? "تقرير واحد" : n === 2 ? "تقريران" : `${n} تقارير`; // 1 : singulier, 2 : duel, 3 et plus : pluriel
+    return n >= need ? `${head} ${n} أشخاص أبلغوا: تم تصحيح المطر في الخطة.` : `${head} ${reports}، ويلزم ${need} لتصحيح الخطة.`;
   }
   if (lang === "en") {
     const head = `Thanks. Rain at ${r} ${when}: ${mm} mm${fromWord ? " (cautious estimate)" : ""}.`;
-    return n >= need ? `${head} ${n} people reported: the plan's rain is corrected.` : `${head} ${n} report so far; ${need} are needed to correct the plan.`;
+    return n >= need ? `${head} ${n} people reported: the plan's rain is corrected.` : `${head} ${n} report${n > 1 ? "s" : ""} so far; ${need} are needed to correct the plan.`;
   }
   const head = `Merci. Pluie à ${r} ${when} : ${mm} mm${fromWord ? " (estimation prudente)" : ""}.`;
-  return n >= need ? `${head} ${n} personnes ont signalé : la pluie du plan est corrigée.` : `${head} ${n} signalement pour l'instant ; il en faut ${need} pour corriger le plan.`;
+  return n >= need ? `${head} ${n} personnes ont signalé : la pluie du plan est corrigée.` : `${head} ${n} signalement${n > 1 ? "s" : ""} pour l'instant ; il en faut ${need} pour corriger le plan.`;
 }

@@ -29,6 +29,7 @@ type Props = {
   lang: UiLang;
   regionId: string; // "" tant que la personne n'a pas choisi
   cropId: string;
+  ago?: string; // dernier arrosage ("" = inconnu) : quand il change, le SMS du matin revient avec le plan recalculé
   feed: SmsFeed | null; // null tant que région et culture ne sont pas choisies
   onNeedChoice: () => void;
 };
@@ -95,7 +96,7 @@ function keysFor(screen: Screen, t: Strings, lang: UiLang): KeyDef[] {
   }
 }
 
-export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoice }: Props) {
+export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, onNeedChoice }: Props) {
   const t = STRINGS[lang];
   const router = useRouter();
   const ready = regionId !== "" && cropId !== "";
@@ -124,9 +125,9 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
   const waiting = useRef(false); // le SMS attend que la météo arrive
   const inCall = useRef(false); // l'appel simulé sonne : l'arrivée automatique du SMS ne doit pas le couper
   const retry = useRef<{ kind: "reply"; text: string; isStop: boolean } | { kind: "lang"; to: SmsLang } | null>(null); // « Réessayer » rejoue le dernier envoi
-  const live = useRef({ t, lang, smsLang, regionId, cropId, ready, feed, now, sim, onNeedChoice });
+  const live = useRef({ t, lang, smsLang, regionId, cropId, ago, ready, feed, now, sim, onNeedChoice });
   useEffect(() => {
-    live.current = { t, lang, smsLang, regionId, cropId, ready, feed, now, sim, onNeedChoice };
+    live.current = { t, lang, smsLang, regionId, cropId, ago, ready, feed, now, sim, onNeedChoice };
   });
 
   const later = useCallback((fn: () => void, ms: number) => {
@@ -215,7 +216,7 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
     if (busy.current) return;
     clearTimers();
     waiting.current = false;
-    startedFor.current = `${L.regionId}|${L.cropId}`;
+    startedFor.current = `${L.regionId}|${L.cropId}|${L.ago}`;
     setStopped(false);
     setScreen({ id: "idle" });
     // l'horloge du téléphone passe à 06:00 juste avant l'arrivée du SMS
@@ -228,15 +229,16 @@ export default function FeaturePhone({ lang, regionId, cropId, feed, onNeedChoic
     startMorningRef.current = startMorning;
   }, [startMorning]);
 
-  // Peu après le choix de la région et de la culture (ou à l'arrivée sur la page avec un profil enregistré), le SMS arrive de lui-même.
+  // Peu après le choix de la région et de la culture (ou à l'arrivée sur la page avec un profil enregistré), le SMS arrive de lui-même ;
+  // il revient quand le dernier arrosage change (le plan, et donc le SMS, en dépendent).
   useEffect(() => {
     if (!ready) return;
-    const sig = `${regionId}|${cropId}`;
+    const sig = `${regionId}|${cropId}|${ago}`;
     const id = window.setTimeout(() => {
       if (startedFor.current !== sig && !inCall.current) startMorningRef.current();
     }, AUTO_ARRIVAL_MS);
     return () => window.clearTimeout(id);
-  }, [ready, regionId, cropId]);
+  }, [ready, regionId, cropId, ago]);
 
   // La météo arrive alors que le SMS l'attendait.
   const feedStatus = feed?.status ?? null;

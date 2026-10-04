@@ -4,11 +4,13 @@
 // personne n'a pas choisi, chaque choix le dit (bordure pointillée, « Obligatoire »). On réutilise les mêmes sélecteurs en images
 // que l'accueil (RegionPicker, CropPicker : une position GPS ou la liste des 24 gouvernorats ; des dessins pour les cultures) et le
 // même profil enregistré dans l'appareil : le choix n'est prérempli que s'il a déjà été fait, sur l'accueil ou ici.
+// Puis, comme sur l'accueil, le dernier arrosage (AgoPicker), FACULTATIF : sans lui, le plan et donc le SMS disent « pas sûr ».
 
 import { CROPS } from "@/lib/crops";
 import { REGIONS } from "@/lib/regions";
 import { cropName, regionName } from "@/components/ui/catalog";
 import { useLang } from "@/components/ui/LangProvider";
+import AgoPicker from "@/components/ui/AgoPicker";
 import CropPicker from "@/components/ui/CropPicker";
 import RegionPicker from "@/components/ui/RegionPicker";
 import { usePhoneProfile } from "./phoneProfile";
@@ -22,8 +24,8 @@ type Props = {
 
 export default function SignupPanel({ lang, showErrors }: Props) {
   const t = STRINGS[lang];
-  const { lang: siteLang } = useLang(); // les sélecteurs de l'accueil parlent les quatre langues du site, darija comprise
-  const { profile, ready, fromSaved, patch } = usePhoneProfile();
+  const { lang: siteLang, t: siteT } = useLang(); // les sélecteurs de l'accueil parlent les quatre langues du site, darija comprise
+  const { profile, ready, fromSaved, patch, ago, setAgo } = usePhoneProfile();
 
   const region = REGIONS.find((r) => r.id === profile.region);
   const crop = CROPS.find((c) => c.id === profile.crop);
@@ -51,6 +53,16 @@ export default function SignupPanel({ lang, showErrors }: Props) {
               {t.cropError}
             </p>
           )}
+        </div>
+      </div>
+
+      <div id="phone-ago-q" className="mt-4">
+        <p className="mb-2 text-base font-bold">{siteT("qLast")}</p>
+        <div className={`rounded-3xl border-2 p-3 ${ago === "" ? "border-sakia-alert bg-sakia-alert-light" : "border-sakia-green/40 bg-sakia-green-light"}`}>
+          <p className={`mb-3 text-base font-semibold ${ago === "" ? "text-sakia-alert" : "text-sakia-green"}`}>
+            {ago === "" ? `⚠ ${siteT("lastWateringMissing")}` : siteT("lastWateringSet")}
+          </p>
+          <AgoPicker value={ago} onChange={setAgo} />
         </div>
       </div>
 

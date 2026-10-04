@@ -4,18 +4,18 @@
 
 import { CROPS } from "../crops";
 import { REGIONS } from "../regions";
-import { planSms } from "../messages";
+import { AGO_ASK, planSms } from "../messages";
 import type { Lang } from "../messages";
 import { addDays, computePlan } from "../planCore";
 import type { Forecast } from "../weather";
 import { handleIncoming, resetSmsSessions } from "./handler";
 import type { PlanSource, ReportsApi } from "./handler";
 import type { ReportRow } from "../reports";
-import { reporterHash } from "../reports";
+import { MIN_REPORTERS, reporterHash } from "../reports";
 import { todayInTunisia } from "../weather";
-import { fitGsm, gsmLength, smsInfo } from "./encoding";
+import { fitGsm, gsmLength, smsInfo, toGsm } from "./encoding";
 import { parseSms } from "./parse";
-import { R } from "./replies";
+import { R, rainThanks } from "./replies";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = "") {
@@ -81,6 +81,49 @@ check("STOP l'emporte", parseSms("olivier kairouan stop").kind === "stop");
 check("« stp » n'efface pas la conversation", parseSms("olivier kairouan stp").kind === "plan");
 check("« sto » seul n'est pas STOP non plus", parseSms("sto").kind === "unknown");
 
+// ---------- dernier arrosage dit dans le message ----------
+// [texte, culture attendue, jours écoulés attendus] ; la région est toujours Kairouan.
+const agoCases: [string, string, number | undefined][] = [
+  ["olivier kairouan hier", "olivier", 1],
+  ["zitoun kairouan lbare7", "olivier", 1],
+  ["olivier kairouan yesterday", "olivier", 1],
+  ["زيتون القيروان البارح", "olivier", 1],
+  ["زيتون القيروان امس", "olivier", 1],
+  ["olivier kairouan aujourd'hui", "olivier", 0],
+  ["olivier kairouan today", "olivier", 0],
+  ["zitoun kairouan lyoum", "olivier", 0],
+  ["زيتون القيروان اليوم", "olivier", 0],
+  ["olivier kairouan avant-hier", "olivier", 2],
+  ["olivier kairouan avant hier", "olivier", 2],
+  ["زيتون القيروان قبل البارح", "olivier", 2],
+  ["زيتون القيروان يومين", "olivier", 2],
+  ["tomate kairouan 3j", "tomate", 3],
+  ["tomate kairouan 3 jours", "tomate", 3],
+  ["tomate kairouan il y a 4 jours", "tomate", 4],
+  ["tomate kairouan 5 days", "tomate", 5],
+  ["tomate kairouan 2 ayem", "tomate", 2],
+  ["tomate kairouan 7j", "tomate", 7],
+  ["tomate kairouan 5j", "tomate", 5], // « 5j » ne doit pas être lu comme un mot d'arabizi (5 = خ)
+  ["tomate kairouan 10 jours", "tomate", 7], // plafonné comme le moteur
+  ["زيتون القيروان قبل 3 ايام", "olivier", 3],
+  ["زيتون القيروان قبل يوم", "olivier", 1],
+  ["olivier kairouan", "olivier", undefined],
+  ["olivier kairouan 3", "olivier", undefined], // un nombre seul n'est pas un nombre de jours
+  ["olivier kairouan jours", "olivier", undefined],
+  ["olivier kairouan arrosé", "olivier", undefined],
+];
+for (const [text, crop, ago] of agoCases) {
+  const p = parseSms(text);
+  check(`dernier arrosage « ${text} » -> ${ago ?? "rien"}`, p.kind === "plan" && p.cropId === crop && p.regionId === "kairouan" && p.ago === ago, JSON.stringify(p));
+}
+for (const [text, days] of [["hier", 1], ["aujourd'hui", 0], ["3j", 3], ["اليوم", 0], ["البارح", 1], ["5 jours", 5], ["avant-hier", 2], ["lbare7", 1]] as [string, number][]) {
+  const p = parseSms(text);
+  check(`« ${text} » seul : dernier arrosage ${days}`, p.kind === "ago" && p.days === days, JSON.stringify(p));
+}
+check("« pluie hier 5 kairouan » reste un rapport de pluie d'hier", (() => { const p = parseSms("pluie hier 5 kairouan"); return p.kind === "rain" && p.dayOffset === -1 && p.mm === 5; })());
+check("« 3 » seul reste une réponse de menu", parseSms("3").kind === "choice");
+check("« jour » seul ne dit rien", parseSms("jour").kind === "unknown");
+
 // mots ordinaires qui ressemblent à une culture ou une région : ils ne doivent rien déclencher
 for (const text of ["what should I plant in kairouan", "what can you do", "quelle date pour kairouan", "rien du tout", "premier fichier", "je suis déjà sous la pluie", "toutes les orages", "figure 3 vide"]) {
   const p = parseSms(text);
@@ -114,7 +157,7 @@ function fixedForecast(): Forecast {
 }
 const FRESH = new Date("2026-10-05T06:00:00.000Z"); // 1 h après le téléchargement de la météo
 const STALE = new Date("2026-10-07T17:00:00.000Z"); // 60 h après : le moteur ne donne plus de conseil
-const planAt = (now: Date): PlanSource => async (r, c) => computePlan({ regionId: r, cropId: c }, fixedForecast(), { now, today: "2026-10-05" });
+const planAt = (now: Date): PlanSource => async (r, c, ago) => computePlan({ regionId: r, cropId: c, lastIrrigationDaysAgo: ago }, fixedForecast(), { now, today: "2026-10-05" });
 const stub: PlanSource = planAt(FRESH);
 
 async function say(from: string, text: string, src: PlanSource = stub) {
@@ -166,6 +209,95 @@ async function conversations() {
   check("limite de débit", last.includes("Trop de messages"), last);
 }
 
+// ---------- dernier arrosage : la question dans le SMS du plan, la réponse (1 à 4, « hier », « 3j »), la mémoire ----------
+// Au 5 octobre 2026 (prévision fixe) l'olivier, le piment, l'amandier... sont en saison ; le blé et la tomate ne le sont pas.
+const planWith = (crop: string, ago: number | undefined, lang: Lang = "fr") => {
+  const text = planSms(computePlan({ regionId: "kairouan", cropId: crop, lastIrrigationDaysAgo: ago }, fixedForecast(), { now: FRESH, today: "2026-10-05" }), lang);
+  return lang === "ar" ? text : fitGsm(text, 160); // la forme finale du service : m³ -> m3, accents hors GSM retirés
+};
+const QUESTION_FR = "Arrosé quand ? 1 auj 2 1-2j 3 3-5j 4 +5j";
+const SAFEGUARD_FR = "Pas sûr : demandez au technicien (CRDA).";
+
+async function lastIrrigation() {
+  resetSmsSessions();
+  const q = await say("g1", "piment kairouan");
+  check("sans dernier arrosage : le SMS pose la question", q.includes(QUESTION_FR), q);
+  check("… et « Pas sûr : demandez au technicien (CRDA) » reste la DERNIÈRE phrase", q.endsWith(SAFEGUARD_FR.replace("sûr", "sur")) || q.endsWith(SAFEGUARD_FR), q);
+  check("… le tout tient dans un SMS (≤ 160, alphabet GSM)", (gsmLength(q) ?? 999) <= 160, q);
+  const a2 = await say("g1", "2");
+  check("réponse 2 (1 à 2 jours) : plan sûr, sans « Pas sûr » ni question", a2.startsWith("Sakia Kairouan") && !a2.includes("Pas s") && !a2.includes("Arrosé quand"), a2);
+  check("… c'est le plan du moteur avec 2 jours écoulés", a2 === planWith("piment", 2), `${a2} | ${planWith("piment", 2)}`);
+  check("PLAN rejoue ce plan (le dernier arrosage est retenu)", (await say("g1", "PLAN")) === a2);
+  check("même culture et région redites : le dernier arrosage est retenu, pas de question", (await say("g1", "piment kairouan")) === a2);
+  check("autre culture : le dernier arrosage ne vaut plus, la question revient", (await say("g1", "olivier kairouan")).includes(QUESTION_FR));
+  for (const [digit, ago] of [["1", 0], ["2", 2], ["3", 5], ["4", 7]] as [string, number][]) {
+    await say(`d${digit}`, "olivier kairouan");
+    check(`réponse ${digit} -> ${ago} jour(s) écoulé(s), mêmes tranches que la ligne vocale`, (await say(`d${digit}`, digit)) === planWith("olivier", ago));
+  }
+
+  check("dans le message : « piment kairouan hier » -> plan sûr, sans question", (await say("g5", "piment kairouan hier")) === planWith("piment", 1));
+  check("dans le message : « piment kairouan 3j »", (await say("g6", "piment kairouan 3j")) === planWith("piment", 3));
+  check("dans le message : « piment kairouan aujourd'hui »", (await say("g7", "piment kairouan aujourd'hui")) === planWith("piment", 0));
+  check("dans le message, en arabizi : « felfel kairouan lbare7 »", (await say("g8", "felfel kairouan lbare7")) === planWith("piment", 1));
+
+  await say("g9", "piment kairouan");
+  check("« hier » seul, après un plan : le plan devient sûr", (await say("g9", "hier")) === planWith("piment", 1));
+  check("« hier » seul, sans culture ni région : on les demande", (await say("g10", "hier")).includes("culture"));
+
+  await say("g11", "piment kairouan");
+  check("chiffre hors tranches (7) : on repose la question", (await say("g11", "7")) === R.askAgo.fr);
+  check("… puis un chiffre valable est accepté", (await say("g11", "2")) === planWith("piment", 2));
+  await say("g12", "piment kairouan");
+  const dont = await say("g12", "9");
+  check("9 = je ne sais pas : le plan avec « Pas sûr », sans reposer la question", dont.includes("Pas s") && !dont.includes("Arrosé quand"), dont);
+
+  check("culture hors saison : pas de question", !(await say("g13", "ble kairouan")).includes("Arrosé quand"));
+  const none = await say("g14", "piment kairouan", planAt(STALE));
+  check("météo de 60 h : aucun conseil, pas de question", !none.includes("Arrosé quand") && none.includes("CRDA"), none);
+  check("… et un chiffre qui suit ne change rien (pas de question en attente)", (await say("g14", "2")).includes("compris"));
+
+  await say("g15", "piment kairouan");
+  await say("g15", "2");
+  await say("g15", "stop");
+  check("STOP efface aussi le dernier arrosage : la question revient", (await say("g15", "piment kairouan")).includes(QUESTION_FR));
+
+  const en = (await say("g16", "langue en"), await say("g16", "pepper kairouan"));
+  check("en anglais : question « Last irrigation? » et avertissement en dernier", en.includes("Last irrigation? 1 today") && en.endsWith("Not sure: ask the technician (CRDA)."), en);
+  check("… ≤ 160", (gsmLength(en) ?? 999) <= 160, en);
+  check("en anglais, réponse 2 : plan sûr", (await say("g16", "2")) === planWith("piment", 2, "en"));
+  const ar = await say("g17", "فلفل القيروان");
+  check("en arabe : la question est posée", ar.includes("آخر سقي؟ 1 اليوم"), ar);
+  check("… 3 SMS au plus", smsInfo(ar).segments <= 3, `${ar.length} car.`);
+  check("en arabe, réponse 2 : plan sûr", (await say("g17", "2")) === planWith("piment", 2, "ar"));
+
+  check("« olivier kairouan hier » : la phrase reste ≤ 160 (anglais aussi)", (gsmLength(await say("g18", "olive kairouan yesterday")) ?? 999) <= 160);
+}
+
+// Toutes les régions x toutes les cultures (prévision fixe) : le SMS avec la question tient dans 160 caractères GSM (arabe : 3 SMS),
+// garde la question ET l'avertissement en dernier. Sans cela, fitGsm ferait sauter la question en silence.
+async function askLengths() {
+  let n = 0;
+  let worst = 0;
+  let worstAt = "";
+  for (const lang of ["fr", "en", "ar"] as Lang[]) {
+    for (const r of REGIONS) {
+      for (const c of CROPS) {
+        const p = computePlan({ regionId: r.id, cropId: c.id }, fixedForecast(), { now: FRESH, today: "2026-10-05" });
+        if (!p.confidence.reasons.includes("unknown_last_irrigation")) continue;
+        const t = planSms(p, lang, { askAgo: true });
+        const size = lang === "ar" ? smsInfo(t).segments : (gsmLength(toGsm(t)) ?? 999);
+        const limit = lang === "ar" ? 3 : 160;
+        if (lang !== "ar" && size > worst) { worst = size; worstAt = `${lang} ${r.id}/${c.id}`; }
+        n++;
+        if (size > limit || !t.includes(AGO_ASK[lang]) || !t.endsWith(lang === "ar" ? "غير متأكد: اسألوا الفني (CRDA)." : lang === "en" ? "Not sure: ask the technician (CRDA)." : SAFEGUARD_FR)) {
+          check(`${lang} ${r.id}/${c.id} : question + avertissement en dernier, ${lang === "ar" ? "3 SMS" : "160"} au plus`, false, `${size} : ${t}`);
+        }
+      }
+    }
+  }
+  check(`${n} SMS avec question (régions x cultures en saison, 3 langues) : tous complets, le plus long : ${worst} (${worstAt})`, n > 0 && worst <= 160);
+}
+
 // ---------- 24 régions x 18 cultures sur la météo réelle ----------
 async function live() {
   const { buildPlan } = await import("../plan");
@@ -213,11 +345,15 @@ async function rainReports() {
 
   const a = await sayR("r1", "PLUIE 10 kairouan", api);
   check("PLUIE 10 kairouan : enregistré (10 mm, aujourd'hui, empreinte « sms:r1 »)", saved.length === 1 && saved[0].mm === 10 && saved[0].day === today && saved[0].token === "sms:r1" && saved[0].regionId === "kairouan", JSON.stringify(saved));
-  check("1re personne : dit qu'il en faut 2", a.includes("10 mm") && a.includes("1 signalement") && a.includes("2"), a);
+  check("1re personne : dit qu'il en faut 3 (MIN_REPORTERS)", a.includes("10 mm") && a.includes("1 signalement") && a.includes(`il en faut ${MIN_REPORTERS}`), a);
   const b = await sayR("r2", "pluie 6 kairouan", api);
-  check("2e personne : « la pluie du plan est corrigée » et le nombre", b.includes("2 personnes") && b.includes("corrigée"), b);
+  check("2e personne : pas encore corrigée, il en faut 3 (pluriel « 2 signalements »)", b.includes("2 signalements") && b.includes(`il en faut ${MIN_REPORTERS}`) && !b.includes("corrigée"), b);
+  const c = await sayR("r2b", "pluie 8 kairouan", api);
+  check("3e personne : « la pluie du plan est corrigée » et le nombre", c.includes(`${MIN_REPORTERS} personnes`) && c.includes("corrigée"), c);
+  check("arabe, 2 signalements : « تقريران » (duel), pas « تقرير واحد »", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "ar").includes("تقريران"));
+  check("anglais, 2 reports : pluriel", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "en").includes("2 reports so far"));
   await sayR("r1", "pluie 12 kairouan", api);
-  check("même personne qui renvoie : un seul rapport, valeur remplacée", saved.length === 2 && saved.find((r) => r.token === "sms:r1")?.mm === 12);
+  check("même personne qui renvoie : un seul rapport, valeur remplacée", saved.length === 3 && saved.find((r) => r.token === "sms:r1")?.mm === 12);
 
   const ar = await sayR("r3", "مطر 10 القيروان", api);
   check("مطر 10 القيروان : accepté, réponse en arabe", /[؀-ۿ]/.test(ar) && saved.some((r) => r.token === "sms:r3" && r.mm === 10), ar);
@@ -252,11 +388,13 @@ async function rainReports() {
   for (let i = 0; i < 12; i++) last = await sayR("spam", `pluie ${i} kairouan`, lim.api);
   check("limite de 10 rapports par heure et par expéditeur", last.includes("trop de rapports") && lim.saved.length === 1, last);
 
-  for (const reply of [a, b, ar, word, down]) check(`réponse de pluie ≤ 160 caractères (${reply.length})`, /[\u0600-\u06FF]/.test(reply) || fitGsm(reply).length <= 160 && reply.length <= 160, reply);
+  for (const reply of [a, b, c, ar, word, down]) check(`réponse de pluie ≤ 160 caractères (${reply.length})`, /[\u0600-\u06FF]/.test(reply) || fitGsm(reply).length <= 160 && reply.length <= 160, reply);
 }
 
 (async () => {
   await conversations();
+  await lastIrrigation();
+  await askLengths();
   await rainReports();
   if (process.argv.includes("--live")) await live();
   console.log(failed ? `\n${failed} contrôle(s) en échec` : "\ntous les contrôles passent");

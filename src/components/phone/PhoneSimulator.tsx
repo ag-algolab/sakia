@@ -14,17 +14,18 @@ import { STRINGS } from "./strings";
 import { useUiLang } from "./useUiLang";
 import { usePlan } from "./usePlan";
 
-// Le plan du SMS est calculé sur l'appareil avec la météo du jour (même calcul que le serveur), SANS « dernier arrosage » :
-// un SMS ne le connaît pas. Monté seulement quand région et culture sont choisies : aucune météo n'est téléchargée pour un choix par défaut.
-function SmsSource({ regionId, cropId, children }: { regionId: string; cropId: string; children: (feed: SmsFeed) => ReactNode }) {
-  const state = usePlan({ regionId, cropId });
+// Le plan du SMS est calculé sur l'appareil avec la météo du jour (même calcul que le serveur) et le dernier arrosage s'il a été
+// donné (inscription, « Mon plan » ou accueil) : le service SMS le connaît aussi, dit dans le message (« piment kairouan 3j ») ou en
+// réponse à sa question. Monté seulement quand région et culture sont choisies : aucune météo n'est téléchargée pour un choix par défaut.
+function SmsSource({ regionId, cropId, ago, children }: { regionId: string; cropId: string; ago: string; children: (feed: SmsFeed) => ReactNode }) {
+  const state = usePlan({ regionId, cropId, lastIrrigationDaysAgo: ago === "" ? undefined : Number(ago) });
   return <>{children({ status: state.status, plan: state.plan })}</>;
 }
 
 export default function PhoneSimulator() {
   const lang = useUiLang();
   const t = STRINGS[lang];
-  const { profile, ready } = usePhoneProfile();
+  const { profile, ready, ago } = usePhoneProfile();
   const [showErrors, setShowErrors] = useState(false);
 
   // Un bouton est pressé alors qu'il manque un choix : on le dit et on place le curseur sur le premier choix à faire.
@@ -47,8 +48,8 @@ export default function PhoneSimulator() {
 
       <div className="mt-6">
         {ready ? (
-          <SmsSource regionId={profile.region} cropId={profile.crop}>
-            {(feed) => <FeaturePhone lang={lang} regionId={profile.region} cropId={profile.crop} feed={feed} onNeedChoice={needChoice} />}
+          <SmsSource regionId={profile.region} cropId={profile.crop} ago={ago}>
+            {(feed) => <FeaturePhone lang={lang} regionId={profile.region} cropId={profile.crop} ago={ago} feed={feed} onNeedChoice={needChoice} />}
           </SmsSource>
         ) : (
           <FeaturePhone lang={lang} regionId="" cropId="" feed={null} onNeedChoice={needChoice} />
