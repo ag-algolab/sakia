@@ -61,18 +61,31 @@ async function clip(name, opts, body) {
 }
 
 // Le questionnaire de l'accueil (ou de /phone) : région, culture, dernier arrosage — comme le ferait l'agriculteur.
-async function questionnaire({ cdp, log }, { last }) {
+async function questionnaire({ cdp, log, mark }, { last }) {
+  // accueil du 4 oct. (PR n° 10/11) : le champ est déjà rempli, « Change » ouvre les questions
+  const change = await find(cdp, { text: "Change", exact: true, scroll: false });
+  const hidden = !(await cdp.eval(`[...document.querySelectorAll("button[aria-haspopup=dialog]")].some((b) => /Region/.test(b.innerText) && b.getBoundingClientRect().width > 0)`));
+  if (change && hidden) {
+    await tapText(cdp, { text: "Change", exact: true }, log, { pauseBefore: 300 });
+    mark?.("tapChange");
+    await sleep(900);
+  }
   await tapText(cdp, { selector: "button[aria-haspopup=dialog]", text: "Region" }, log, { pauseBefore: 500 });
-  await waitFor(cdp, `[...document.querySelectorAll("button")].some((b) => b.innerText.trim() === "Kairouan" && b.getBoundingClientRect().width > 0)`);
+  // (déjà choisie, la case porte une coche : « Kairouan ✓ »)
+  await waitFor(cdp, `[...document.querySelectorAll("button")].some((b) => b.innerText.trim().startsWith("Kairouan") && b.getBoundingClientRect().width > 0)`);
   await sleep(1100);
-  await tapText(cdp, { text: "Kairouan", exact: true }, log, { pauseBefore: 250 });
+  // dans la fenêtre de choix seulement (sinon le bouton « Region Kairouan Change » de la page, derrière, répond aussi)
+  await tapText(cdp, { selector: "dialog[open] button", text: "Kairouan" }, log, { pauseBefore: 250 });
+  mark?.("tapKairouan");
   await sleep(900);
   await tapText(cdp, { selector: "button[aria-haspopup=dialog]", text: "Crop" }, log, { pauseBefore: 400 });
-  await waitFor(cdp, `[...document.querySelectorAll("button")].some((b) => b.innerText.trim() === "Pepper" && b.getBoundingClientRect().width > 0)`);
+  await waitFor(cdp, `[...document.querySelectorAll("button")].some((b) => b.innerText.trim().startsWith("Pepper") && b.getBoundingClientRect().width > 0)`);
   await sleep(1500); // on laisse voir les images des cultures : pas besoin de lire
-  await tapText(cdp, { text: "Pepper", exact: true }, log, { pauseBefore: 250 });
+  await tapText(cdp, { selector: "dialog[open] button", text: "Pepper" }, log, { pauseBefore: 250 });
+  mark?.("tapPepper");
   await sleep(900);
   await tapText(cdp, { text: last, exact: true }, log, { pauseBefore: 300 });
+  mark?.("tapLast");
   await sleep(900);
 }
 
@@ -106,7 +119,10 @@ await clip("home", { profile: "demo", fresh: true }, async (c) => {
   mark("questions");
   await questionnaire(c, { last: LAST });
   mark("continue");
+  // « Continue » est sous l'écran : on y descend en douceur (sinon la page sauterait au moment du toucher)
+  await scrollTo(cdp, { text: "Continue", selector: "button", block: 0.62, durationMs: 700 });
   await tapText(cdp, { text: "Continue", exact: true }, log, { pauseBefore: 300 });
+  mark("continued");
   await sleep(1400);
   const lis = await find(cdp, { text: "Listen to today", scroll: false });
   if (lis && (lis.y < 120 || lis.y > 700)) await scrollTo(cdp, { text: "YOUR FIELD", selector: "p,div,h2,h3,span", block: 0.02, durationMs: 700 });
@@ -159,6 +175,7 @@ await clip("notsure", { profile: "notsure", fresh: true }, async (c) => {
   await rec.start();
   mark("questions");
   await questionnaire(c, { last: "Don't know" });
+  await scrollTo(cdp, { text: "Continue", selector: "button", block: 0.62, durationMs: 700 });
   await tapText(cdp, { text: "Continue", exact: true }, log, { pauseBefore: 300 });
   await sleep(1300);
   await scrollTo(cdp, { text: "I am not sure", selector: "p,div,h2,h3,strong,span", block: 0.3, durationMs: 1400 });

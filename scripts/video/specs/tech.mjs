@@ -206,8 +206,9 @@ export default {
 
     // ------------------------------------------------ fait pendant le hackathon : les outils, avec leurs logos
     {
-      type: "html", start: CRED.at, end: L.total + 0.2, fadeIn: 0.3, fadeOut: 0.01, fx: "zoom",
-      html: `<div class="bg-tech"></div><div class="cr-wrap"><div class="cr-wheel" data-at="0">{{WHEEL}}</div><div class="cr-title" data-at="0.15">Built during the hackathon by Anthony,<br>with <em>Claude Code</em></div><div class="cr-logos">${TOOLS.map(([id, color, name, role], i) => `<span data-at="${(0.8 + i * 0.28).toFixed(2)}" data-fx="pop" data-rot="-4">${id ? logo(id, color) : "<i>⛅</i>"}<b>${name}</b><small>${role}</small></span>`).join("")}</div><div class="cr-url" data-at="2.6">sakia-opal.vercel.app · github.com/ag-algolab/sakia</div></div>`,
+      type: "html", start: CRED.at, end: L.total + 0.2, fadeIn: 0.3, fadeOut: 0.01, fx: "none",
+      // Anthony et Claude Code dans la même couleur (décision d'Anthony : Claude Code seul en couleur, « ça fait genre je fais rien »)
+      html: `<div class="bg-tech"></div><div class="cr-wrap"><div class="cr-wheel" data-at="0">{{WHEEL}}</div><div class="cr-title" data-at="0.15">Built during the hackathon by <em>Anthony</em>,<br>with <em>Claude Code</em></div><div class="cr-logos">${TOOLS.map(([id, color, name, role], i) => `<span data-at="${(0.8 + i * 0.28).toFixed(2)}" data-fx="pop" data-rot="-4">${id ? logo(id, color) : "<i>⛅</i>"}<b>${name}</b><small>${role}</small></span>`).join("")}</div><div class="cr-url" data-at="2.6">sakia-opal.vercel.app · github.com/ag-algolab/sakia</div></div>`,
     },
     ...(vo?.synthetic ? [{ type: "note", start: CRED.at + 0.5, end: L.total + 0.2, x: 96, y: 1030, w: 1700, text: "Narration: synthetic voice (ElevenLabs)." }] : []),
   ],

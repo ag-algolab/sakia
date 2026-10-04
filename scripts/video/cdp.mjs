@@ -162,7 +162,9 @@ export async function find(cdp, { text, selector = "button, a, [role=button], la
     if (!el) return null;
     document.querySelectorAll("[data-cap-target]").forEach((e) => e.removeAttribute("data-cap-target"));
     el.setAttribute("data-cap-target", "1");
-    if (${scroll}) el.scrollIntoView({ block: "center", behavior: "instant" });
+    // on ne fait défiler que si l'élément est hors de l'écran : sinon la page saute sans raison pendant le film
+    const b0 = el.getBoundingClientRect();
+    if (${scroll} && (b0.top < 70 || b0.bottom > innerHeight - 70)) el.scrollIntoView({ block: "center", behavior: "instant" });
     const b = el.getBoundingClientRect();
     return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, text: norm(el.innerText).slice(0, 80) };
   })()`);

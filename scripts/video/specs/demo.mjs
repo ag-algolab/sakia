@@ -2,8 +2,8 @@
 // (docs/WB-EXIGENCES.md) : le problème (Noor ne lit pas, la nappe est surexploitée), la solution qui marche de bout en bout
 // (le vrai site, filmé, en un seul plan continu), la langue locale nommée, la même réponse sur quatre autres téléphones dont un
 // SANS RÉSEAU, le garde-fou « pas sûr : demander à une personne » (éliminatoire), la preuve chiffrée (simulation), la fin.
-// Règle d'Anthony (4 oct., 09 h 20) : peu de choses à l'écran, chacune assez longtemps pour être vue ; jamais de téléphone
-// coupé par un zoom. Visuels : chapitres du film /story (tenus sur leur image clé), séquences filmées du vrai site, vidéo
+// Règles d'Anthony (4 oct., 09 h 20 et 09 h 40) : peu de choses à l'écran, chacune assez longtemps pour être vue ; AUCUN zoom
+// (ni avancée lente sur le film, ni recadrage dans un téléphone, ni entrée en grossissant : « le zoom, c'est moche »). Visuels : chapitres du film /story (tenus sur leur image clé), séquences filmées du vrai site, vidéo
 // Telegram d'Anthony. La partition se cale sur la voix off (videos/build/takes/demo-vo.json, tts-vo.mjs).
 // Rendu : node scripts/video/compose.mjs scripts/video/specs/demo.mjs
 import { existsSync, readFileSync, statSync } from "node:fs";
@@ -59,12 +59,20 @@ const meta = (clip) => {
 };
 const HOME = meta("home"), CALL = meta("call"), SMS = meta("sms"), OFF = meta("offline"), UNSURE = meta("notsure");
 const HOME_VOICE = HOME.audio.find((a) => a.file) ?? { t: HOME.marks.listen + 1.9, file: "audio-01.mp3" };
-// Raccord dans le plan filmé du site (relevé image par image sur la prise du 4 oct. 07:04 UTC) : le robot descend de l'accueil
-// vers « Your field », puis la page remonte d'un coup (~9,2 s). On coupe pendant la descente à 8,04 s et on reprend à 9,29 s :
-// même position de défilement, donc aucune saute visible.
-const HERO_TO = 8.04, Q_FROM = 9.294;
-if (!HOME.capturedAt?.startsWith("2026-10-04T07:04")) console.log("ATTENTION : nouvelle prise « home » : revérifier HERO_TO / Q_FROM (raccord du défilement)");
-const CH_TO = HOME.taps[5] + 0.3; // « Continue » touché
+// Le site en un seul plan, sans coupe (accueil du 4 oct., PR n° 10/11 : le champ est déjà rempli, « Change » ouvre les questions).
+// Les touches à vitesse lisible, les ouvertures et fermetures de fenêtres plus vite : morceaux contigus, donc aucune saute.
+const M = HOME.marks;
+const H_Q = M.questions; // l'accueil vient de descendre sur « Your field »
+const CH_TO = M.continued + 0.3; // « Continue » touché
+const choosePieces = (r) => [
+  [H_Q - 0.1, M.tapChange + 1.2, 1.8], // « Change » : les trois questions s'ouvrent
+  [M.tapChange + 1.2, M.tapKairouan + 0.35, r], // la région, en images
+  [M.tapKairouan + 0.35, M.tapKairouan + 1.15, 2], // la fenêtre se ferme
+  [M.tapKairouan + 1.15, M.tapPepper + 0.35, r], // la culture, en images
+  [M.tapPepper + 0.35, M.tapLast + 0.3, r], // le dernier arrosage
+  [M.tapLast + 0.3, CH_TO, 2], // « Continue »
+];
+const piecesLen = (ps) => ps.reduce((s, [a, b, rate]) => s + (b - a) / rate, 0);
 // appel : la question « quand avez-vous arrosé ? », la touche 3, puis « Irrigation advice for Kairouan, crop: Pepper. » ;
 // on s'arrête avant le chiffre (la tranche « 3 à 5 jours » compte 5 jours à l'appel, 4 jours sur les autres canaux)
 const CALL_KEY = CALL.taps.at(-1);
@@ -86,7 +94,7 @@ function plan() {
   // le site, un seul plan : l'accueil (« Sakia answers »), les trois touches, « Continue » jusqu'à la voix, la voix, le plan
   const heroLen = Math.max(1.3, 0.2 + v[4] + 0.15);
   const chooseAt = heroLen;
-  const listenAt = chooseAt + (CH_TO - Q_FROM) / flex.chRate;
+  const listenAt = chooseAt + piecesLen(choosePieces(flex.chRate));
   // « Then the answer… » peut commencer pendant les dernières touches : elle annonce la voix qui suit
   const vo6At = Math.max(chooseAt + 0.3 + v[5] + 0.3, listenAt + (HOME_VOICE.t - CH_TO) / 2.2 - v[6] - 0.15);
   const appVoiceAt = Math.max(listenAt + (HOME_VOICE.t - CH_TO) / 2.2, vo6At + v[6] + 0.15);
@@ -132,17 +140,29 @@ VO_AT[13] = A("proof", 0.15);
 VO_AT[14] = A("end", 0.3);
 
 // ---------------------------------------------------------------- le site, en un seul plan continu (vitesse variable, sans saute)
+const PIECES = choosePieces(flex.chRate);
 const webSegs = [
-  { at: A("web"), clip: "home", from: HERO_TO - S.web.heroLen, to: HERO_TO },
-  { at: WEB("chooseAt"), clip: "home", from: Q_FROM, to: CH_TO, rate: flex.chRate, xfade: 0.12 },
+  // l'accueil (« Kairouan · today »), puis la descente vers « Your field »
+  { at: A("web"), clip: "home", from: H_Q - 2.3, to: H_Q - 0.1, rate: 2.2 / S.web.heroLen },
+  ...PIECES.map(([a, b, rate], i) => ({ at: WEB("chooseAt") + piecesLen(PIECES.slice(0, i)), clip: "home", from: a, to: b, rate, xfade: 0.01 })),
   { at: WEB("listenAt"), clip: "home", from: CH_TO, to: HOME_VOICE.t, rate: (HOME_VOICE.t - CH_TO) / S.web.listenLen, xfade: 0.01 },
   { at: APP_VOICE, clip: "home", from: HOME_VOICE.t, to: HOME_VOICE.t + 14, xfade: 0.01 },
 ];
-const chT = (tap) => WEB("chooseAt") + (tap - Q_FROM) / flex.chRate;
+// instant, dans la vidéo, d'un moment de la séquence filmée pendant le choix
+const chT = (src) => {
+  let t = WEB("chooseAt");
+  for (const [a, b, rate] of PIECES) {
+    if (src <= b) return t + Math.max(0, src - a) / rate;
+    t += (b - a) / rate;
+  }
+  return t;
+};
+// « The answer, spoken. » s'affiche une fois la 3e touche faite (la voix, elle, l'annonce un peu avant)
+const ANSWER_CAP = Math.max(VO_AT[6], chT(M.tapLast) + 0.4);
 const STEPS = [
-  [HOME.taps[1], "1", "Region: Kairouan"],
-  [HOME.taps[3], "2", "Crop: pepper"],
-  [HOME.taps[4], "3", "Last watered: 4 days ago"],
+  [M.tapKairouan, "1", "Region: Kairouan"],
+  [M.tapPepper, "2", "Crop: pepper"],
+  [M.tapLast, "3", "Last watered: 4 days ago"],
 ];
 
 // ---------------------------------------------------------------- les quatre téléphones, côte à côte, entiers (aucun zoom)
@@ -164,10 +184,9 @@ const tgSegs = [
   { at: A("telegram") + Math.max(1.5, TG_LEN - TG_V0 - TG_W) + TG_W, media: "tg", from: 25.5, to: 29.5, rate: 4.0 / TG_V0, xfade: 0.01 },
 ];
 
-// un chapitre du film en plein écran, joué jusqu'à son image clé puis tenu (moins de texte à lire), avec une lente avancée
-const filmLayer = (media, start, end, from, hold, origin) => ({
-  type: "video", start, end, fadeIn: 0.35, fadeOut: 0.01, x: 0, y: 0, w: 1920, h: 1080, origin,
-  zoom: [[start, 1], [end, 1.05]],
+// un chapitre du film en plein écran, joué jusqu'à son image clé puis tenu (moins de texte à lire)
+const filmLayer = (media, start, end, from, hold) => ({
+  type: "video", start, end, fadeIn: 0.35, fadeOut: 0.01, x: 0, y: 0, w: 1920, h: 1080,
   segments: [{ at: start, media, from, to: hold }],
 });
 
@@ -215,21 +234,20 @@ export default {
 
     // ---------------------------------------------------------------- 1. le problème : chapitres du film, tenus sur leur image clé
     // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage en jaune ; « 230 % » ; « Irrigate today… or wait? »)
-    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 4.95, "12% 22%"),
-    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.5, "18% 18%"),
-    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 3.7, "22% 22%"),
-    { ...filmLayer("noor", A("question") - 0.15, E("question"), 7.7, 9.6, "12% 26%"), fadeOut: 0.35 },
+    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 4.95),
+    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.5),
+    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 3.7),
+    { ...filmLayer("noor", A("question") - 0.15, E("question"), 7.7, 9.6), fadeOut: 0.35 },
 
     // ---------------------------------------------------------------- 2. la solution, sur le vrai site (un seul plan continu)
     { type: "chip", start: A("web", 0.3), end: E("web") - 0.2, x: X, y: 240, text: "REAL · WORKS END TO END", tone: "real" },
     { type: "caption", start: VO_AT[4], end: WEB("chooseAt") - 0.05, x: X, y: 320, w: W, size: 96, text: "__Sakia__ answers.", stagger: 0.12 },
-    { type: "caption", start: VO_AT[5], end: VO_AT[6] - 0.05, x: X, y: 320, w: W, text: "Three taps, __with pictures.__", stagger: 0.08 },
+    { type: "caption", start: VO_AT[5], end: ANSWER_CAP - 0.05, x: X, y: 320, w: W, text: "Three taps, __with pictures.__", stagger: 0.08 },
     { type: "html", start: WEB("chooseAt"), end: WEB("listenAt") + 0.3, fx: "none", fadeOut: 0.25, html: `<div class="keys">${STEPS.map(([t, n, label]) => `<span data-at="${Math.max(0.1, chT(t) - WEB("chooseAt")).toFixed(2)}" data-fx="pop" data-rot="-5"><b>${n}</b>${label}</span>`).join("")}</div>` },
-    { type: "caption", start: VO_AT[6], end: VO_AT[7] - 0.05, x: X, y: 320, w: W, text: "The answer, __spoken.__", stagger: 0.1 },
+    { type: "caption", start: ANSWER_CAP, end: VO_AT[7] - 0.05, x: X, y: 320, w: W, text: "The answer, __spoken.__", stagger: 0.1 },
     { type: "html", start: APP_VOICE - 0.3, end: VO_AT[7] - 0.05, fx: "none", fadeOut: 0.2, html: `<div class="lang" data-at="0" data-fx="pop" data-rot="-4">🔊 AI voice · Tunisian Arabic</div>` },
     {
       type: "phone", start: A("web"), end: E("web") + 0.1, fadeIn: 0.2, fadeOut: 0.35, enterFrom: "bottom", ...PHONE,
-      zoom: [[VO_AT[7] - 0.1, { s: 1, ox: 0.5, oy: 0.5 }], [VO_AT[7] + 0.9, { s: 1.3, ox: 0.5, oy: 0.6 }]],
       segments: webSegs,
     },
     { type: "caption", start: VO_AT[7], end: E("web") - 0.2, x: X, y: 320, w: W, text: "Irrigate __today:__ 214 m³ per hectare.", stagger: 0.07 },
@@ -248,17 +266,17 @@ export default {
     // ---------------------------------------------------------------- 4. le garde-fou (éliminatoire dans le barème)
     { type: "chip", start: A("unsure", 0.1), end: E("unsure") - 0.1, x: X, y: 240, text: "SAFEGUARD", tone: "info" },
     { type: "caption", start: VO_AT[12], end: E("unsure") - 0.1, x: X, y: 320, w: W, text: "Not sure? Sakia __says so__, and asks a person to check.", stagger: 0.07 },
-    { type: "phone", start: A("unsure"), end: E("unsure") + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", ...PHONE, segments: [{ at: A("unsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.3, to: UNSURE.marks.notsure + 1.0 }], zoom: [[A("unsure", 0.8), { s: 1, ox: 0.5, oy: 0.5 }], [A("unsure", 1.8), { s: 1.15, ox: 0.5, oy: 0.42 }]] },
+    { type: "phone", start: A("unsure"), end: E("unsure") + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", ...PHONE, segments: [{ at: A("unsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.3, to: UNSURE.marks.notsure + 1.0 }] },
 
     // ---------------------------------------------------------------- 5. la preuve : un seul chiffre
     {
-      type: "html", start: A("proof"), end: E("proof"), fadeIn: 0.35, fadeOut: 0.3, fx: "zoom",
+      type: "html", start: A("proof"), end: E("proof"), fadeIn: 0.35, fadeOut: 0.3, fx: "none",
       html: `<div class="pr-wrap"><div class="pr-tag" data-at="0.15">SIMULATION · 11 SEASONS OF OBSERVED WEATHER · KAIROUAN</div><div class="pr-big" data-at="${(0.15 + 0.38 * v[13]).toFixed(2)}" data-fx="pop" data-rot="-3">3 to 27 %</div><div class="pr-sub" data-at="${(0.15 + 0.62 * v[13]).toFixed(2)}">less water pumped, depending on the crop</div></div>`,
     },
 
     // ---------------------------------------------------------------- 6. fin
     {
-      type: "html", start: A("end", 0.05), end: E("end"), fadeIn: 0.4, fadeOut: 0.01, fx: "zoom",
+      type: "html", start: A("end", 0.05), end: E("end"), fadeIn: 0.4, fadeOut: 0.01, fx: "none",
       html: `<div class="end-wrap"><div class="end-logo" data-at="0">{{WHEEL}}</div><div class="end-name" data-at="0.15">Sakia</div><div class="end-tag" data-at="0.4">One decision a day.</div><div class="end-url" data-at="0.9">sakia-opal.vercel.app</div><div class="end-small" data-at="1.2">Call and SMS simulated in the browser · Noor is a persona from the challenge brief · Indicative advice: a person decides${vo?.synthetic ? " · Synthetic narration (ElevenLabs)" : ""}</div></div>`,
     },
   ],
