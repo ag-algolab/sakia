@@ -535,7 +535,9 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             <div className="absolute inset-x-0 bottom-0 top-12 flex justify-center">
               <Presenter svgRef={svgRef} />
             </div>
-            <div className="absolute start-3 top-3 rounded bg-black/75 px-2.5 py-1 text-sm font-bold tracking-wider text-[#f0c75e]">SAKIA · BULLETIN</div>
+            <div aria-hidden className="absolute start-3 top-3 rounded bg-black/75 px-2.5 py-1 text-sm font-bold tracking-wider text-[#f0c75e]">
+              SAKIA · BULLETIN
+            </div>
             <div
               className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2.5 py-1 text-sm font-bold tracking-wider ${
                 playing ? (isDemo ? "bg-[#f0c75e] text-[#0b1d15]" : "bg-[#c4281f] text-white") : "bg-black/75 text-[#f7f1e1]"
@@ -618,7 +620,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                     t.outOfSeason
                   ) : band.next ? (
                     <>
-                      {fmtDay(band.next.date)} · {unitText(doseText(band.next))}
+                      {fmtDay(band.next.date)}
+                      <span className="block">{unitText(doseText(band.next))}</span>
                     </>
                   ) : (
                     t.noIrrigation
