@@ -219,16 +219,6 @@ html[data-lang-pending]::after {
     transform: translateX(1.5px) skewX(-1.2deg);
   }
 }
-@keyframes sk-rainfall {
-  from {
-    transform: translateY(-1px);
-    opacity: 0.55;
-  }
-  to {
-    transform: translateY(1.4px);
-    opacity: 1;
-  }
-}
 @keyframes sk-wind {
   0%,
   100% {
@@ -296,9 +286,6 @@ html[data-lang-pending]::after {
   }
   .sk-haze {
     animation: sk-haze 2.2s ease-in-out infinite;
-  }
-  .sk-rainfall path {
-    animation: sk-rainfall 0.9s ease-in-out infinite alternate;
   }
   .sk-sun-pulse {
     animation: sk-sun-pulse 5s ease-in-out infinite;
@@ -404,10 +391,13 @@ html[data-lang-pending]::after {
   background: linear-gradient(180deg, #2a0c08 0%, #7a2412 34%, #cf5428 60%, #f4a64a 88%, #ffd68a 100%);
 }
 
-
-
-
-
+/* Bandes qui défilent au doigt (menu du haut sur téléphone) : pas de barre de défilement dessinée, comme sur un téléphone. */
+.sk-noscrollbar {
+  scrollbar-width: none;
+}
+.sk-noscrollbar::-webkit-scrollbar {
+  display: none;
+}
 
 /* Lisible pour tous, y compris les personnes âgées : sur ordinateur, tout (textes ET largeurs, qui sont en rem) grandit.
    Les seuils des media queries Tailwind restent calculés sur 16 px, rien ne casse. */

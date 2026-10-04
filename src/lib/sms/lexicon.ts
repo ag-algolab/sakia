@@ -77,18 +77,15 @@ export const LANGUAGE_WORDS: Record<"fr" | "ar" | "en", string[]> = {
   en: ["en", "english", "anglais", "انجليزي", "انقليزي"],
 };
 
-// ---------- rapports de pluie (« PLUIE 10 », « مطر 10 », « shta 10 ») ----------
-// À FAIRE VALIDER par un Tunisien : « shta / chta » (arabizi), « barcha » (beaucoup), « chwaya » (un peu), « walou » (rien).
+// ---------- mots de pluie : seulement un garde-fou ----------
+// Il n'y a plus de commande « pluie ». Mais un message qui parle de pluie (« il a plu hier à kairouan ») ne dit pas quand on a arrosé :
+// l'analyseur n'y lit alors AUCUN dernier arrosage (sinon « hier » ferait croire que le sol a été arrosé hier).
+// À FAIRE VALIDER par un Tunisien : « shta / chta » (arabizi).
 
-export const RAIN_WORDS = ["pluie", "plu", "rain", "مطر", "امطار", "شتا", "شتاء", "shta", "chta", "matar", "mtar"];
+export const RAIN_WORDS = ["pluie", "plu", "rain", "rained", "مطر", "امطار", "شتا", "شتاء", "shta", "chta", "matar", "mtar"];
 
-// Personne ne mesure en millimètres : un mot suffit. Chaque mot correspond à un degré de l'échelle de src/lib/rainLevels.ts.
-export const RAIN_LEVEL_WORDS: Record<"none" | "light" | "heavy" | "very_heavy", string[]> = {
-  none: ["rien", "aucune", "zero", "walou", "nothing", "لا شيء"],
-  light: ["peu", "chwaya", "chuaya", "شوية", "خفيفة", "little", "light"],
-  heavy: ["beaucoup", "barcha", "barsha", "برشا", "غزيرة", "heavy"],
-  very_heavy: ["enormement", "enorme", "huge"],
-};
+// ---------- jours (dernier arrosage) ----------
+// À FAIRE VALIDER par un Tunisien : « lbare7 » (hier).
 
 export const YESTERDAY_WORDS = ["hier", "yesterday", "lbare7", "lbarah", "lbarha", "البارح", "البارحة", "امس"];
 

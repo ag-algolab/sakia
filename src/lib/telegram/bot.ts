@@ -12,10 +12,6 @@ import { bulletinScript, planMessage } from "../messages";
 import type { Lang } from "../messages";
 import { buildPlan } from "../plan";
 import type { Plan } from "../plan";
-import { LEVEL_LABEL, LEVEL_MM, MIN_REPORTERS } from "../rainLevels";
-import type { RainLevel } from "../rainLevels";
-import { loadReports, reporterHash, saveReport, summarize } from "../reports";
-import type { ReportRow } from "../reports";
 import { parseSms, scriptOf } from "../sms/parse";
 import { EFFICIENCY, SOILS } from "../waterBalance";
 import type { IrrigationSystem, SoilName } from "../waterBalance";
@@ -34,8 +30,6 @@ import {
   langKeyboard,
   parseAction,
   planKeyboard,
-  rainKeyboard,
-  refreshKeyboard,
   regionKeyboard,
   regionName,
   stopKeyboard,
@@ -60,8 +54,6 @@ export type Deps = {
   limiter: RateLimiter; // 20 messages par minute
   voiceLimiter: RateLimiter; // 10 messages vocaux par heure (la transcription coûte des crédits)
   plan: (sub: Subscriber, forecast?: Forecast) => Promise<Plan>;
-  reportLimiter: RateLimiter; // 20 signalements de pluie par heure
-  reports: { save: typeof saveReport; load: typeof loadReports }; // src/lib/reports.ts (import direct)
 };
 
 function addDays(date: string, n: number): string {
@@ -103,8 +95,6 @@ export function defaultDeps(): Deps {
     limiter: new RateLimiter(),
     voiceLimiter: new RateLimiter(10, 3_600_000),
     plan: computePlan,
-    reportLimiter: new RateLimiter(20, 3_600_000),
-    reports: { save: saveReport, load: loadReports },
   };
 }
 
@@ -153,6 +143,17 @@ async function editOrSend(deps: Deps, chatId: number, messageId: number | undefi
     }
   }
   await deps.api.sendMessage(chatId, text, markup);
+}
+
+// La base des abonnés ne sert qu'à se souvenir de la personne. Si elle est en panne (ou en pause), les questions en clair
+// (« olivier Kairouan ») et l'aide continuent de marcher, simplement sans mémoire : le robot reste joignable 24 h/24.
+async function subOrNull(deps: Deps, chatId: number): Promise<Subscriber | null> {
+  try {
+    return await deps.store.get(chatId);
+  } catch (e) {
+    logError("base (lecture)", e);
+    return null;
+  }
 }
 
 // Langue de Telegram de la personne tant qu'elle n'en a pas choisi : arabe ou français si c'est la sienne, sinon l'anglais (le jury).
@@ -205,7 +206,7 @@ async function answerQuestion(
   opts: { spoken?: Lang; echo: boolean },
 ): Promise<void> {
   const chatId = msg.chat.id;
-  const sub = await deps.store.get(chatId);
+  const sub = await subOrNull(deps, chatId);
   const lang: Lang = opts.spoken ?? (scriptOf(text) === "arabic" ? "ar" : (sub?.lang ?? guessLang(msg.from?.language_code)));
   const s = t(lang);
   if (opts.echo) await deps.api.sendMessage(chatId, s.heard(text.slice(0, 200))); // la personne vérifie ce qui a été compris
@@ -264,11 +265,12 @@ async function onCommand(deps: Deps, msg: TgMessage, cmd: string): Promise<void>
   const chatId = msg.chat.id;
   if (cmd === "start") return promptLanguage(deps, chatId);
 
-  const sub = await deps.store.get(chatId);
   if (cmd === "aide" || cmd === "help") {
-    await deps.api.sendMessage(chatId, t(sub?.lang ?? guessLang(msg.from?.language_code)).help);
+    const known = await subOrNull(deps, chatId);
+    await deps.api.sendMessage(chatId, t(known?.lang ?? guessLang(msg.from?.language_code)).help);
     return;
   }
+  const sub = await deps.store.get(chatId);
   if (!sub) return promptLanguage(deps, chatId); // pas encore configuré : on commence par la configuration
 
   switch (cmd) {
@@ -277,10 +279,6 @@ async function onCommand(deps: Deps, msg: TgMessage, cmd: string): Promise<void>
       return sendPlanTo(deps, sub);
     case "bulletin":
       return sendVoice(deps, sub);
-    case "pluie":
-    case "rain":
-      await deps.api.sendMessage(chatId, t(sub.lang).askRain, rainKeyboard(sub.lang));
-      return;
     case "langue":
     case "language":
       await deps.api.sendMessage(chatId, "🌐", langKeyboard("L"));
@@ -320,38 +318,6 @@ async function finishSetup(deps: Deps, chatId: number, messageId: number | undef
   await sendPlanTo(deps, sub);
 }
 
-// « Il a plu ici » : le signalement va dans la région de l’abonné, pour la journée en cours, sous un identifiant anonyme
-// (tg:<chat_id>, jamais affiché ; la base n’en garde qu’une empreinte salée). Le plan en tient compte quand
-// au moins MIN_REPORTERS (3) personnes différentes ont signalé la même journée (médiane) : voir src/lib/reports.ts.
-async function reportRain(deps: Deps, cb: TgCallback, sub: Subscriber, level: RainLevel): Promise<void> {
-  const chatId = sub.chat_id;
-  const messageId = cb.message!.message_id;
-  const s = t(sub.lang);
-  await deps.api.answerCallback(cb.id);
-  if (!deps.reportLimiter.allow(chatId)) return editOrSend(deps, chatId, messageId, s.rainLimit);
-
-  const today = todayInTunisia();
-  const reporter = `tg:${chatId}`;
-  // quantité retenue = le BAS de la fourchette du degré (prudence : surestimer la pluie ferait sauter une irrigation)
-  const mm = LEVEL_MM[level];
-  const saved = await deps.reports.save(sub.region_id, today, mm, reporter, level);
-  if (!saved) return editOrSend(deps, chatId, messageId, s.rainFailed);
-
-  // la lecture peut venir d’un cache de 60 s : on s’assure que notre propre signalement est compté
-  const rows: ReportRow[] = [...(await deps.reports.load(sub.region_id, today))];
-  const mine = reporterHash(reporter);
-  if (!rows.some((r) => r.day === today && r.reporter_hash === mine)) rows.push({ day: today, mm, reporter_hash: mine, level });
-  const day = summarize(rows).find((d) => d.date === today);
-  const n = day?.n ?? 1;
-  const region = regionName(sub.region_id, sub.lang);
-  const text = [
-    s.rainThanks(LEVEL_LABEL[sub.lang][level], region),
-    s.rainCount(n, region, LEVEL_LABEL[sub.lang][day?.level ?? level]),
-    n >= MIN_REPORTERS ? s.rainApplied : s.rainRule, // le plan n'utilise un jour qu'à partir de MIN_REPORTERS personnes (src/lib/reports.ts)
-  ].join("\n\n");
-  await editOrSend(deps, chatId, messageId, text, refreshKeyboard(sub.lang));
-}
-
 async function onAction(deps: Deps, cb: TgCallback, a: Action): Promise<void> {
   const chatId = cb.message!.chat.id;
   const messageId = cb.message!.message_id;
@@ -389,7 +355,6 @@ async function onAction(deps: Deps, cb: TgCallback, a: Action): Promise<void> {
     return promptLanguage(deps, chatId);
   }
   const s = t(sub.lang);
-  if (a.kind === "rain") return reportRain(deps, cb, sub, a.level);
   switch (a.name) {
     case "upd": {
       // toujours recalculer : jamais de plan gardé de l'appel précédent
@@ -411,9 +376,6 @@ async function onAction(deps: Deps, cb: TgCallback, a: Action): Promise<void> {
       await answer(s.irrigatedNoted);
       return editOrSend(deps, chatId, messageId, out.text, out.markup);
     }
-    case "rain":
-      await answer();
-      return void (await deps.api.sendMessage(chatId, s.askRain, rainKeyboard(sub.lang)));
     case "chg":
       await answer();
       return void (await deps.api.sendMessage(chatId, s.askRegion, regionKeyboard(sub.lang)));

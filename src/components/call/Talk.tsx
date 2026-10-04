@@ -11,7 +11,7 @@ import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
 import { AgentCall } from "./agentClient";
 import type { AgentEvent, AgentToolResult } from "./agentClient";
-import { uiLangOf } from "./strings";
+import { tr, uiLangOf } from "./strings";
 import type { UiLang } from "./strings";
 import { tt } from "./talkStrings";
 
@@ -90,7 +90,9 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
       <h1 className="text-2xl font-bold text-sakia-green">{t("title")}</h1>
       <p className="mt-2 max-w-3xl text-lg">{t("intro")}</p>
       <p className="mt-2 max-w-3xl text-base text-sakia-brown">{t("whyAi")}</p>
-      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base">{t("langOrder")}</p>
+      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base">
+        <strong className="block">{tr(ui, "langOrderTitle")}</strong> {t("langOrder")}
+      </p>
 
       {!agentReady && <p className="mt-4 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 font-semibold text-sakia-alert">{t("noAgent")}</p>}
 

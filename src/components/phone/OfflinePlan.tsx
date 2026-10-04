@@ -10,7 +10,6 @@ import { planMessage, planSms } from "@/lib/messages";
 import { REGIONS } from "@/lib/regions";
 import { smsInfo } from "@/lib/sms/encoding";
 import { usePhoneProfile } from "./phoneProfile";
-import RainReport from "./RainReport";
 import { asSent } from "./smsKeys";
 import { STRINGS, formatAge } from "./strings";
 import type { UiLang } from "./strings";
@@ -116,7 +115,6 @@ function PlanBody({ lang, regionId, cropId }: { lang: UiLang; regionId: string; 
           </div>
         </div>
       )}
-      <RainReport regionId={regionId} />
     </>
   );
 }

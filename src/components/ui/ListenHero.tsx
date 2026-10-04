@@ -5,8 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { startBedMusic } from "./bedMusic";
 import type { BedMusic } from "./bedMusic";
 import { AlertIcon, DropIcon, HandIcon, LockIcon, RetryIcon, SpeakerIcon } from "./icons";
+import { isArabic } from "./i18n";
+import type { Lang } from "./i18n";
 import { useLang } from "./LangProvider";
-import { forgetAdvice, loadAdvice, prefetchAdvice, storedAdvice } from "@/lib/adviceClient";
+import { CLIP_BYTES_PER_SECOND, forgetAdvice, loadAdvice, prefetchAdvice, storedAdvice, subtitleAt } from "@/lib/adviceClient";
+import type { AdviceQuery, Sub } from "@/lib/adviceClient";
 import type { Plan } from "@/lib/plan";
 
 // Pensé pour quelqu'un qui ne lit pas : un seul gros bouton, la voix en DARIJA TUNISIENNE, et une réponse en
@@ -15,12 +18,16 @@ import type { Plan } from "@/lib/plan";
 // Le navigateur interdit de lancer un son sans geste : d'où le bouton, pas de lecture automatique.
 // Une petite musique de fond (bedMusic.ts) accompagne TOUJOURS la voix, très basse, pour que la voix seule n'endorme pas.
 // Elle est AUTOMATIQUE, comme à la télé : un bulletin météo ne demande pas « avec ou sans musique ». Aucun réglage.
+// SOUS-TITRES : pendant la lecture, la phrase dite s'affiche sous le bouton, dans la langue de l'écran (en anglais pour un juré qui ne parle
+// pas arabe). Ils viennent du serveur avec le son, construits à partir du même plan que la voix (adviceClient.ts). Ils ne sont qu'un
+// appui de lecture : sans sous-titres reçus (vieille copie gardée), le son se joue seul.
 
 const BIG_LABEL = "اسمع النصيحة"; // « écoute le conseil » en darija
 const INTRO_MS = 1500; // la musique joue seule un instant (le jingle) avant la voix
 const OUTRO_MS = 1500;
 const FETCH_TIMEOUT_MS = 25000; // au-delà, on renonce : la musique ne doit jamais tourner sans fin en attendant la voix
 const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
+const SUBS_LINGER_MS = 4000; // la dernière phrase reste à l'écran un instant après la fin du son : le temps de la lire
 // Le message est le MESSAGE COURT (/api/advice, mp3 de 50 à 100 Ko, préparé à l'avance), chargé d'avance dès que le conseil
 // s'affiche, et gardé sur l'appareil 12 h au plus (même seuil que le moteur) pour être rejoué sans connexion : src/lib/adviceClient.ts.
 
@@ -59,16 +66,20 @@ export default function ListenHero({
   locked?: boolean;
   onLockedTap?: () => void;
 }) {
-  const { t, fmtNum } = useLang();
+  const { t, fmtNum, lang } = useLang();
   const [state, setState] = useState<State>("idle");
   const [cachedAgeH, setCachedAgeH] = useState<number | null>(null);
+  // sous-titres du message en cours : la langue dans laquelle ils ont été demandés, les phrases, et celle qui est dite maintenant
+  const [cap, setCap] = useState<{ lang: Lang; subs: Sub[]; idx: number } | null>(null);
+  const lingerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const musicRef = useRef<BedMusic | null>(null);
   const capRef = useRef<number | null>(null);
   const runRef = useRef(0); // numéro de lecture : une lecture abandonnée ne doit pas relancer le son
   const blobUrlRef = useRef<string | null>(null);
-  const key = JSON.stringify(query);
+  const asked: AdviceQuery = { ...query, subs: lang }; // la demande de son, avec la langue des sous-titres (celle de l'écran)
+  const key = JSON.stringify(asked);
   const hasPlan = plan != null;
   // ce que dit l'écran : une copie gardée n'est rejouée que si elle dit la même chose (niveau de fiabilité et jour du plan)
   const expect = plan ? { level: plan.confidence.level, today: plan.today } : null;
@@ -78,11 +89,16 @@ export default function ListenHero({
     blobUrlRef.current = null;
   }, []);
 
+  const clearLinger = useCallback(() => {
+    if (lingerRef.current != null) window.clearTimeout(lingerRef.current);
+    lingerRef.current = null;
+  }, []);
+
   // Dès que le conseil est à l'écran, on charge le message en arrière-plan (s'il est déjà préparé côté serveur) : l'appui
   // sur le bouton joue alors tout de suite. Petit délai : on ne charge pas pendant que la personne change de choix.
   useEffect(() => {
     if (!hasPlan) return;
-    const id = window.setTimeout(() => prefetchAdvice(JSON.parse(key) as VoiceQuery), 700);
+    const id = window.setTimeout(() => prefetchAdvice(JSON.parse(key) as AdviceQuery), 700);
     return () => window.clearTimeout(id);
   }, [key, hasPlan]);
 
@@ -95,8 +111,10 @@ export default function ListenHero({
     releaseBlob();
     musicRef.current?.stop(400);
     musicRef.current = null;
+    clearLinger();
+    setCap(null);
     setState("idle");
-  }, [releaseBlob]);
+  }, [releaseBlob, clearLinger]);
 
   // Si la personne change région, culture ou date, la page remonte ce composant (sa clé est la demande) : le son en cours ne
   // correspond plus, on l'arrête ici, au démontage. Ces références sont des compteurs et des lecteurs, pas des nœuds du DOM :
@@ -109,6 +127,7 @@ export default function ListenHero({
       audioRef.current?.pause();
       musicRef.current?.stop(100);
       releaseBlob();
+      if (lingerRef.current != null) window.clearTimeout(lingerRef.current);
     },
     [releaseBlob],
   );
@@ -124,6 +143,8 @@ export default function ListenHero({
     const alive = () => runRef.current === run;
     setState("loading");
     setCachedAgeH(null);
+    clearLinger();
+    setCap(null);
     const began = Date.now();
     musicRef.current = startBedMusic(); // automatique ; dans le geste de la personne, sinon le navigateur refuse
     const player = new Audio(SILENT); // débloque la lecture (voir SILENT)
@@ -143,14 +164,18 @@ export default function ListenHero({
     capRef.current = cap;
 
     let payload: Blob | null = null;
+    let subs: Sub[] = [];
     try {
-      payload = await loadAdvice(query, expect, ctrl.signal); // déjà chargé d'avance dans la plupart des cas : instantané
+      const clip = await loadAdvice(asked, expect, ctrl.signal); // déjà chargé d'avance dans la plupart des cas : instantané
+      payload = clip.blob;
+      subs = clip.subs;
     } catch (e) {
       if (!alive() || ((e as Error).name === "AbortError" && !timedOut)) return;
       // pas de réseau, ou plus de crédits de voix : on rejoue le dernier message de CETTE demande, s'il est récent
-      const c = await storedAdvice(query, expect);
+      const c = await storedAdvice(asked, expect);
       if (c) {
         payload = c.blob;
+        subs = c.subs;
         setCachedAgeH(c.ageMs / 3600000);
       }
     }
@@ -163,6 +188,7 @@ export default function ListenHero({
       return;
     }
 
+    const clipBlob: Blob = payload;
     try {
       releaseBlob();
       blobUrlRef.current = URL.createObjectURL(payload);
@@ -177,6 +203,7 @@ export default function ListenHero({
           musicRef.current?.swell();
           const m = musicRef.current;
           setState("idle");
+          if (subs.length > 0) lingerRef.current = window.setTimeout(() => setCap(null), SUBS_LINGER_MS);
           window.setTimeout(() => {
             if (musicRef.current === m) musicRef.current = null;
             m?.stop(1000);
@@ -188,13 +215,23 @@ export default function ListenHero({
         "error",
         () => {
           if (!alive()) return;
-          void forgetAdvice(query); // fichier illisible : on ne le rejouera pas pendant 12 h
+          void forgetAdvice(asked); // fichier illisible : on ne le rejouera pas pendant 12 h
           musicRef.current?.stop(300);
           musicRef.current = null;
+          setCap(null);
           setState("error");
         },
         { once: true },
       );
+      // la phrase affichée suit la lecture (simple proportion des lettres dites : voir subtitleAt)
+      if (subs.length > 0) {
+        audio.addEventListener("timeupdate", () => {
+          if (!alive()) return;
+          const d = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : clipBlob.size / CLIP_BYTES_PER_SECOND;
+          const i = subtitleAt(subs, audio.currentTime, d);
+          setCap((c) => (c && c.idx !== i ? { ...c, idx: i } : c));
+        });
+      }
       // la musique joue seule un instant, puis la voix démarre et la musique descend
       if (musicRef.current) {
         const wait = INTRO_MS - (Date.now() - began);
@@ -204,6 +241,7 @@ export default function ListenHero({
       }
       await audio.play();
       if (!alive()) return;
+      setCap(subs.length > 0 ? { lang, subs, idx: 0 } : null);
       setState("playing");
     } catch {
       if (!alive()) return;
@@ -273,6 +311,8 @@ export default function ListenHero({
         </span>
       </button>
 
+      {!locked && cap && cap.lang === lang && <Subtitles subs={cap.subs} idx={cap.idx} lang={lang} />}
+
       {!locked && (
         <>
       <div className="mt-2 flex items-center justify-center border-t border-sakia-sand-dark/60 pt-2">
@@ -313,6 +353,40 @@ export default function ListenHero({
 
       {plan && <Verdict plan={plan} />}
     </section>
+  );
+}
+
+// Sous-titres : la phrase dite en ce moment, dans la langue de l'écran (« aeb » : le texte dit lui-même). La bande garde la hauteur de trois
+// lignes pour que la page ne saute pas à chaque phrase. Sur un ordinateur de 900 px de haut, le gros bouton est tout en bas de la première
+// page et des sous-titres juste dessous seraient hors de vue : à son apparition, la page défile juste ce qu'il faut pour les montrer (une
+// seule fois, sans animation si la personne a demandé moins de mouvement). Elle n'est pas annoncée par les lecteurs d'écran (elle se
+// superposerait à la voix) : le texte complet leur est donné une fois, dans un bloc masqué.
+function Subtitles({ subs, idx, lang }: { subs: Sub[]; idx: number; lang: Lang }) {
+  const { t } = useLang();
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.current?.scrollIntoView({ block: "nearest", behavior: calm ? "auto" : "smooth" });
+  }, []);
+  const cur = subs[Math.min(Math.max(idx, 0), subs.length - 1)];
+  const rtl = isArabic(lang);
+  const htmlLang = lang === "aeb" ? "ar-TN" : lang;
+  const unsure = cur.id === "unsure";
+  return (
+    <div ref={box} role="group" aria-label={t("listenSubs")} className="mt-1 scroll-mb-4 rounded-2xl bg-sakia-green-deep px-4 py-3 text-white">
+      <p
+        aria-hidden
+        lang={htmlLang}
+        dir={rtl ? "rtl" : "ltr"}
+        className={`flex min-h-[4.5rem] items-center justify-center text-center text-base font-semibold leading-snug sm:min-h-[5rem] sm:text-lg ${unsure ? "text-[#ffd9a8]" : ""}`}
+      >
+        {unsure && <span className="me-1.5">⚠</span>}
+        {cur.text}
+      </p>
+      <p lang={htmlLang} dir={rtl ? "rtl" : "ltr"} className="sr-only">
+        {subs.map((x) => x.text).join(" ")}
+      </p>
+    </div>
   );
 }
 

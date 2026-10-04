@@ -11,13 +11,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CROPS } from "@/lib/crops";
 import { planSms } from "@/lib/messages";
 import type { Plan } from "@/lib/planCore";
-import { LEVEL_LABEL } from "@/lib/rainLevels";
 import { REGIONS } from "@/lib/regions";
 import Lcd, { Envelope, Handset } from "./Lcd";
 import type { KeyDef, Msg, Screen } from "./Lcd";
 import s from "./phone.module.css";
 import { getSimNumber } from "./simNumber";
-import { HELP_TEXT, SMS_LANGS, SMS_RAIN, STOP_TEXT, asSent, languageText, rainText } from "./smsKeys";
+import { HELP_TEXT, SMS_LANGS, STOP_TEXT, asSent, languageText } from "./smsKeys";
 import type { SmsLang } from "./smsKeys";
 import { STRINGS } from "./strings";
 import type { Strings, UiLang } from "./strings";
@@ -70,17 +69,14 @@ function useNow(stepMs: number): number {
 }
 
 // Touches utiles sur chaque écran (légende de l'écran, sous-titres des touches, liste à côté du téléphone).
-function keysFor(screen: Screen, t: Strings, lang: UiLang): KeyDef[] {
+function keysFor(screen: Screen, t: Strings): KeyDef[] {
   switch (screen.id) {
     case "msg":
       return [
-        { key: "1", label: t.kRain },
-        { key: "2", label: t.kHelp },
-        { key: "3", label: t.kLang },
-        { key: "4", label: t.kStop },
+        { key: "1", label: t.kHelp },
+        { key: "2", label: t.kLang },
+        { key: "3", label: t.kStop },
       ];
-    case "rain":
-      return SMS_RAIN.map((level, i) => ({ key: String(i + 1), label: LEVEL_LABEL[lang][level] }));
     case "lang":
       // dans l'ordre de SMS_LANGS (anglais, arabe, français) : la touche N choisit SMS_LANGS[N - 1]
       return SMS_LANGS.map((l, i) => ({ key: String(i + 1), label: LANG_LABEL[l] }));
@@ -365,18 +361,11 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
         openMsg(screen.msgId);
         return;
       case "msg":
-        if (k === "1") setScreen({ id: "rain" });
-        else if (k === "2") void sendReply(HELP_TEXT[smsLang]);
-        else if (k === "3") setScreen({ id: "lang" });
-        else if (k === "4") setScreen({ id: "stop" });
+        if (k === "1") void sendReply(HELP_TEXT[smsLang]);
+        else if (k === "2") setScreen({ id: "lang" });
+        else if (k === "3") setScreen({ id: "stop" });
         else if (k === "*") setScreen({ id: "idle" });
         return;
-      case "rain": {
-        const n = Number(k);
-        if (n >= 1 && n <= SMS_RAIN.length) void sendReply(rainText(smsLang, SMS_RAIN[n - 1], regionId));
-        else if (k === "*") goBack();
-        return;
-      }
       case "lang": {
         const n = Number(k);
         if (n >= 1 && n <= SMS_LANGS.length) void chooseLang(SMS_LANGS[n - 1]);
@@ -420,7 +409,6 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
         return { left: t.softRead, right: "" };
       case "msg":
       case "notice":
-      case "rain":
       case "lang":
       case "stop":
         return { left: "", right: t.softBack };
@@ -447,7 +435,6 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
       case "notice":
         if (side === "right") setScreen({ id: "idle" });
         return;
-      case "rain":
       case "lang":
       case "stop":
         if (side === "right") goBack();
@@ -467,7 +454,7 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
 
   const shownScreen: Screen = ready || screen.id === "ring" ? screen : { id: "idle" };
   const shownMsg = "msgId" in shownScreen ? (msgs.find((m) => m.id === shownScreen.msgId) ?? null) : null;
-  const keys = keysFor(shownScreen, t, lang);
+  const keys = keysFor(shownScreen, t);
   const keyLabel = (k: string) => keys.find((x) => x.key === k)?.label ?? "";
   const ringing = shownScreen.id === "ring" && shownScreen.phase === "ringing";
 
@@ -628,10 +615,9 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
           <ul className="mt-3 space-y-3">
             {(
               [
-                ["1", t.kRain, t.kRainDesc, ready ? rainText(smsLang, "heavy", regionId) : ""],
-                ["2", t.kHelp, t.kHelpDesc, HELP_TEXT[smsLang]],
-                ["3", t.kLang, t.kLangDesc, languageText(smsLang, "en")],
-                ["4", t.kStop, t.kStopDesc, STOP_TEXT[smsLang]],
+                ["1", t.kHelp, t.kHelpDesc, HELP_TEXT[smsLang]],
+                ["2", t.kLang, t.kLangDesc, languageText(smsLang, "en")],
+                ["3", t.kStop, t.kStopDesc, STOP_TEXT[smsLang]],
                 ["*", t.softBack, t.kBackDesc, ""],
               ] as const
             ).map(([k, label, desc, example]) => (
@@ -651,7 +637,6 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
               </li>
             ))}
           </ul>
-          <p className="mt-3 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-sm font-semibold leading-snug text-sakia-alert">{t.keysCaution}</p>
         </section>
 
         <div className="space-y-2 text-sm leading-6 text-sakia-ink">

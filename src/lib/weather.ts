@@ -10,21 +10,11 @@ export type Day = {
   rainProb?: number; // probabilité de pluie (%), prévision seulement
 };
 
-// Pluie signalée par des agriculteurs et retenue à la place de celle du modèle (voir src/lib/reports.ts).
-export type LocalReport = {
-  date: string; // AAAA-MM-JJ
-  medianMm: number; // pluie retenue (médiane prudente des signalements)
-  n: number; // nombre de personnes différentes
-  modelMm: number; // ce que disait le modèle météo ce jour-là
-  level?: "none" | "very_light" | "light" | "heavy" | "very_heavy"; // échelle qualitative retenue
-};
-
 export type Forecast = {
   days: Day[]; // 7 jours passés + 16 jours à venir
   today: string; // date du jour (fuseau Tunisie)
   fetchedAt: string; // ISO
   source: "open-meteo";
-  localReports?: LocalReport[]; // jours où la pluie a été corrigée par des signalements locaux
 };
 
 const TZ = "Africa%2FTunis";

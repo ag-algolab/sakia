@@ -15,7 +15,7 @@ import { BudgetError, synthesizeBulletinMeta } from "@/lib/voice";
 import { isVoiceLang } from "@/lib/voice/langs";
 import { bandFromPlan } from "@/lib/voice/band";
 import type { BulletinPayload } from "@/lib/voice/band";
-import { REPORTS_ARE_FICTIONAL, SELECTED_VOICE } from "@/lib/voice/voices";
+import { SELECTED_VOICE } from "@/lib/voice/voices";
 
 export const dynamic = "force-dynamic";
 
@@ -69,9 +69,7 @@ export async function GET(request: Request) {
       soil: soil ?? "limoneux", // valeurs réellement utilisées par le moteur (défauts compris)
       system: system ?? "goutte",
       planting,
-      reportsFictional: plan.localReports?.length ? REPORTS_ARE_FICTIONAL : undefined,
       voiceName: SELECTED_VOICE.name,
-      voiceValidated: SELECTED_VOICE.validated,
     };
     return Response.json(body);
   } catch (e) {

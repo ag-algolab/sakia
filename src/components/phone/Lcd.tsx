@@ -14,7 +14,6 @@ export type Screen =
   | { id: "notice"; text: string } // aucun SMS possible (pas de météo, météo trop ancienne, calcul impossible)
   | { id: "alert"; msgId: string } // « 1 nouveau message »
   | { id: "msg"; msgId: string }
-  | { id: "rain" }
   | { id: "lang" }
   | { id: "stop" }
   | { id: "sending"; text: string }
@@ -221,8 +220,6 @@ function View({ p }: { p: LcdProps }) {
       );
     }
 
-    case "rain":
-      return <ListView title={t.lcdRainQ} keys={p.keys} />;
     case "lang":
       return <ListView title={t.lcdLangTitle} keys={p.keys} />;
     case "stop":

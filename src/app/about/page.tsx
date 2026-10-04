@@ -1,16 +1,65 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AlertIcon, CheckIcon, DownloadIcon, DropIcon, PhoneIcon, SpeakerIcon } from "@/components/ui/icons";
 import { Reveal } from "@/components/ui/motion";
-import { MIN_REPORTERS } from "@/lib/rainLevels";
 import LiveSizes from "./LiveSizes";
+import OpenOnHash from "./OpenOnHash";
 
 export const metadata: Metadata = {
   title: "About Sakia — AI, safeguards and data",
   description: "What the AI does in Sakia, why not a spreadsheet, the safeguards, and the data card.",
 };
 
-// Contenu repris de README.md et de docs/DATA-CARD.md (à jour au 3 octobre 2026), MOT POUR MOT quand c'est un chiffre ou une limite.
-// En anglais d'abord (jury). Ne rien arrondir vers le haut : si une mesure n'est pas faite, la page le dit.
+// Contenu repris de README.md et de docs/DATA-CARD.md, MOT POUR MOT quand c'est un chiffre ou une limite ; chiffres des cartes du haut :
+// docs/NOTES-chiffres.md (A2, A8, E1, F1, F4, F5). En anglais d'abord (jury).
+// Le jury ne lit pas les longs textes : en haut, six cartes et les limites, lisibles en trente secondes ; tout le détail (phrase du
+// problème, IA, langues, garde-fous, tailles, fiche des données) est replié juste dessous, une touche pour l'ouvrir. Rien n'est retiré.
+// Ne rien arrondir vers le haut : si une mesure n'est pas faite, la page le dit.
+
+const FACTS: { icon: React.ReactNode; title: string; body: string; href?: string; link?: string }[] = [
+  {
+    icon: <DropIcon className="h-6 w-6" />,
+    title: "The problem",
+    body: "The Kairouan aquifer is drawn at about 230 % of its renewable volume (press report). More than one person in four there cannot read.",
+  },
+  {
+    icon: <PhoneIcon className="h-6 w-6" />,
+    title: "What Sakia does",
+    body: "One decision a day: water or wait, and how much. Spoken aloud, on five channels.",
+  },
+  {
+    icon: <SpeakerIcon className="h-6 w-6" />,
+    title: "Where the AI is",
+    body: "It listens, it talks, it answers in Tunisian-accented Arabic. The numbers come from FAO-56 physics: checkable, no hallucination.",
+    href: "/lab",
+    link: "Lab: a 43 KB model tested in public",
+  },
+  {
+    icon: <AlertIcon className="h-6 w-6" />,
+    title: "When it is not sure",
+    body: "It says “Not sure: ask a person” instead of guessing. Weather data over 48 hours old: no advice at all.",
+  },
+  {
+    icon: <DownloadIcon className="h-6 w-6" />,
+    title: "Small, works offline",
+    body: "383 KB on a first visit, then zero data. A day's advice: about 1 KB of plan, plus 76 KB if you play the voice.",
+    href: "/speed",
+    link: "Measured against 5 sites",
+  },
+  {
+    icon: <CheckIcon className="h-6 w-6" />,
+    title: "Real or simulated",
+    body: "Telegram, the web and the app are real. Call and SMS are simulated. The water savings are a simulation, not a field trial.",
+  },
+];
+
+const LIMITS = [
+  "Crop coefficients are generic (FAO), not validated in Tunisian fields: the advice is indicative.",
+  "The weather point is the governorate capital, not the plot; the model sees about half of heavy rain.",
+  "Water savings are a simulation on past weather, against a weekly schedule we chose as a benchmark.",
+  "The Tunisian Arabic text is not yet validated by a native speaker; speech recognition is not measured on real farmers.",
+  "Offline was checked in Chrome with the server stopped, not in a phone's airplane mode. With no phone signal at all, no channel reaches the farmer.",
+];
 
 const EVIDENCE = [
   ["Share of agriculture in Tunisia's water withdrawals", "75.5 % (2.71 of 3.59 km³)", "FAO AQUASTAT, Tunisia country fact sheet", "2022", "Some values imputed by FAO"],
@@ -94,7 +143,7 @@ const DATASETS = [
     "ElevenLabs (Scribe, and a conversational agent running a language model, claude-sonnet-4-5)",
     "ElevenLabs terms",
     "—",
-    "Published accuracy: Arabic average, Tunisian dialect not evaluated by the provider, French excellent; our own measurement on real recordings is not done yet",
+    "Published accuracy: Arabic average, Tunisian dialect not evaluated by the provider, French excellent; not measured by us on real recordings",
   ],
   [
     "Test phrases for typed messages",
@@ -102,7 +151,31 @@ const DATASETS = [
     "Written by hand by us (Arabic, Arabizi, French), not by farmers",
     "Produced for this project",
     "n/a",
-    "Not an accuracy claim. We do not train any model of our own: typed messages are parsed by rules and fuzzy matching on a lexicon",
+    "Not an accuracy claim. Typed messages are parsed by rules and fuzzy matching on a lexicon, not by a trained model",
+  ],
+  [
+    "Satellite evapotranspiration (research model only)",
+    "Label of Sakia-ML",
+    "NASA MODIS MOD16A2GF, 500 m, 8-day, gap-filled, via the NASA ORNL DAAC subset service",
+    "NASA open data",
+    "About 320 eight-day periods × 92 Kairouan cropland pixels (plus 100 pixels in three transfer regions)",
+    "A model product with its own error; 500 m pixels mix fields; no irrigated pixel in the Kairouan sample; not a measurement of any field",
+  ],
+  [
+    "Satellite vegetation index (research model only)",
+    "NDVI feature (variants only)",
+    "NASA MODIS MOD13Q1, 250 m, 16-day, same service",
+    "NASA open data",
+    "Same pixels",
+    "Shares its sensor with the label's inputs: partly circular, not deployable",
+  ],
+  [
+    "Land cover (research model only)",
+    "Picks cropland pixels",
+    "ESA WorldCover 2021, class cropland",
+    "CC BY 4.0",
+    "Random 500 m cells with 70 % cropland or more",
+    "Cropland is mostly rainfed; says nothing about irrigation",
   ],
   [
     "Chat and settings",
@@ -112,14 +185,6 @@ const DATASETS = [
     "A few rows",
     "Nothing else is stored; no name, no phone number, no precise location",
   ],
-  [
-    "Farmers' rain reports",
-    `Correct the model's rain (${MIN_REPORTERS} or more different people agree)`,
-    "Collected by Sakia through the web app, the bulletin, Telegram, SMS and the voice line",
-    "Produced for this project; each report keeps only a salted hash of an identifier (pseudonymous, not anonymous)",
-    "Demo reports only: fictitious and labelled so",
-    "No real reports yet; a scale of five levels, not millimetres; at most 3 days back",
-  ],
 ];
 
 const NOT_COVERED = [
@@ -127,8 +192,8 @@ const NOT_COVERED = [
   "No local weather station and no soil-moisture sensor in the calculation; rain from the model is underestimated on heavy-rain days.",
   "No farmer registry, no market prices, no water salinity, no real irrigation calendar of the administration (the “fixed weekly schedule” in the backtest is a benchmark we built, not the State's).",
   "Relative yield is estimated only for the 9 crops with a published Ky, never for trees.",
-  "Speech recognition of the Tunisian dialect has not been measured on real farmers; the dialect text is not validated by a native speaker.",
-  "Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings; rain reports carry only a salted hash. Speech is processed by ElevenLabs under its own terms (retention still to be confirmed).",
+  "Speech recognition of the Tunisian dialect is not measured on real farmers; the dialect text is not validated by a native speaker.",
+  "Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings. Speech is processed by ElevenLabs under its own terms (retention not confirmed).",
   "The weather source was checked against Tunisian stations at Kairouan and one station 47 km away, over limited periods, not across the country.",
 ];
 
@@ -145,10 +210,14 @@ const WEATHER_CHECK = [
 const EVALUATIONS = [
   ["Backtest: 11–12 seasons, 18 crops, advised vs fixed weekly schedule", "Done: water pumped 3 to 27 % lower depending on the crop, almost no stress days. Run on observed weather, not on past forecasts (forecast errors are not simulated, so stress days are near zero by construction): a simulation, not a field result. Kairouan only, drip irrigation, loam"],
   ["Weather source against Tunisian stations", "Done (table above)"],
-  ["Offline recomputation", "Done in Chrome with the server stopped; phone airplane mode not yet"],
+  ["Offline recomputation", "Done in Chrome with the server stopped; not tested in a phone's airplane mode"],
   ["Understanding of typed phrases (Arabic, Arabizi, French)", "Done on phrases written by us, not by farmers: not an accuracy claim"],
-  ["Speech recognition on real recordings (Tunisian dialect, French)", "Not done yet: to be measured and published as it is"],
-  ["Voice agent against adversarial requests", "Not done yet"],
+  ["Speech recognition on real recordings (Tunisian dialect, French)", "Not done"],
+  ["Voice agent against adversarial requests", "Not done"],
+  [
+    "Sakia-ML (research, shadow mode): CatBoost vs monthly calendar and a FAO-56-style water balance, held-out years 2024–2025, transfer to three regions",
+    "Done, protocol first, failures published: error about 9 % below the calendar in Kairouan; no gain in spring; “not sure” rule not met; fails in the Sahel",
+  ],
 ];
 
 const REASONS = [
@@ -161,14 +230,24 @@ const REASONS = [
   ["Extreme heat (42 °C or more) within 3 days: the calculation does not model heat stress", "Shown as a note; advice unchanged"],
 ];
 
-function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+// Une section détaillée, repliée : un titre et une ligne qui dit ce qu'il y a dedans. `id` sert aux liens (/about#data).
+function Fold({ id, title, hint, children }: { id: string; title: string; hint: string; children: React.ReactNode }) {
   return (
-    <Reveal as="section" className="space-y-3">
-      <h2 id={id} className="font-display text-3xl font-bold leading-tight text-sakia-green-deep">
-        {title}
-      </h2>
-      {children}
-    </Reveal>
+    <details id={id} className="group scroll-mt-4 rounded-3xl bg-white shadow-sm ring-1 ring-black/5">
+      <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-3xl px-5 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0">
+          <span className="font-display block text-xl font-bold leading-tight text-sakia-green-deep">{title}</span>
+          <span className="mt-0.5 block text-sm text-sakia-brown">{hint}</span>
+        </span>
+        <span
+          aria-hidden
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sakia-green-light text-2xl leading-none text-sakia-green-deep transition-transform group-open:rotate-45"
+        >
+          +
+        </span>
+      </summary>
+      <div className="space-y-3 px-5 pb-5 pt-1">{children}</div>
+    </details>
   );
 }
 
@@ -203,193 +282,205 @@ function Table({ head, rows, label }: { head: string[]; rows: string[][]; label:
   );
 }
 
+const linkClass = "inline-flex min-h-11 items-center font-bold text-sakia-water-deep underline underline-offset-2";
+
 export default function AboutPage() {
   return (
     <main className="sk-type flex flex-1 flex-col">
+      <OpenOnHash />
       <section className="sk-hero-sky px-4 pb-14 pt-8 text-white">
-        <div className="mx-auto max-w-4xl" dir="ltr" lang="en">
-          <h1 className="font-display max-w-xl text-4xl font-bold leading-[1.05] sm:text-6xl">What the AI does, and what it does not.</h1>
-          <p className="mt-3 max-w-lg text-base leading-snug text-white/90 sm:text-lg">
-            This page is in English. Sakia speaks to farmers in a Tunisian-accented voice, and writes in Tunisian Arabic (Darija, not yet validated by a native speaker), standard Arabic, French and English.
-          </p>
+        <div className="mx-auto max-w-5xl" dir="ltr" lang="en">
+          <h1 className="font-display text-balance text-4xl font-bold leading-[1.05] sm:text-5xl">What the AI does, and what it does not.</h1>
+          <p className="mt-3 text-base leading-snug text-white/90 sm:text-lg">Sakia speaks to farmers in Tunisian Arabic. This page is in English.</p>
         </div>
       </section>
-      <div dir="ltr" lang="en" className="mx-auto w-full max-w-4xl flex-1 space-y-10 px-4 py-8 text-start">
-      <Section id="problem" title="The problem, in one sentence">
-        <p className="font-display rounded-3xl bg-gradient-to-br from-sakia-green to-sakia-green-deep p-6 text-lg font-semibold leading-relaxed text-white shadow-md sm:text-xl">
-          Because of Sakia, a smallholder in Kairouan who irrigates from their own well will know which day to irrigate
-          and how much, from the weather forecast, through a short call or message that needs no smartphone and no
-          reading, instead of deciding by habit or by waiting for rain. We know because, in a past SMS pilot, generic
-          messages were judged “too general” and only about 15–16 % of 421 surveyed farmers said they arrived at the
-          right time, and because replaying our rule on 11–12 seasons of observed weather (not on past forecasts, so
-          forecast errors are left out) used 3 to 27 % less pumped water than a fixed weekly schedule we defined as a
-          benchmark, with almost no water-stress days (a simulation for Kairouan, not a field measurement).
-        </p>
-        <p className="text-sm text-sakia-brown">
-          The simulation is on the{" "}
-          <Link href="/backtest" className="font-semibold underline">
-            proof page
-          </Link>
-          , with its assumptions.
-        </p>
-        <p className="text-sm text-sakia-brown">
-          Beyond the advice, we trained and tested a small learned model in public, in shadow mode: it changes no advice. Its protocol,
-          its results and its failures are on the{" "}
-          <Link href="/lab" className="font-semibold underline">
-            Lab page
-          </Link>
-          , where you can run it in your browser.
-        </p>
-      </Section>
 
-      <Section id="ai" title="What does the AI do, and why not a spreadsheet?">
-        <p className="leading-relaxed text-sakia-ink">
-          The numbers come from a deterministic FAO-56 water balance, <strong>on purpose</strong>: it can be checked, and
-          it cannot hallucinate. A spreadsheet could do that calculation.
-        </p>
-        <p className="leading-relaxed text-sakia-ink">
-          What a spreadsheet cannot do is meet the farmer where the language is the barrier. 27.9 % of people aged 10 and
-          over in Kairouan cannot read (17.3 % across Tunisia; INS, 2024 census), and many speak only Tunisian Arabic
-          (Darija), which is spoken far more than it is written. So AI is used for three things: speech recognition (a
-          farmer can speak instead of type), a voice agent that works out the crop and the region and reads our
-          server&apos;s answer, and a voice that answers aloud in Tunisian-accented Arabic.
-        </p>
-        <p className="leading-relaxed text-sakia-ink">
-          Understanding a <em>typed</em> message in English, Arabic, Latin-script Tunisian (“Arabizi”) or French is not AI: it is
-          rules and fuzzy matching on a lexicon of crops and places.
-        </p>
-        <p className="rounded-xl border border-sakia-sand-dark bg-sakia-sand p-3 text-sm text-sakia-brown">
-          <strong>Status, stated plainly:</strong> typed phrases were tested on sentences written by us, not by farmers,
-          which is not an accuracy claim; speech recognition on real recordings has not been measured yet. We will publish
-          the result as it comes, even if it is poor.
-        </p>
-      </Section>
-
-      <Section id="languages" title="Languages">
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          <li>
-            <strong>Tunisian Arabic (Darija) comes first.</strong> The on-screen text and the recorded bulletins can be in
-            Darija, written in Arabic letters, because it is the language of farmers who do not read standard Arabic
-            comfortably. The Darija text is not yet validated by a native speaker. Everywhere else the voice answers in
-            Tunisian-accented Arabic.
-          </li>
-          <li>English is available in the web app, the Telegram bot and the SMS simulator; standard Arabic and French on every channel (the voice line speaks Arabic and French).</li>
-          <li>A message typed in English, Arabic, Latin-script Tunisian (“zitoun kairouan”) or French is understood in the SMS simulator and the Telegram bot.</li>
-          <li>
-            <strong>Our answer to “what about a less-supported language?”</strong> Darija is exactly that case. It has no
-            standard spelling, and the speech-recognition provider has not evaluated it. Our Darija text is built from
-            fixed templates in common Tunisian words, with an automated check that rejects Moroccan and Egyptian forms.
-            It has <strong>not yet been checked by a native speaker</strong>, and we will publish recognition results as
-            measured, even if they are poor.
-          </li>
-        </ul>
-      </Section>
-
-      <Section id="safeguards" title="Safeguards">
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          <li>
-            <strong>A human decides.</strong> The advice is indicative and must be validated by the regional agricultural
-            administration (CRDA).
-          </li>
-          <li>
-            <strong>“Not sure: ask a person.”</strong> When the tool cannot give a reliable answer it says so and does not
-            guess. The plan and safeguard sentences are fixed templates, with the numbers filled in by the engine.
-          </li>
-          <li>The calculation is deterministic and the assumptions are always visible.</li>
-          <li>Estimates are never presented as measurements; estimated days are labelled.</li>
-          <li>
-            <strong>The voice agent is the one place where wording is not fixed.</strong> It is a real ElevenLabs
-            conversation with a language model (claude-sonnet-4-5) that is instructed to read our server&apos;s answer word
-            for word: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction,
-            not something we enforce.
-          </li>
-          <li>
-            Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous) plus language, region,
-            crop and a few settings; rain reports carry only a salted hash. Our database stores no name, phone number,
-            precise location or IP address.
-          </li>
-        </ul>
-        <Table label="When the tool says “not sure” or adds a note" head={["When the tool says…", "What the user sees"]} rows={REASONS} />
-        <p className="text-sm text-sakia-brown">
-          On the home screen, a softer “old data” notice also appears after 5 hours (the forecast is refreshed about every 3 hours).
-        </p>
-      </Section>
-
-      <Section id="rain" title="Farmers as weather stations">
-        <p className="leading-relaxed text-sakia-ink">
-          Weather models see a grid of 9 to 25 km, not your field, and our check against Tunisian stations shows that they
-          see only about half of the heavy rain. Few farmers have a rain gauge, so a farmer can report how much rain fell
-          at their place, on a five-step scale (none, a few drops, light, a lot, a huge amount). When at least{" "}
-          <strong>{MIN_REPORTERS} different people</strong> of the same region report the same day, their cautious median replaces
-          the model&apos;s rain for that day, and the irrigation plan is recomputed. A human stays in the loop, and the
-          data is local.
-        </p>
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          <li>One report per person, per region and per day; values bounded; today and the last 3 days only.</li>
-          <li>Median, not average: it limits the effect of one false report. Each step counts for the low end of its range, because wrongly skipping an irrigation hurts the crop more than wasting a little water. The rule is a brake, not a guarantee: it is not abuse-proof (the simulated SMS channel does not identify senders).</li>
-          <li>Our database stores no name and no IP address, only a salted hash of an identifier (pseudonymous, not anonymous). On the web, each device gets an identity issued and signed by the server. IP addresses are held in server memory for rate limits (20 reports per hour per address; at most 10 reports and 2 identities per address per day) and appear in the hosting provider&apos;s logs.</li>
-          <li>Always shown as “reported by farmers, not measured”. <strong>In this demonstration the reports are fictional.</strong></li>
-        </ul>
-      </Section>
-
-      <Section id="size" title="Small AI: measured sizes">
-        <p className="text-sm text-sakia-brown">
-          No large model runs on the device. These sizes are measured live from this site (bytes received, before compression).
-        </p>
-        <div className="rounded-xl bg-white p-4">
-          <LiveSizes />
-        </div>
-      </Section>
-
-      <Section id="data" title="Data card">
-        <p className="text-sm text-sakia-brown">
-          For every dataset: source, licence, size, and what it does not cover. Where a measurement has not been made yet,
-          it says so. Nothing is rounded up.
-        </p>
-        <h3 className="text-base font-bold text-sakia-brown">A. Evidence that the problem is real</h3>
-        <Table label="Evidence that the problem is real" head={["Fact", "Value", "Source", "Year", "Caveat"]} rows={EVIDENCE} />
-        <h3 className="pt-2 text-base font-bold text-sakia-brown">B. Data the tool works with</h3>
-        <Table label="Data the tool works with" head={["Dataset", "Role", "Source", "Licence", "Size", "What it does not cover"]} rows={DATASETS} />
-        <p className="text-sm text-sakia-brown">
-          We do <strong>not</strong> use any trained model of our own: no training data, no synthetic data set.
-        </p>
-        <h3 className="pt-2 text-base font-bold text-sakia-brown">C. What our data does not cover</h3>
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          {NOT_COVERED.map((n) => (
-            <li key={n}>{n}</li>
+      <div dir="ltr" lang="en" className="relative z-10 mx-auto -mt-8 w-full max-w-5xl flex-1 space-y-10 px-4 pb-8 text-start">
+        {/* ---------- en trente secondes ---------- */}
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {FACTS.map((f, i) => (
+            <Reveal as="li" key={f.title} delay={Math.min(i, 5) * 60} className="flex flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <p className="flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-sakia-green-light text-sakia-green-deep">{f.icon}</span>
+                <span className="font-display text-xl font-bold leading-tight text-sakia-green-deep">{f.title}</span>
+              </p>
+              <p className="mt-2 leading-snug text-sakia-ink">{f.body}</p>
+              {f.href && (
+                <Link href={f.href} className={`${linkClass} mt-auto pt-1 text-sm`}>
+                  {f.link} →
+                </Link>
+              )}
+            </Reveal>
           ))}
         </ul>
-        <h3 id="weather-check" className="pt-2 text-base font-bold text-sakia-brown">
-          D. Weather source checked against Tunisian measurements (3 October 2026)
-        </h3>
-        <p className="text-sm text-sakia-brown">
-          Bias = Open-Meteo minus station. Stations: NOAA GHCN-D Kairouan; DGACTA stations (Oueslatia, 47 km from
-          Kairouan; Zaghouan) and CRDA Kairouan on catalog.agridata.tn (Tunisian open-data licence, reuse allowed with attribution).
-        </p>
-        <Table label="Weather source checked against Tunisian measurements" head={["Measure", "Period", "Result", "Caveat"]} rows={WEATHER_CHECK} />
-        <p className="leading-relaxed text-sakia-ink">
-          <strong>What we conclude.</strong> At Kairouan the weather source is good for evapotranspiration (within a few
-          percent) and temperature (0.6 °C). A study in Morocco found an underestimation of 2 to 37 %: we do not find that
-          here. The <strong>measured weakness is heavy rain</strong>, which is exactly what farmers&apos; rain reports
-          correct, with deliberately cautious values. A local correction factor for evapotranspiration is not defensible
-          today: the gap changes sign from one station to another, and the only complete series near Kairouan dates from
-          2019–2020. At least a year of measurements is needed; that is the roadmap, not a promise. The analysis scripts
-          are not included in this repository: treat these figures as our own unpublished analysis until they are added.
-        </p>
-        <h3 className="pt-2 text-base font-bold text-sakia-brown">E. Evaluations: done and not done</h3>
-        <Table label="Evaluations: done and not done" head={["Evaluation", "Status"]} rows={EVALUATIONS} />
-      </Section>
 
-      <Section id="limits" title="Limits">
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          <li>The voice line (keypad call) and SMS are simulated in the browser; the Telegram bot, the web app, the installable app and the voice agent are real. The same engine would serve real telephony.</li>
-          <li>“Offline” means without internet: the plan is recomputed in the browser from the last saved forecast (checked in Chrome with the server stopped; not yet in a phone&apos;s airplane mode). Telegram needs a connection.</li>
-          <li>Crop coefficients are generic and not validated by farmers: the advice is indicative.</li>
-          <li>The water-saving figures are a simulation on observed weather, not on past forecasts, and the fixed weekly schedule is our own benchmark: they are not field measurements.</li>
-          <li>The weather point is the governorate capital, an approximation of the plot.</li>
-          <li>Farmers without any phone signal are not reached by any of our channels.</li>
-        </ul>
-      </Section>
+        {/* ---------- les limites, visibles ---------- */}
+        <Reveal as="section" className="space-y-3">
+          <h2 id="limits" className="font-display text-3xl font-bold leading-tight text-sakia-green-deep">
+            Limits
+          </h2>
+          <ul className="list-disc space-y-1.5 ps-5 text-sakia-ink">
+            {LIMITS.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
+        </Reveal>
+
+        {/* ---------- le détail, replié ---------- */}
+        <section aria-labelledby="detail-title" className="space-y-3">
+          <h2 id="detail-title" className="font-display text-3xl font-bold leading-tight text-sakia-green-deep">
+            In detail
+          </h2>
+
+          <Fold id="problem" title="The problem, in one sentence" hint="The World Bank template, with our evidence">
+            <p className="font-display rounded-3xl bg-gradient-to-br from-sakia-green to-sakia-green-deep p-6 text-lg font-semibold leading-relaxed text-white shadow-md">
+              Because of Sakia, a smallholder in Kairouan who irrigates from their own well will know which day to irrigate
+              and how much, from the weather forecast, through a short call or message that needs no smartphone and no
+              reading, instead of deciding by habit or by waiting for rain. We know because, in a past SMS pilot, generic
+              messages were judged “too general” and only about 15–16 % of 421 surveyed farmers said they arrived at the
+              right time, and because replaying our rule on 11–12 seasons of observed weather (not on past forecasts, so
+              forecast errors are left out) used 3 to 27 % less pumped water than a fixed weekly schedule we defined as a
+              benchmark, with almost no water-stress days (a simulation for Kairouan, not a field measurement).
+            </p>
+            <p className="text-sm text-sakia-brown">
+              The simulation is on the{" "}
+              <Link href="/backtest" className="font-semibold underline">
+                proof page
+              </Link>
+              , with its assumptions. A small learned model, tested in public in shadow mode (it changes no advice), is on the{" "}
+              <Link href="/lab" className="font-semibold underline">
+                Lab page
+              </Link>
+              .
+            </p>
+          </Fold>
+
+          <Fold id="ai" title="Why AI, and why not a spreadsheet?" hint="Three uses of AI; the numbers stay physics">
+            <p className="leading-relaxed text-sakia-ink">
+              The numbers come from a deterministic FAO-56 water balance, <strong>on purpose</strong>: it can be checked, and
+              it cannot hallucinate. A spreadsheet could do that calculation.
+            </p>
+            <p className="leading-relaxed text-sakia-ink">
+              What a spreadsheet cannot do is meet the farmer where the language is the barrier. 27.9 % of people aged 10 and
+              over in Kairouan cannot read (17.3 % across Tunisia; INS, 2024 census), and many speak only Tunisian Arabic,
+              which is spoken far more than it is written. So AI is used for three things: speech recognition (a
+              farmer can speak instead of type), a voice agent that works out the crop and the region and reads our
+              server&apos;s answer, and a voice that answers aloud in Tunisian-accented Arabic.
+            </p>
+            <p className="leading-relaxed text-sakia-ink">
+              Understanding a <em>typed</em> message in English, Arabic, Latin-script Tunisian (“Arabizi”) or French is not AI: it is
+              rules and fuzzy matching on a lexicon of crops and places.
+            </p>
+            <p className="rounded-xl border border-sakia-sand-dark bg-sakia-sand p-3 text-sm text-sakia-brown">
+              <strong>Status, stated plainly:</strong> typed phrases were tested on sentences written by us, not by farmers,
+              which is not an accuracy claim; speech recognition is not measured on real recordings.
+            </p>
+          </Fold>
+
+          <Fold id="languages" title="Languages" hint="Tunisian Arabic first; standard Arabic, French, English">
+            <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
+              <li>
+                <strong>Tunisian Arabic comes first.</strong> The on-screen text and the recorded bulletins can be in
+                Tunisian Arabic, written in Arabic letters, because it is the language of farmers who do not read standard
+                Arabic comfortably. That text is not yet validated by a native speaker. Everywhere else the voice answers in
+                Tunisian-accented Arabic.
+              </li>
+              <li>English is available in the web app, the Telegram bot and the SMS simulator; standard Arabic and French on every channel (the voice line speaks Arabic and French).</li>
+              <li>A message typed in English, Arabic, Latin-script Tunisian (“zitoun kairouan”) or French is understood in the SMS simulator and the Telegram bot.</li>
+              <li>
+                <strong>Our answer to “what about a less-supported language?”</strong> Tunisian Arabic is exactly that case. It has no
+                standard spelling, and the speech-recognition provider has not evaluated it. Our Tunisian Arabic text is built from
+                fixed templates in common Tunisian words, with an automated check that rejects Moroccan and Egyptian forms.
+                It is <strong>not yet validated by a native speaker</strong>.
+              </li>
+            </ul>
+          </Fold>
+
+          <Fold id="safeguards" title="Safeguards" hint="When it says “not sure”, and what a person decides">
+            <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
+              <li>
+                <strong>A human decides.</strong> The advice is indicative and must be validated by the regional agricultural
+                administration (CRDA).
+              </li>
+              <li>
+                <strong>“Not sure: ask a person.”</strong> When the tool cannot give a reliable answer it says so and does not
+                guess. The plan and safeguard sentences are fixed templates, with the numbers filled in by the engine.
+              </li>
+              <li>The calculation is deterministic and the assumptions are always visible.</li>
+              <li>Estimates are never presented as measurements; estimated days are labelled.</li>
+              <li>
+                <strong>The voice agent is the one place where wording is not fixed.</strong> It is a real ElevenLabs
+                conversation with a language model (claude-sonnet-4-5) that is instructed to read our server&apos;s answer word
+                for word: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction,
+                not something we enforce.
+              </li>
+              <li>
+                Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous) plus language, region,
+                crop and a few settings. Our database stores no name, phone number, precise location or IP address. Raw IP
+                addresses are held in server memory for rate limits and appear in the hosting provider&apos;s logs.
+              </li>
+            </ul>
+            <Table label="When the tool says “not sure” or adds a note" head={["When the tool says…", "What the user sees"]} rows={REASONS} />
+            <p className="text-sm text-sakia-brown">
+              On the home screen, a softer “old data” notice also appears after 5 hours (the forecast is refreshed about every 3 hours).
+            </p>
+          </Fold>
+
+          <Fold id="size" title="Measured sizes, live" hint="Bytes your browser receives from this site, before compression">
+            <p className="text-sm text-sakia-brown">No large model runs on the device.</p>
+            <div className="rounded-xl bg-sakia-sand/50 p-4">
+              <LiveSizes />
+            </div>
+            <Link href="/speed" className={linkClass}>
+              Weak connection, measured against 5 sites →
+            </Link>
+          </Fold>
+
+          <Fold id="data" title="Data card" hint="Sources, licences, sizes, and what the data does not cover">
+            <p className="text-sm text-sakia-brown">
+              For every dataset: source, licence, size, and what it does not cover. Where a measurement has not been made,
+              it says so. Nothing is rounded up.
+            </p>
+            <h3 className="text-base font-bold text-sakia-brown">A. Evidence that the problem is real</h3>
+            <Table label="Evidence that the problem is real" head={["Fact", "Value", "Source", "Year", "Caveat"]} rows={EVIDENCE} />
+            <h3 className="pt-2 text-base font-bold text-sakia-brown">B. Data the tool works with</h3>
+            <Table label="Data the tool works with" head={["Dataset", "Role", "Source", "Licence", "Size", "What it does not cover"]} rows={DATASETS} />
+            <p className="text-sm text-sakia-brown">
+              <strong>The irrigation advice uses no trained model.</strong> One research model (Sakia-ML, CatBoost, 43 KB) is trained and
+              evaluated in shadow mode on the three satellite rows above; it changes no advice. Protocol and results: the{" "}
+              <Link href="/lab" className="font-semibold underline">
+                Lab page
+              </Link>
+              .
+            </p>
+            <h3 className="pt-2 text-base font-bold text-sakia-brown">C. What our data does not cover</h3>
+            <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
+              {NOT_COVERED.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+            <h3 id="weather-check" className="scroll-mt-4 pt-2 text-base font-bold text-sakia-brown">
+              D. Weather source checked against Tunisian measurements (3 October 2026)
+            </h3>
+            <p className="text-sm text-sakia-brown">
+              Bias = Open-Meteo minus station. Stations: NOAA GHCN-D Kairouan; DGACTA stations (Oueslatia, 47 km from
+              Kairouan; Zaghouan) and CRDA Kairouan on catalog.agridata.tn (Tunisian open-data licence, reuse allowed with attribution).
+            </p>
+            <Table label="Weather source checked against Tunisian measurements" head={["Measure", "Period", "Result", "Caveat"]} rows={WEATHER_CHECK} />
+            <p className="leading-relaxed text-sakia-ink">
+              <strong>What we conclude.</strong> At Kairouan the weather source is good for evapotranspiration (within a few
+              percent) and temperature (0.6 °C). A study in Morocco found an underestimation of 2 to 37 %: we do not find that
+              here. The <strong>measured weakness is heavy rain</strong>: on the 43 days when the station measured 10 mm or
+              more, the model saw about half of it, and the plan uses the model&apos;s rain as it is, with no correction. A
+              local correction factor for evapotranspiration is not defensible today: the gap changes sign from one station
+              to another, and the only complete series near Kairouan dates from 2019–2020. It would need at least a year of
+              measurements. The analysis scripts are not included in this repository: treat these figures as our own
+              unpublished analysis.
+            </p>
+            <h3 className="pt-2 text-base font-bold text-sakia-brown">E. Evaluations: done and not done</h3>
+            <Table label="Evaluations: done and not done" head={["Evaluation", "Status"]} rows={EVALUATIONS} />
+          </Fold>
+        </section>
       </div>
     </main>
   );

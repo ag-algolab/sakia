@@ -38,6 +38,9 @@ export type SimInput = {
   initialDepletion?: number;
   policy: Policy;
   irrigationSeason?: { from: number; to: number };
+  // Aucun arrosage n'est simulé avant ce jour (AAAA-MM-JJ). Sert quand le dernier arrosage est CONNU : la personne n'a pas arrosé
+  // depuis, la politique ne doit donc pas « arroser » à sa place dans le passé.
+  noIrrigationBefore?: string;
 };
 
 export type SimDay = {
@@ -90,7 +93,7 @@ export function simulate(input: SimInput): SimDay[] {
 
     // décision d'irrigation
     let irrigNet = 0;
-    if (season) {
+    if (season && !(input.noIrrigationBefore && day.date < input.noIrrigationBefore)) {
       if (policy.type === "adaptive") {
         const trigger = policy.trigger ?? 1;
         // on irrigue le jour où la consommation du jour ferait franchir le seuil, avant le stress

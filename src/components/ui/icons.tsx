@@ -183,3 +183,22 @@ export const BellIcon = (p: P) => (
     <path d="M10 21a2.2 2.2 0 0 0 4 0" />
   </svg>
 );
+
+// Drapeau de la Tunisie, tout petit, pour dire OÙ on est sans un mot (les emojis de drapeau s'affichent « TN » sous Windows : on le dessine).
+// Fond rouge, disque blanc, croissant rouge ouvert vers la droite, étoile rouge dans l'ouverture.
+export const TunisiaFlagIcon = (p: P) => (
+  <svg
+    viewBox="0 0 36 24"
+    className={p.className}
+    style={p.style}
+    role={p.title ? "img" : undefined}
+    aria-hidden={p.title ? undefined : true}
+    aria-label={p.title}
+  >
+    <rect width="36" height="24" rx="3" fill="#e70013" />
+    <circle cx="18" cy="12" r="7.2" fill="#fff" />
+    <circle cx="17.1" cy="12" r="5.4" fill="#e70013" />
+    <circle cx="18.6" cy="12" r="4.4" fill="#fff" />
+    <path d="M19.20 9.00 L19.91 11.03 L22.05 11.07 L20.34 12.37 L20.96 14.43 L19.20 13.20 L17.44 14.43 L18.06 12.37 L16.35 11.07 L18.49 11.03Z" fill="#e70013" />
+  </svg>
+);

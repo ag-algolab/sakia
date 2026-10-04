@@ -7,17 +7,13 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildPlan } from "../src/lib/plan";
-import { applyReports, summarize } from "../src/lib/reports";
-import { levelFromMm } from "../src/lib/rainLevels";
-import { fetchForecast } from "../src/lib/weather";
-import { getRegion } from "../src/lib/regions";
 import { synthesizeBulletinMeta } from "../src/lib/voice";
 import type { VoiceLang } from "../src/lib/voice/langs";
 import { bandFromPlan } from "../src/lib/voice/band";
 import type { BulletinPayload } from "../src/lib/voice/band";
-import { REPORTS_ARE_FICTIONAL, SELECTED_VOICE } from "../src/lib/voice/voices";
+import { SELECTED_VOICE } from "../src/lib/voice/voices";
 
-type Demo = { id: string; title: string; region: string; crop: string; lang: VoiceLang; asOf?: string; ago?: number; fictionalReports?: number[] };
+type Demo = { id: string; title: string; region: string; crop: string; lang: VoiceLang; asOf?: string; ago?: number };
 
 const DEMOS: Demo[] = [
   { id: "kairouan-olivier-aeb", title: "Kairouan · olive tree · last irrigation 3 days ago · Tunisian Arabic (Darija) voice", region: "kairouan", crop: "olivier", lang: "aeb", ago: 3 },
@@ -30,30 +26,15 @@ const DEMOS: Demo[] = [
   { id: "kairouan-tomate-canicule-ar", title: "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Standard Arabic voice", region: "kairouan", crop: "tomate", lang: "ar", asOf: "2026-07-17" },
   { id: "kairouan-tomate-canicule-en", title: "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · English voice", region: "kairouan", crop: "tomate", lang: "en", asOf: "2026-07-17" },
   { id: "kairouan-tomate-canicule-ko", title: "Kairouan · tomato · replay of the 17 July 2026 heatwave · last irrigation unknown, so the bulletin says “not sure” · Korean voice (한국어)", region: "kairouan", crop: "tomate", lang: "ko", asOf: "2026-07-17" },
-  // Pluie corrigée par des signalements d'agriculteurs : FICTIFS (démonstration). Trois personnes différentes signalent la
-  // veille 2, 2 et 8 mm ; la médiane prudente (2 mm, « pluie légère ») remplace la prévision pour ce jour.
-  { id: "kairouan-olivier-signalements-aeb", title: "Kairouan · olive tree · rain corrected by fictional farmers' reports · Tunisian Arabic (Darija) voice", region: "kairouan", crop: "olivier", lang: "aeb", ago: 3, fictionalReports: [2, 2, 8] },
-  { id: "kairouan-olivier-signalements-fr", title: "Kairouan · olive tree · rain corrected by fictional farmers' reports · French voice", region: "kairouan", crop: "olivier", lang: "fr", ago: 3, fictionalReports: [2, 2, 8] },
-  { id: "kairouan-olivier-signalements-en", title: "Kairouan · olive tree · rain corrected by fictional farmers' reports · English voice", region: "kairouan", crop: "olivier", lang: "en", ago: 3, fictionalReports: [2, 2, 8] },
 ];
 
 const OUT = join(process.cwd(), "public", "audio");
 
 (async () => {
   mkdirSync(OUT, { recursive: true });
-  const index: { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string; fictionalReports?: boolean }[] = [];
+  const index: { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string }[] = [];
   for (const d of DEMOS) {
-    let forecast;
-    if (d.fictionalReports) {
-      // même chemin de code que la vraie correction : summarize puis applyReports, sans passer par la base de données
-      const region = getRegion(d.region)!;
-      const fc = await fetchForecast(region.lat, region.lon);
-      const yesterday = new Date(Date.parse(`${fc.today}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
-      const rows = d.fictionalReports.map((mm, i) => ({ day: yesterday, mm, reporter_hash: `demo-${i}`, level: levelFromMm(mm) }));
-      const { days, applied } = applyReports(fc.days, summarize(rows));
-      forecast = { ...fc, days, localReports: applied };
-    }
-    const plan = await buildPlan({ regionId: d.region, cropId: d.crop, asOf: d.asOf, lastIrrigationDaysAgo: d.ago }, forecast);
+    const plan = await buildPlan({ regionId: d.region, cropId: d.crop, asOf: d.asOf, lastIrrigationDaysAgo: d.ago });
     const r = await synthesizeBulletinMeta(plan, d.lang);
     writeFileSync(join(OUT, `demo-${d.id}.mp3`), r.audio);
     const payload: BulletinPayload = {
@@ -64,13 +45,11 @@ const OUT = join(process.cwd(), "public", "audio");
       lang: d.lang,
       band: bandFromPlan(plan),
       source: "demo",
-      reportsFictional: plan.localReports?.length ? REPORTS_ARE_FICTIONAL : undefined,
       voiceName: SELECTED_VOICE.name,
-      voiceValidated: SELECTED_VOICE.validated,
     };
     writeFileSync(join(OUT, `demo-${d.id}.json`), JSON.stringify({ ...payload, title: d.title }, null, 1));
-    index.push({ id: d.id, title: d.title, lang: d.lang, region: d.region, crop: d.crop, replayOf: d.asOf, recordedAt: r.generatedAt, fictionalReports: d.fictionalReports ? true : undefined });
-    console.log(`demo-${d.id} : ${Math.round(r.audio.length / 1024)} Ko, ${r.lines.length} lignes (${r.source})${plan.localReports?.length ? `, signalements : ${JSON.stringify(plan.localReports)}` : ""}`);
+    index.push({ id: d.id, title: d.title, lang: d.lang, region: d.region, crop: d.crop, replayOf: d.asOf, recordedAt: r.generatedAt });
+    console.log(`demo-${d.id} : ${Math.round(r.audio.length / 1024)} Ko, ${r.lines.length} lignes (${r.source})`);
   }
   writeFileSync(join(OUT, "demo-index.json"), JSON.stringify(index, null, 1));
 })();

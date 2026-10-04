@@ -16,10 +16,6 @@ function describe(say: Say) {
   if (say.kind === "prompt") {
     return { kind: "prompt", id: say.id, lang: say.lang, text: promptText(say.id, say.lang), en: promptEn(say.id, say.lang), audio: recordingFile(say.id, say.lang) };
   }
-  if (say.kind === "rain") {
-    // la passerelle enregistre le signalement avec POST /api/ivr/rain {regionId, level, reporter, lang}, puis joue la confirmation
-    return { kind: "rain", lang: say.lang, regionId: say.regionId, level: say.level, rainUrl: "/api/ivr/rain" };
-  }
   const qs = new URLSearchParams({ region: say.regionId, crop: say.cropId, lang: say.lang, ago: say.ago === null ? "u" : String(say.ago) });
   if (say.detail) qs.set("detail", "1");
   return { kind: "plan", lang: say.lang, regionId: say.regionId, cropId: say.cropId, ago: say.ago, detail: say.detail, planUrl: `/api/ivr/plan-audio?${qs}`, subtitlesUrl: `/api/ivr/plan?${qs}` };

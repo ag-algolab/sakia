@@ -20,11 +20,8 @@ import { planSms } from "@/lib/messages";
 import type { Lang } from "@/lib/messages";
 import { fitGsm } from "./encoding";
 import { latinLangOf, parseSms, scriptOf, MAX_INPUT } from "./parse";
-import type { Parsed } from "./parse";
-import { R, askCrop, askRegion, askWhichCrop, rainThanks } from "./replies";
+import { R, askCrop, askRegion, askWhichCrop } from "./replies";
 import { addDays } from "@/lib/planCore";
-import { LEVEL_MM, MIN_REPORTERS, loadReports, reporterHash, saveReport, summarize, validMm } from "@/lib/reports";
-import type { ReportRow } from "@/lib/reports";
 import { todayInTunisia } from "@/lib/weather";
 
 type Menu = "main" | "lang" | "ago"; // « ago » : la réponse attendue est un chiffre de 1 à 4 (dernier arrosage)
@@ -85,30 +82,7 @@ function rateLimited(from: string, now: number): boolean {
   return false;
 }
 
-// ---------- rapports de pluie : enregistrés par src/lib/reports.ts (appel direct, pas d'appel HTTP à soi-même) ----------
-
-export type ReportsApi = {
-  save: (regionId: string, day: string, mm: number, reporterToken: string, level?: "none" | "light" | "heavy" | "very_heavy") => Promise<boolean>;
-  load: (regionId: string, sinceDay: string) => Promise<ReportRow[]>;
-};
-export const defaultReports: ReportsApi = { save: saveReport, load: loadReports };
-
-const REPORT_MAX_PER_HOUR = 10; // par expéditeur ; la route /api/reports limite aussi par adresse
-const reportHits = new Map<string, number[]>();
-function reportLimited(from: string, now: number): boolean {
-  const recent = (reportHits.get(from) ?? []).filter((t) => now - t < 3600_000);
-  if (recent.length >= REPORT_MAX_PER_HOUR) {
-    reportHits.set(from, recent);
-    return true;
-  }
-  recent.push(now);
-  reportHits.set(from, recent);
-  if (reportHits.size > 5000) for (const [k, v] of reportHits) if (!v.some((t) => now - t < 3600_000)) reportHits.delete(k);
-  return false;
-}
-
 export function resetSmsSessions() {
-  reportHits.clear();
   sessions.clear();
   rate.clear();
   allHits = [];
@@ -164,43 +138,7 @@ async function planReply(s: Session, getPlan: PlanSource, askAgo = true): Promis
   }
 }
 
-async function rainReply(s: Session, from: string, parsed: Extract<Parsed, { kind: "rain" }>, reports: ReportsApi, now: number): Promise<string> {
-  if (parsed.mm === undefined && !parsed.level) return R.askRain[s.lang];
-  if (parsed.mm !== undefined && !validMm(parsed.mm)) return R.badMm[s.lang];
-  const regionId = parsed.regionId ?? s.regionId;
-  if (!regionId || !getRegion(regionId)) return R.rainNeedRegion[s.lang];
-  if (parsed.regionId) s.regionId = parsed.regionId;
-  if (reportLimited(from, now)) return R.tooManyReports[s.lang];
-
-  const kept = parsed.mm ?? LEVEL_MM[parsed.level!];
-  const today = todayInTunisia();
-  const day = parsed.dayOffset === -1 ? addDays(today, -1) : today;
-  const token = `sms:${from}`;
-  let ok = false;
-  try {
-    ok = await reports.save(regionId, day, kept, token, parsed.level);
-  } catch {
-    ok = false;
-  }
-  if (!ok) return R.reportFailed[s.lang];
-
-  // combien de personnes ont signalé ce jour-là, la nôtre comprise (la liste lue peut dater d'une minute)
-  let rows: ReportRow[] = [];
-  try {
-    rows = await reports.load(regionId, addDays(today, -3));
-  } catch {
-    rows = [];
-  }
-  rows = [...rows, { day, mm: kept, reporter_hash: reporterHash(token) }];
-  const n = summarize(rows).find((d) => d.date === day)?.n ?? 1;
-  return rainThanks({ regionId, kept, fromWord: parsed.mm === undefined, yesterday: parsed.dayOffset === -1, n, need: MIN_REPORTERS }, s.lang);
-}
-
-export async function handleIncoming(
-  input: { from?: unknown; text?: unknown },
-  getPlan: PlanSource = defaultPlanSource,
-  reports: ReportsApi = defaultReports,
-): Promise<{ reply: string }> {
+export async function handleIncoming(input: { from?: unknown; text?: unknown }, getPlan: PlanSource = defaultPlanSource): Promise<{ reply: string }> {
   const now = Date.now();
   const from = cleanFrom(input.from);
   const s = loadSession(from, now);
@@ -277,9 +215,6 @@ export async function handleIncoming(
         s.menu = "lang";
         reply = R.langMenu[s.lang];
       }
-      break;
-    case "rain":
-      reply = await rainReply(s, from, parsed, reports, now);
       break;
     case "plan": {
       if (parsed.ambiguousCrops) {

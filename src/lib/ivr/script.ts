@@ -164,18 +164,6 @@ function buildLines(plan: Plan, lang: Lang): PlanLine[] {
     lines.push({ id: "off", text: bulletin.get("off")! });
   } else {
     lines.push({ id: "rain", text: rainLine(plan.summary.rainExpectedMm, lang) });
-    // transparence : la pluie d'un ou plusieurs jours vient de signalements d'agriculteurs (au moins MIN_REPORTERS = 3 personnes), pas du modèle
-    if (plan.localReports && plan.localReports.length > 0) {
-      lines.push({
-        id: "local",
-        text:
-          lang === "ar"
-            ? "تم تصحيح المطر بتبليغات من فلاحين."
-            : lang === "en"
-              ? "The rain was corrected by farmers' reports."
-              : "La pluie a été corrigée par des signalements d'agriculteurs.",
-      });
-    }
     if (Number.isFinite(plan.summary.tmaxMax)) lines.push({ id: "hot", text: hotLine(plan.summary.tmaxMax, lang) });
     const irrigations = plan.days.filter((d) => d.action === "irriguer");
     const first = irrigations[0];

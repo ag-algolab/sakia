@@ -14,7 +14,7 @@ export function visitorKey(request: Request): string {
   return createHash("sha256").update(`${process.env.CRON_SECRET ?? "sakia"}|${ip}`).digest("hex").slice(0, 16);
 }
 
-// Une voix fabriquée à la demande (ligne vocale, signalement de pluie) : plafond par visiteur, PUIS plafond commun du jour,
+// Une voix fabriquée à la demande (conseil de la ligne vocale) : plafond par visiteur, PUIS plafond commun du jour,
 // le même compteur que les conseils parlés de l'accueil (« tts_live »). false : ne rien fabriquer.
 export async function chargeLiveVoice(request: Request, chars: number): Promise<boolean> {
   if (!(await chargeUsage(`tts_ip:${visitorKey(request)}`, chars, LIMITS.ttsCharsPerIp))) return false;

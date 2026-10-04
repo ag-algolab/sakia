@@ -122,7 +122,6 @@ type PlanJson = {
   await refused("tâche du matin (voix) sans clé", "/api/advice/pregen", undefined, [403, 503]);
   await refused("envoi quotidien Telegram sans clé", "/api/telegram/daily", undefined, [403, 503]);
   await refused("webhook Telegram sans secret", "/api/telegram", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" }, [401, 403, 404, 405]);
-  await refused("rapport de pluie sans jeton serveur", "/api/reports", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ regionId: "kairouan", level: "light", reporter: "smoke-test-without-token" }) }, [400, 401, 403]);
   await refused("message court avec une date quelconque", "/api/advice?region=kairouan&crop=olivier&asOf=2026-05-01", undefined, [400]);
   await refused("région inconnue", "/api/advice?region=zzz&crop=olivier", undefined, [400]);
 

@@ -75,7 +75,7 @@ export default function FiveDoors() {
         <p className="mt-2 max-w-3xl text-lg font-semibold leading-snug text-sakia-brown">{t("doorsHook")}</p>
       </Reveal>
 
-      <ul className="-mx-4 mt-5 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:scroll-px-0 sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5">
+      <ul className="sk-noscrollbar -mx-4 mt-5 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:scroll-px-0 sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5">
         {doors.map((d, i) => (
           <Reveal as="li" key={d.key} delay={i * 60} className="flex">
             {d.key === "app" ? (

@@ -21,9 +21,9 @@ export function regionName(id: string, lang: Lang): string {
 
 export const R = {
   help: {
-    fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, PLUIE 10, LANGUE, STOP = effacer. *123# = menu.",
-    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, RAIN 10, LANGUAGE, STOP = erase. *123# = menu.",
-    ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، مطر 10، لغة، ايقاف = مسح. *123# قائمة",
+    fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, LANGUE, STOP = effacer. *123# = menu.",
+    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, LANGUAGE, STOP = erase. *123# = menu.",
+    ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، لغة، ايقاف = مسح. *123# قائمة",
   } as T,
   // Réponse à la question « dernier arrosage ? » quand le chiffre n'est pas l'un de ceux proposés.
   askAgo: AGO_ASK as T,
@@ -73,31 +73,6 @@ export const R = {
     en: "Too many messages. Try again in a minute.",
     ar: "رسائل كثيرة. أعد المحاولة بعد دقيقة.",
   } as T,
-  askRain: {
-    fr: "Combien de pluie ? Ex : PLUIE 10 (mm) ou PLUIE BEAUCOUP",
-    en: "How much rain? E.g. RAIN 10 (mm) or RAIN HEAVY",
-    ar: "كم مطر؟ مثال: مطر 10 (ملم) أو مطر برشا",
-  } as T,
-  badMm: {
-    fr: "Quantité invalide : de 0 à 150 mm. Ex : PLUIE 10",
-    en: "Invalid amount: 0 to 150 mm. E.g. RAIN 10",
-    ar: "كمية غير صالحة: من 0 إلى 150 ملم. مثال: مطر 10",
-  } as T,
-  rainNeedRegion: {
-    fr: "Quelle région ? Ex : PLUIE 10 kairouan",
-    en: "Which region? E.g. RAIN 10 kairouan",
-    ar: "أي ولاية؟ مثال: مطر 10 القيروان",
-  } as T,
-  reportFailed: {
-    fr: "Rapport de pluie non enregistré pour le moment. Réessayez plus tard.",
-    en: "Rain report not saved right now. Please try again later.",
-    ar: "لم يُسجَّل تقرير المطر حاليا. أعد المحاولة لاحقا.",
-  } as T,
-  tooManyReports: {
-    fr: "Merci, mais trop de rapports de pluie pour le moment. Réessayez plus tard.",
-    en: "Thanks, but too many rain reports for now. Please try again later.",
-    ar: "شكرا، لكن تقارير المطر كثيرة حاليا. أعد المحاولة لاحقا.",
-  } as T,
   tooLong: {
     fr: "Message trop long (160 caractères maximum).",
     en: "Message too long (160 characters maximum).",
@@ -124,24 +99,4 @@ export function askWhichCrop(ids: string[], lang: Lang): string {
   if (lang === "ar") return `${names.join(" أو ")}؟ أعد الإرسال مع الاسم الدقيق.`;
   if (lang === "en") return `${names.join(" or ")}? Please resend with the exact name.`;
   return `${names.join(" ou ")} ? Renvoyez avec le nom exact.`;
-}
-
-// Confirmation d'un rapport de pluie : ce qui a été retenu, et combien de personnes ont signalé ce jour-là.
-// `kept` : quantité retenue en mm (pour un mot comme « beaucoup », c'est le bas de la fourchette, voir src/lib/rainLevels.ts).
-export function rainThanks(opts: { regionId: string; kept: number; fromWord: boolean; yesterday: boolean; n: number; need: number }, lang: Lang): string {
-  const { regionId, kept, fromWord, yesterday, n, need } = opts;
-  const r = regionName(regionId, lang);
-  const mm = Number.isInteger(kept) ? String(kept) : kept.toFixed(1);
-  const when = lang === "ar" ? (yesterday ? "البارحة" : "اليوم") : lang === "en" ? (yesterday ? "yesterday" : "today") : yesterday ? "hier" : "aujourd'hui";
-  if (lang === "ar") {
-    const head = `شكرا. مطر ${r} ${when}: ${mm} ملم${fromWord ? " (تقدير حذر)" : ""}.`;
-    const reports = n === 1 ? "تقرير واحد" : n === 2 ? "تقريران" : `${n} تقارير`; // 1 : singulier, 2 : duel, 3 et plus : pluriel
-    return n >= need ? `${head} ${n} أشخاص أبلغوا: تم تصحيح المطر في الخطة.` : `${head} ${reports}، ويلزم ${need} لتصحيح الخطة.`;
-  }
-  if (lang === "en") {
-    const head = `Thanks. Rain at ${r} ${when}: ${mm} mm${fromWord ? " (cautious estimate)" : ""}.`;
-    return n >= need ? `${head} ${n} people reported: the plan's rain is corrected.` : `${head} ${n} report${n > 1 ? "s" : ""} so far; ${need} are needed to correct the plan.`;
-  }
-  const head = `Merci. Pluie à ${r} ${when} : ${mm} mm${fromWord ? " (estimation prudente)" : ""}.`;
-  return n >= need ? `${head} ${n} personnes ont signalé : la pluie du plan est corrigée.` : `${head} ${n} signalement${n > 1 ? "s" : ""} pour l'instant ; il en faut ${need} pour corriger le plan.`;
 }

@@ -9,13 +9,10 @@ import type { Lang } from "../messages";
 import { addDays, computePlan } from "../planCore";
 import type { Forecast } from "../weather";
 import { handleIncoming, resetSmsSessions } from "./handler";
-import type { PlanSource, ReportsApi } from "./handler";
-import type { ReportRow } from "../reports";
-import { MIN_REPORTERS, reporterHash } from "../reports";
-import { todayInTunisia } from "../weather";
+import type { PlanSource } from "./handler";
 import { fitGsm, gsmLength, smsInfo, toGsm } from "./encoding";
 import { parseSms } from "./parse";
-import { R, rainThanks } from "./replies";
+import { R } from "./replies";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = "") {
@@ -120,7 +117,8 @@ for (const [text, days] of [["hier", 1], ["aujourd'hui", 0], ["3j", 3], ["الي
   const p = parseSms(text);
   check(`« ${text} » seul : dernier arrosage ${days}`, p.kind === "ago" && p.days === days, JSON.stringify(p));
 }
-check("« pluie hier 5 kairouan » reste un rapport de pluie d'hier", (() => { const p = parseSms("pluie hier 5 kairouan"); return p.kind === "rain" && p.dayOffset === -1 && p.mm === 5; })());
+check("« pluie hier 5 kairouan » : « hier » n'est pas lu comme un arrosage (message de pluie)", (() => { const p = parseSms("pluie hier 5 kairouan"); return p.kind === "plan" && p.regionId === "kairouan" && p.ago === undefined; })());
+check("« il a plu hier, olivier kairouan » : pas de dernier arrosage lu", (() => { const p = parseSms("il a plu hier, olivier kairouan"); return p.kind === "plan" && p.cropId === "olivier" && p.ago === undefined; })());
 check("« 3 » seul reste une réponse de menu", parseSms("3").kind === "choice");
 check("« jour » seul ne dit rien", parseSms("jour").kind === "unknown");
 
@@ -216,7 +214,8 @@ async function conversations() {
   await say("t16", "*123#");
   await say("t16", "3");
   check("menu des langues : 3 = français", (await say("t16", "3")).startsWith("Langue : fran")); // « ç » ramené à « c » (alphabet GSM)
-  check("aide en anglais : mots-clés anglais (RAIN, LANGUAGE), ≤ 160", ((h) => h.includes("RAIN 10") && h.includes("LANGUAGE") && !h.includes("PLUIE") && (gsmLength(h) ?? 999) <= 160)(await say("t17", "help")));
+  // plus de signalement de pluie (décision d'Anthony) : l'aide anglaise ne propose ni RAIN ni PLUIE
+  check("aide en anglais : mots-clés anglais (LANGUAGE), sans RAIN ni PLUIE, ≤ 160", ((h) => h.includes("LANGUAGE") && !h.includes("RAIN") && !h.includes("PLUIE") && (gsmLength(h) ?? 999) <= 160)(await say("t17", "help")));
 
   resetSmsSessions();
   let last = "";
@@ -333,84 +332,31 @@ async function live() {
   check(`${n} combinaisons réelles : réponse ≤ 160 (plus long : ${worst})`, worst <= 160);
 }
 
-// ---------- rapports de pluie, avec un enregistrement simulé (aucune écriture réelle dans Supabase) ----------
-type Saved = { regionId: string; day: string; mm: number; level?: string; token: string };
-function fakeReports(failing = false) {
-  const saved: Saved[] = [];
-  const api: ReportsApi = {
-    save: async (regionId, day, mm, token, level) => {
-      if (failing) return false;
-      const i = saved.findIndex((r) => r.regionId === regionId && r.day === day && r.token === token);
-      const row = { regionId, day, mm, level, token };
-      if (i >= 0) saved[i] = row;
-      else saved.push(row);
-      return true;
-    },
-    load: async (regionId, since) =>
-      saved.filter((r) => r.regionId === regionId && r.day >= since).map((r): ReportRow => ({ day: r.day, mm: r.mm, level: r.level ?? null, reporter_hash: reporterHash(r.token) })),
-  };
-  return { api, saved };
-}
-const sayR = async (from: string, text: string, reports: ReportsApi) => (await handleIncoming({ from, text }, stub, reports)).reply;
-
-async function rainReports() {
+// ---------- « PLUIE » n'est plus une commande : l'aide ne la cite pas, le message reçoit la réponse d'aide ----------
+async function noRainCommand() {
   resetSmsSessions();
-  const { api, saved } = fakeReports();
-  const today = todayInTunisia();
-
-  const a = await sayR("r1", "PLUIE 10 kairouan", api);
-  check("PLUIE 10 kairouan : enregistré (10 mm, aujourd'hui, empreinte « sms:r1 »)", saved.length === 1 && saved[0].mm === 10 && saved[0].day === today && saved[0].token === "sms:r1" && saved[0].regionId === "kairouan", JSON.stringify(saved));
-  check("1re personne : dit qu'il en faut 3 (MIN_REPORTERS)", a.includes("10 mm") && a.includes("1 signalement") && a.includes(`il en faut ${MIN_REPORTERS}`), a);
-  const b = await sayR("r2", "pluie 6 kairouan", api);
-  check("2e personne : pas encore corrigée, il en faut 3 (pluriel « 2 signalements »)", b.includes("2 signalements") && b.includes(`il en faut ${MIN_REPORTERS}`) && !b.includes("corrigée"), b);
-  const c = await sayR("r2b", "pluie 8 kairouan", api);
-  check("3e personne : « la pluie du plan est corrigée » et le nombre", c.includes(`${MIN_REPORTERS} personnes`) && c.includes("corrigée"), c);
-  check("arabe, 2 signalements : « تقريران » (duel), pas « تقرير واحد »", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "ar").includes("تقريران"));
-  check("anglais, 2 reports : pluriel", rainThanks({ regionId: "kairouan", kept: 6, fromWord: false, yesterday: false, n: 2, need: MIN_REPORTERS }, "en").includes("2 reports so far"));
-  await sayR("r1", "pluie 12 kairouan", api);
-  check("même personne qui renvoie : un seul rapport, valeur remplacée", saved.length === 3 && saved.find((r) => r.token === "sms:r1")?.mm === 12);
-
-  const ar = await sayR("r3", "مطر 10 القيروان", api);
-  check("مطر 10 القيروان : accepté, réponse en arabe", /[؀-ۿ]/.test(ar) && saved.some((r) => r.token === "sms:r3" && r.mm === 10), ar);
-  const arabizi = await sayR("r4", "shta 10 sfax", api);
-  check("shta 10 sfax : accepté (arabizi)", saved.some((r) => r.token === "sms:r4" && r.regionId === "sfax" && r.mm === 10), arabizi);
-  const virgule = await sayR("r5", "pluie 2,5mm kairouan", api);
-  check("virgule et unité : « 2,5mm » -> 2,5", saved.some((r) => r.token === "sms:r5" && r.mm === 2.5), virgule);
-
-  await sayR("r6", "zitoun kairouan", api);
-  await sayR("r6", "pluie 7", api);
-  check("région retenue de la conversation (pas besoin de la répéter)", saved.some((r) => r.token === "sms:r6" && r.regionId === "kairouan" && r.mm === 7));
-
-  const word = await sayR("r7", "pluie beaucoup kairouan", api);
-  check("mot « beaucoup » : retenu 8 mm (bas de la fourchette), estimation prudente", saved.some((r) => r.token === "sms:r7" && r.mm === 8 && r.level === "heavy") && word.includes("prudente"), word);
-  await sayR("r8", "chta barcha kairouan", api);
-  check("« chta barcha » (arabizi) = beaucoup", saved.some((r) => r.token === "sms:r8" && r.mm === 8));
-  await sayR("r9", "pluie hier 5 kairouan", api);
-  check("« hier » : la veille", saved.some((r) => r.token === "sms:r9" && r.day < today && r.mm === 5));
-
-  check("« pluie » seul : on demande la quantité", (await sayR("r10", "pluie", api)).includes("PLUIE 10"));
-  check("200 mm refusé", (await sayR("r11", "pluie 200 kairouan", api)).includes("invalide") && !saved.some((r) => r.token === "sms:r11"));
-  check("sans région : on la demande", (await sayR("r12", "pluie 10", api)).includes("Quelle région") && !saved.some((r) => r.token === "sms:r12"));
-  const plan = await sayR("r13", "quand arroser mes oliviers à kairouan s'il a plu ?", api);
-  check("question d'irrigation avec « plu » : reste une demande de plan", plan.startsWith("Sakia Kairouan") && !saved.some((r) => r.token === "sms:r13"), plan);
-
-  const down = await sayR("r14", "pluie 10 kairouan", fakeReports(true).api);
-  check("enregistrement impossible : message poli, pas d'erreur technique", down.includes("non enregistré"), down);
-
-  resetSmsSessions();
-  const lim = fakeReports();
-  let last = "";
-  for (let i = 0; i < 12; i++) last = await sayR("spam", `pluie ${i} kairouan`, lim.api);
-  check("limite de 10 rapports par heure et par expéditeur", last.includes("trop de rapports") && lim.saved.length === 1, last);
-
-  for (const reply of [a, b, c, ar, word, down]) check(`réponse de pluie ≤ 160 caractères (${reply.length})`, /[\u0600-\u06FF]/.test(reply) || fitGsm(reply).length <= 160 && reply.length <= 160, reply);
+  for (const text of ["PLUIE 10", "pluie", "PLUIE BEAUCOUP", "rain 10", "مطر 10", "shta 10"]) {
+    const kind = parseSms(text).kind;
+    check(`« ${text} » n'est plus une commande`, kind === "unknown", kind);
+  }
+  const fr = await say("p1", "PLUIE 10");
+  check("« PLUIE 10 » reçoit la réponse d'aide (exemple et AIDE)", fr.includes("pas compris") && fr.includes("AIDE"), fr);
+  const ar = await say("p2", "مطر 10");
+  check("« مطر 10 » reçoit la réponse d'aide en arabe", /[؀-ۿ]/.test(ar) && ar.includes("AIDE"), ar);
+  const region = await say("p3", "pluie 10 kairouan");
+  check("« pluie 10 kairouan » : seule la région est lue, on demande la culture", region === "Kairouan : quelle culture ? Ex : olivier", region);
+  for (const lang of ["fr", "en", "ar"] as Lang[]) {
+    check(`l'aide (${lang}) ne cite aucune commande de pluie`, !/pluie|rain|مطر/i.test(R.help[lang]), R.help[lang]);
+  }
+  const menu = await say("p4", "*123#");
+  check("le menu *123# ne propose pas la pluie", !/pluie|rain/i.test(menu), menu);
 }
 
 (async () => {
   await conversations();
   await lastIrrigation();
   await askLengths();
-  await rainReports();
+  await noRainCommand();
   if (process.argv.includes("--live")) await live();
   console.log(failed ? `\n${failed} contrôle(s) en échec` : "\ntous les contrôles passent");
   process.exit(failed ? 1 : 0);

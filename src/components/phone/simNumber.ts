@@ -1,7 +1,7 @@
 "use client";
 
 // Le numéro FICTIF de ce navigateur (« sim-xxxxxx ») : seule clé de la conversation côté serveur. Il est gardé dans l'appareil pour
-// qu'un même navigateur reste « une seule personne » (un seul signalement de pluie par région et par jour), au lieu d'en créer une
+// qu'un même navigateur reste la même conversation (langue, culture et région retenues par le serveur), au lieu d'en créer une
 // nouvelle à chaque rechargement. Jamais un vrai numéro. Le faux téléphone « à écrire » le réutilise (même conversation).
 
 const KEY = "sakia.phone.sid.v1";

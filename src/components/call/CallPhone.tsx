@@ -11,7 +11,6 @@ import type { DemoItem } from "@/lib/ivr/demo";
 import { KEYS } from "@/lib/ivr/flow";
 import type { CallState, Key } from "@/lib/ivr/flow";
 import { AGO_CHOICES, GROUPS, OTHER_REGIONS } from "@/lib/ivr/menu";
-import { LEVEL_LABEL, RAIN_LEVELS } from "@/lib/rainLevels";
 import { getRegion } from "@/lib/regions";
 import { countCached, precache } from "./audioStore";
 import { LOCALES, tr, uiLangOf } from "./strings";
@@ -40,7 +39,6 @@ function hintsFor(state: CallState | null, ui: UiLang): { key: string; label: st
       return [
         { key: "1", label: regionLabel("kairouan", ui) },
         { key: "2", label: t("hint_region_other") },
-        ...(state.intent === "rain" ? [] : [{ key: "7", label: t("hint_rain") }]),
       ];
     case "region_list":
       return OTHER_REGIONS.map((id, i) => ({ key: String(i + 1), label: regionLabel(id, ui) }));
@@ -52,19 +50,21 @@ function hintsFor(state: CallState | null, ui: UiLang): { key: string; label: st
       return AGO_CHOICES.map((c) => ({ key: c.key, label: t(`ago_${c.key}`) }));
     case "plan":
     case "detail":
-    case "rain_done":
       return [{ key: "·", label: t("hint_skip") }];
     case "again":
       return [
         { key: "1", label: t("hint_again_yes") },
         { key: "2", label: t("hint_again_no") },
         { key: "3", label: t("hint_again_detail") },
-        { key: "7", label: t("hint_rain") },
       ];
-    case "rain_level":
-      return RAIN_LEVELS.map((l, i) => ({ key: String(i + 1), label: LEVEL_LABEL[ui][l] }));
   }
 }
+
+// Taille en mégaoctets : « 2.1 MB » en anglais, « 2,1 Mo » en français (l'arabe garde « Mo » : pas d'abréviation arabe nouvelle à faire valider).
+const megabytes = (kb: number, ui: UiLang): string => {
+  const n = (kb / 1024).toFixed(1);
+  return ui === "en" ? `${n} MB` : ui === "fr" ? `${n.replace(".", ",")} Mo` : `${n} Mo`;
+};
 
 const mmss = (ms: number) => `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, "0")}`;
 
@@ -133,27 +133,6 @@ function GuardView({ guard, ui }: { guard: Guard | null; ui: UiLang }) {
     );
   }
   return <p className="rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base text-sakia-ink">{t("guardOk")}</p>;
-}
-
-function RainCard({ r, ui }: { r: NonNullable<ReturnType<typeof useIvrCall>["rainResult"]>; ui: UiLang }) {
-  const t = (k: string, v?: Record<string, string | number>) => tr(ui, k, v);
-  const label = LEVEL_LABEL[ui][r.level];
-  const region = regionLabel(r.regionId, ui);
-  return (
-    <div className={`rounded-xl border p-3 ${r.ok ? "border-sakia-water bg-sakia-water-light" : "border-sakia-alert bg-sakia-alert-light"}`}>
-      <h2 className="text-base font-bold text-sakia-water-deep">{t("rainTitle")}</h2>
-      {r.ok ? (
-        <>
-          <p className="mt-1 text-lg font-semibold">{t("rainSaved", { level: label, region })}</p>
-          <p className="mt-1 text-base">{t("rainCount", { n: r.n, min: r.minReporters })}</p>
-          <p className="mt-1 text-base font-semibold">{r.counted ? t("rainCounted") : t("rainNotYet", { min: r.minReporters })}</p>
-        </>
-      ) : (
-        <p className="mt-1 text-base font-semibold text-sakia-alert">{t(r.offline ? "rainNotSavedOffline" : "rainNotSaved")}</p>
-      )}
-      <p className="mt-2 text-sm text-sakia-brown">{t("rainDemoNote")}</p>
-    </div>
-  );
 }
 
 function Reasons({ reasons, ui }: { reasons: string[]; ui: UiLang }) {
@@ -232,7 +211,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
       <p className="mt-2 max-w-3xl text-lg">{t("intro")}</p>
       <p className="mt-2 max-w-3xl text-base text-sakia-brown">{t("stat")}</p>
       <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base text-sakia-ink">
-        <strong>{t("langOrderTitle")}</strong> {t("langOrder")}
+        <strong className="block">{t("langOrderTitle")}</strong> {t("langOrder")}
       </p>
       <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base font-semibold text-sakia-alert">
         {t("simulated")}
@@ -251,10 +230,10 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
               <div aria-live="polite" className="mt-2 flex-1">
                 {c.phase === "idle" && <p className="text-base" dir={ui === "ar" ? "rtl" : "ltr"}>{t("idleHint")}</p>}
                 {c.phase === "ringing" && <p className="text-xl font-semibold">☎ {t("ringing")}</p>}
-                {(c.loadingPlan || c.loadingRain) && (
-                  <p className="text-lg font-semibold text-sakia-water-deep" dir={ui === "ar" ? "rtl" : "ltr"}>⏳ {t(c.loadingRain ? "loadingRain" : "loadingPlan")}</p>
+                {c.loadingPlan && (
+                  <p className="text-lg font-semibold text-sakia-water-deep" dir={ui === "ar" ? "rtl" : "ltr"}>⏳ {t("loadingPlan")}</p>
                 )}
-                {!c.loadingPlan && !c.loadingRain && c.now && c.phase !== "idle" && (
+                {!c.loadingPlan && c.now && c.phase !== "idle" && (
                   <div>
                     <p className="text-xl font-semibold leading-snug" lang="en" dir="ltr">
                       {c.now.en}
@@ -380,8 +359,6 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             </div>
           </div>
 
-          {c.rainResult && <RainCard r={c.rainResult} ui={ui} />}
-
           {lastPlan && (
             <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
               <ol className="space-y-2">
@@ -425,7 +402,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-sakia-sand-dark bg-white p-4">
           <h2 className="text-lg font-bold text-sakia-green">{t("prepTitle")}</h2>
-          <p className="mt-1 text-base">{t("prepText", { n: offlineUrls.length, size: `${(offlineKb / 1024).toFixed(1)} Mo` })}</p>
+          <p className="mt-1 text-base">{t("prepText", { n: offlineUrls.length, size: megabytes(offlineKb, ui) })}</p>
           <button
             type="button"
             onClick={runPrep}
@@ -442,8 +419,14 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
           <p className="mt-2 text-sm text-sakia-brown">{t("sizes", { n: stats.promptCount, kb: stats.promptKb, planKb: stats.planKb })}</p>
         </section>
 
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-4">
-          <h2 className="text-lg font-bold text-sakia-green">{t("realTitle")}</h2>
+        {/* le détail technique est replié : le jury lit le titre, le curieux ouvre (rien n'est retiré) */}
+        <details className="group self-start rounded-xl border border-sakia-sand-dark bg-white p-4">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="text-lg font-bold text-sakia-green">{t("realTitle")}</h2>
+            <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
           <ul className="mt-2 list-disc space-y-1 ps-5 text-base">
             <li>{t("real1")}</li>
             <li>{t("real2")}</li>
@@ -451,10 +434,15 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             <li>{t("real4")}</li>
           </ul>
           <p className="mt-2 text-sm text-sakia-brown">{t("voiceFootnote", { voice: stats.voiceName })}</p>
-        </section>
+        </details>
 
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-4 md:col-span-2">
-          <h2 className="text-lg font-bold text-sakia-green">{t("plugTitle")}</h2>
+        <details className="group rounded-xl border border-sakia-sand-dark bg-white p-4 md:col-span-2">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="text-lg font-bold text-sakia-green">{t("plugTitle")}</h2>
+            <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
           <ol className="mt-2 list-decimal space-y-1 ps-5 text-base">
             <li>{t("plug1")}</li>
             <li>{t("plug2")}</li>
@@ -462,7 +450,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             <li>{t("plug4")}</li>
             <li>{t("plug5")}</li>
           </ol>
-        </section>
+        </details>
       </div>
     </main>
   );

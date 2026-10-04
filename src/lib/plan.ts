@@ -5,7 +5,6 @@ import { getCrop } from "./crops";
 import { getRegion } from "./regions";
 import { addDays, computePlan } from "./planCore";
 import type { Plan, PlanRequest } from "./planCore";
-import { applyReports, loadReports, summarize } from "./reports";
 import { fetchForecast, fetchArchive, climatology } from "./weather";
 import type { Day, Forecast } from "./weather";
 
@@ -43,10 +42,7 @@ export async function loadForecast(regionId: string, asOf?: string, horizon = 7)
     const archive = await fetchArchive(region.lat, region.lon, addDays(asOf, -7), addDays(asOf, horizon + 1));
     return { days: archive, today: asOf, fetchedAt: new Date().toISOString(), source: "open-meteo" };
   }
-  const fc = await fetchForecast(region.lat, region.lon);
-  // Solidarité locale : la pluie signalée par au moins MIN_REPORTERS (3) agriculteurs de la région remplace celle du modèle.
-  const { days, applied } = applyReports(fc.days, summarize(await loadReports(regionId, addDays(fc.today, -7))));
-  return { ...fc, days, localReports: applied };
+  return fetchForecast(region.lat, region.lon);
 }
 
 export async function buildPlan(req: PlanRequest, forecastOverride?: Forecast): Promise<Plan> {

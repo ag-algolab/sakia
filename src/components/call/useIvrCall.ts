@@ -12,8 +12,6 @@ import type { CallState, Key, Say, StepResult } from "@/lib/ivr/flow";
 import { SILENCE_MS } from "@/lib/ivr/menu";
 import type { IvrLang } from "@/lib/ivr/menu";
 import { promptEn, promptText } from "@/lib/ivr/prompts";
-import { MIN_REPORTERS } from "@/lib/ivr/rain";
-import type { RainLevel } from "@/lib/ivr/rain";
 import { loadBlob, loadJson } from "./audioStore";
 import { playKeyTone, playRingback } from "./tones";
 
@@ -36,8 +34,6 @@ export type Banner =
   | { kind: "norec" }
   | { kind: "error" };
 export type Guard = { level: "ok" | "low" | "none"; askAPerson: boolean; reasons: string[] };
-// Résultat du dernier signalement de pluie : ok = enregistré ; n = personnes différentes qui ont signalé aujourd'hui dans la région.
-export type RainResult = { ok: boolean; level: RainLevel; regionId: string; n: number; counted: boolean; minReporters: number; offline: boolean };
 
 type Now = { text: string; en: string; lang: IvrLang } | null;
 type PlanView = { lang: IvrLang; lines: PlanLineView[]; active: number } | null;
@@ -55,35 +51,6 @@ function b64ToBlob(b64: string, mime: string): Blob {
   return new Blob([bytes], { type: mime });
 }
 
-// Identité anonyme de cet appareil pour les signalements de pluie, ÉMISE ET SIGNÉE PAR LE SERVEUR (GET /api/reports/token) :
-// un navigateur ne choisit pas la sienne. Même clé que le site : le téléphone dessiné et le site, sur le même appareil, comptent pour
-// UNE personne (un seul rapport par personne), et plusieurs appels depuis le même appareil aussi. Jamais un nom, un numéro ni une adresse.
-const SIGNED = /^[0-9a-f]{24}\.[0-9a-f]{16}$/;
-let memoryReporter = "";
-async function reporterId(forceNew = false): Promise<string | null> {
-  try {
-    const known = localStorage.getItem("sakia-reporter");
-    if (!forceNew && known && SIGNED.test(known)) return known;
-  } catch {
-    if (!forceNew && SIGNED.test(memoryReporter)) return memoryReporter;
-  }
-  try {
-    const res = await fetch("/api/reports/token");
-    if (!res.ok) return null;
-    const { reporter } = (await res.json()) as { reporter?: string };
-    if (!reporter || !SIGNED.test(reporter)) return null;
-    memoryReporter = reporter;
-    try {
-      localStorage.setItem("sakia-reporter", reporter);
-    } catch {
-      // stockage refusé : l'identité reste en mémoire pour cet appel
-    }
-    return reporter;
-  } catch {
-    return null;
-  }
-}
-
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mode: SourceMode }) {
@@ -96,8 +63,6 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
   const [guard, setGuard] = useState<Guard | null>(null);
   const [speaking, setSpeaking] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(false);
-  const [loadingRain, setLoadingRain] = useState(false);
-  const [rainResult, setRainResult] = useState<RainResult | null>(null);
   const [online, setOnline] = useState(true);
 
   const optsRef = useRef(opts);
@@ -334,72 +299,6 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
     [playMedia, pushLog, resolvePlan, sayPrompt],
   );
 
-  // ---------- un signalement de pluie (touche 7) ----------
-  // Enregistre le signalement par notre serveur (identifiant anonyme gardé dans cet appareil), puis dit la confirmation et
-  // combien de personnes ont signalé aujourd'hui. Sans internet (ou en mode « enregistrements seulement »), rien n'est enregistré :
-  // l'appel le dit (« je n'ai pas pu enregistrer »), il ne fait pas semblant.
-  const sayRain = useCallback(
-    async (s: Extract<Say, { kind: "rain" }>, token: number): Promise<PlayResult> => {
-      const { mode } = optsRef.current;
-      type Reply = { ok: boolean; n: number; counted: boolean; minReporters: number; countText?: string; countEn?: string; audioBase64?: string; mime?: string };
-      let reply: Reply | null = null;
-      const offline = mode === "recorded" || navigator.onLine === false;
-      setLoadingRain(true);
-      setNow(null);
-      if (!offline) {
-        const ctrl = new AbortController();
-        const timer = window.setTimeout(() => ctrl.abort(), 15_000);
-        try {
-          const send = async (id: string) =>
-            fetch("/api/ivr/rain", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ regionId: s.regionId, level: s.level, lang: s.lang, reporter: id }),
-              signal: ctrl.signal,
-            });
-          let id = await reporterId();
-          let res = id ? await send(id) : null;
-          // identité refusée (ancienne forme gardée par le site, ou clé du serveur changée) : on en demande une neuve, une seule fois
-          if (res && res.status === 400) {
-            id = await reporterId(true);
-            res = id ? await send(id) : res;
-          }
-          if (res?.ok) reply = (await res.json()) as Reply;
-        } catch {
-          // pas de réseau ou délai dépassé : le signalement n'est pas enregistré
-        } finally {
-          window.clearTimeout(timer);
-        }
-      }
-      setLoadingRain(false);
-      if (token !== tokenRef.current) return "cancelled";
-      setRainResult({
-        ok: !!reply?.ok,
-        level: s.level,
-        regionId: s.regionId,
-        n: reply?.n ?? 0,
-        counted: !!reply?.counted,
-        minReporters: reply?.minReporters ?? MIN_REPORTERS,
-        offline,
-      });
-      if (!reply?.ok) return sayPrompt({ kind: "prompt", id: "rain_fail", lang: s.lang }, token);
-
-      const thanks = await sayPrompt({ kind: "prompt", id: "rain_thanks", lang: s.lang }, token);
-      if (thanks === "cancelled" || token !== tokenRef.current) return "cancelled";
-      if (!reply.countText) return thanks;
-      const line = { text: reply.countText, en: reply.countEn ?? reply.countText, lang: s.lang };
-      setNow(line);
-      pushLog({ kind: "prompt", ...line });
-      if (reply.audioBase64) {
-        const url = URL.createObjectURL(b64ToBlob(reply.audioBase64, reply.mime ?? "audio/mpeg"));
-        blobUrls.current.set(`rain:${Date.now()}`, url);
-        return playMedia({ src: url });
-      }
-      return playMedia({ silentMs: Math.min(7000, 1500 + line.text.length * 55) });
-    },
-    [playMedia, pushLog, sayPrompt],
-  );
-
   // ---------- enchaînement ----------
   const clearSilence = useCallback(() => window.clearTimeout(silenceRef.current), []);
 
@@ -408,7 +307,6 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
     cancelRef.current?.();
     setSpeaking(false);
     setLoadingPlan(false);
-    setLoadingRain(false);
   }, []);
 
   const endCall = useCallback(() => {
@@ -428,7 +326,6 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
       for (const s of r.say) {
         if (token !== tokenRef.current) return;
         if (s.kind === "prompt") await sayPrompt(s, token);
-        else if (s.kind === "rain") await sayRain(s, token);
         else await sayPlan(s, token);
       }
       if (token !== tokenRef.current) return;
@@ -436,7 +333,7 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
       if (r.end) return endCall();
       const state = stateRef.current;
       if (!state) return;
-      if (state.node === "plan" || state.node === "detail" || state.node === "rain_done") {
+      if (state.node === "plan" || state.node === "detail") {
         applyRef.current(step(state, { type: "played" }));
         return;
       }
@@ -447,7 +344,7 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
         applyRef.current(step(st, { type: "silence" }));
       }, SILENCE_MS);
     },
-    [endCall, sayPlan, sayPrompt, sayRain],
+    [endCall, sayPlan, sayPrompt],
   );
 
   const apply = useCallback(
@@ -499,7 +396,6 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
     setPlanView(null);
     setNow(null);
     planCache.current.clear();
-    setRainResult(null);
     phaseRef.current = "ringing";
     setPhase("ringing");
     const myRing = ++ringToken.current;
@@ -539,5 +435,5 @@ export function useIvrCall(opts: { recordings: Recordings; demos: DemoItem[]; mo
     endCall();
   }, [cancelSpeech, clearSilence, endCall, pushLog]);
 
-  return { phase, call, now, planView, log, banner, guard, speaking, loadingPlan, loadingRain, rainResult, online, start, hangup, press };
+  return { phase, call, now, planView, log, banner, guard, speaking, loadingPlan, online, start, hangup, press };
 }

@@ -6,7 +6,6 @@ const COMMANDS = {
   fr: [
     ["plan", "Plan d'irrigation des 7 jours"],
     ["bulletin", "Bulletin vocal"],
-    ["pluie", "Signaler la pluie chez moi"],
     ["langue", "Changer de langue"],
     ["stop", "Arrêter le bulletin quotidien"],
     ["aide", "Aide"],
@@ -14,7 +13,6 @@ const COMMANDS = {
   ar: [
     ["plan", "خطة الري لـ 7 أيام"],
     ["bulletin", "النشرة الصوتية"],
-    ["pluie", "الإبلاغ عن المطر عندي"],
     ["langue", "تغيير اللغة"],
     ["stop", "إيقاف النشرة اليومية"],
     ["aide", "مساعدة"],
@@ -22,7 +20,6 @@ const COMMANDS = {
   en: [
     ["plan", "7-day irrigation plan"],
     ["bulletin", "Voice bulletin"],
-    ["pluie", "Report rain at my place"],
     ["langue", "Change language"],
     ["stop", "Stop the daily bulletin"],
     ["aide", "Help"],

@@ -55,7 +55,7 @@ export const FILMS: Record<FilmKey, FilmDef> = {
       "The same answer reaches him as a spoken bulletin in Tunisian Arabic (real), on a keypad voice line (simulated), by SMS (simulated) and on Telegram (real). Without a network, the installable web app recomputes the plan in the browser. The advice is ready every morning, before Noor goes to the field.",
       "When the data is too old, Sakia says it is not sure and asks the farmer to see a technician. A person always decides.",
       "Replaying every season from 2015 to 2026 on observed weather, advised schedules used 3 to 27 percent less pumped water depending on the crop, with almost no stress days. This is a simulation, a best case without forecast errors, not a field measurement.",
-      "English first, for the jury. In reality: Darija first, then French, for the spoken bulletin and the app. Sakia. One decision a day.",
+      "English first, for the jury. In reality: Arabic first, then French, for the spoken bulletin and the app. Sakia. One decision a day.",
     ],
   },
   tech: {

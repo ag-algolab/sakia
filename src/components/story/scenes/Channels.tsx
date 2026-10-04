@@ -158,7 +158,7 @@ export default function Channels({ t, data }: SceneProps) {
         <Words text="Same answer. Wherever Noor is." t={t} start={0.3} step={0.1} />
       </h2>
 
-      <Card i={0} at={1.0} t={t} title="Spoken bulletin" sub="Tunisian Arabic (Darija)" real>
+      <Card i={0} at={1.0} t={t} title="Spoken bulletin" sub="Arabic" real>
         <Voice t={t} at={1.0} enText={data.adviceEn} arText={data.adviceAeb} />
       </Card>
       <Card i={1} at={3.8} t={t} title="Voice line" sub="Keypad call, in the browser" real={false}>
