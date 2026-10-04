@@ -1,5 +1,9 @@
 @AGENTS.md
 
+> **Passation en cours (session cloud vers session locale), 4 octobre 2026.** Lire `docs/PASSATION-CLOUD-2026-10-04.md` avant de continuer :
+> ce qui reste à faire hors cloud (PR n°3, vérification du site en ligne, Telegram 24 h/24), deux questions en attente d'Anthony (correction du
+> moteur « dernier arrosage », choix de la présentatrice) et les pièces de `docs/passation-cloud/`. Supprimer cette note une fois la passation faite.
+
 # Décisions du propriétaire (Anthony), 4 octobre 2026
 
 À lire par toute session avant de toucher au produit. Ces décisions viennent d'Anthony ; si un autre texte du dépôt les contredit

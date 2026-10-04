@@ -1,0 +1,35 @@
+diff --git a/src/lib/planCore.ts b/src/lib/planCore.ts
+index f66c5ae..591d24a 100644
+--- a/src/lib/planCore.ts
++++ b/src/lib/planCore.ts
+@@ -127,6 +127,7 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
+     soil,
+     system,
+     initialDepletion: ago != null ? 0 : 0.5,
++    noIrrigationBefore: ago != null ? today : undefined, // dernier arrosage connu : rien n'a été arrosé entre ce jour-là et aujourd'hui
+     policy: { type: "adaptive", trigger: 1 },
+     irrigationSeason: crop.irrigationSeason,
+   });
+diff --git a/src/lib/waterBalance.ts b/src/lib/waterBalance.ts
+index 83e84b2..44330e6 100644
+--- a/src/lib/waterBalance.ts
++++ b/src/lib/waterBalance.ts
+@@ -38,6 +38,9 @@ export type SimInput = {
+   initialDepletion?: number;
+   policy: Policy;
+   irrigationSeason?: { from: number; to: number };
++  // Aucun arrosage n'est simulé avant ce jour (AAAA-MM-JJ). Sert quand le dernier arrosage est CONNU : la personne n'a pas arrosé
++  // depuis, la politique ne doit donc pas « arroser » à sa place dans le passé.
++  noIrrigationBefore?: string;
+ };
+ 
+ export type SimDay = {
+@@ -90,7 +93,7 @@ export function simulate(input: SimInput): SimDay[] {
+ 
+     // décision d'irrigation
+     let irrigNet = 0;
+-    if (season) {
++    if (season && !(input.noIrrigationBefore && day.date < input.noIrrigationBefore)) {
+       if (policy.type === "adaptive") {
+         const trigger = policy.trigger ?? 1;
+         // on irrigue le jour où la consommation du jour ferait franchir le seuil, avant le stress
