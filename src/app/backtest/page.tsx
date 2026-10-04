@@ -226,10 +226,6 @@ export default function BacktestPage() {
                     ))}
                   </ul>
                 </section>
-
-                <p className="rounded-2xl border border-sakia-sand-dark bg-sakia-sand p-4 text-sm font-semibold leading-relaxed text-sakia-brown">
-                  {t("fixedAssumption", { n: s.fixedEveryDays })}
-                </p>
               </>
             )}
             <Assumptions items={data.assumptions} />

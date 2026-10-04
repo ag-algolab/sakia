@@ -39,10 +39,8 @@ export default function WeekView({ plan }: { plan: Plan }) {
     <div className="space-y-4">
       <Reveal>
         <figure className="rounded-3xl bg-white p-3 shadow-sm ring-1 ring-black/5 sm:p-5">
-          <figcaption>
-            <h3 className="font-display text-xl font-bold text-sakia-green-deep sm:text-2xl">{t("weekTitle")}</h3>
-            <p className="mt-1 text-sm leading-snug text-sakia-brown">{t("weekHint")}</p>
-          </figcaption>
+          {/* le titre de la section (« Les 7 prochains jours ») suffit : une phrase pour lire les tubes, pas de second titre */}
+          <figcaption className="text-sm font-semibold leading-snug text-sakia-brown">{t("weekHint")}</figcaption>
 
           <ol className="mt-4 grid gap-0.5 sm:gap-2" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
             {days.map((d, i) => {

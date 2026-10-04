@@ -6,12 +6,13 @@ import FieldQuestions from "@/components/ui/FieldQuestions";
 import FiveDoors from "@/components/ui/FiveDoors";
 import HeroPanorama from "@/components/ui/HeroPanorama";
 import HeroScene from "@/components/ui/HeroScene";
-import { AlertIcon, DropIcon, RainIcon, SproutIcon, ThermoIcon, TunisiaFlagIcon } from "@/components/ui/icons";
+import { AlertIcon, RainIcon, SproutIcon, ThermoIcon, TunisiaFlagIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
 import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfile, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
 import type { Profile } from "@/components/ui/profile";
+import SpeedBand from "@/components/ui/SpeedBand";
 import StatBand from "@/components/ui/StatBand";
 import WeekView from "@/components/ui/WeekView";
 import { usePlan } from "@/components/phone/usePlan";
@@ -207,6 +208,7 @@ export default function Home() {
       </div>
 
       <FiveDoors />
+      <SpeedBand />
 
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
         {/* rejeu de la canicule : la scène de la vidéo */}
@@ -307,21 +309,21 @@ export default function Home() {
                 <WeekView plan={plan} />
               </>
             )}
-            <Assumptions items={plan.assumptions} />
+            <Assumptions items={plan.assumptions} folded />
             <p className="text-center text-xs text-sakia-brown/80">{t("indicative")}</p>
             {!replay && <p className="text-center text-xs font-semibold text-sakia-green">{t("computedOnDevice")}</p>}
             <dl className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-sakia-brown/80">
-              <div className="flex gap-1">
-                <dt className="font-semibold">
+              <div className="flex flex-wrap justify-center gap-x-1">
+                <dt className="whitespace-nowrap font-semibold">
                   {t("planSize")}
                   {colon}
                 </dt>
-                <dd dir="ltr">
-                  {bytes != null ? `${fmtNum(bytes)} B (${fmtNum(bytes / 1024, 1)} KB)` : "–"} · {t("sizeNote")}
+                <dd>
+                  <span dir="ltr">{bytes != null ? `${fmtNum(bytes / 1024, 1)} ${t("kbUnit")}` : "–"}</span> ({t("sizeNote")})
                 </dd>
               </div>
-              <div className="flex gap-1">
-                <dt className="font-semibold">
+              <div className="flex flex-wrap justify-center gap-x-1">
+                <dt className="whitespace-nowrap font-semibold">
                   {t("dataAge")}
                   {colon}
                 </dt>
@@ -392,20 +394,15 @@ function Notes({ confidence }: { confidence: Confidence }) {
   );
 }
 
+// Quatre chiffres de la semaine. Le prochain arrosage n'est pas redit ici : le verdict sous le bouton d'écoute et les cartes des jours
+// d'arrosage le disent déjà (une phrase, un seul endroit).
 function Summary({ plan }: { plan: Plan }) {
-  const { t, fmtDate, fmtNum, colon } = useLang();
+  const { t, fmtNum } = useLang();
   const s = plan.summary;
   const risk = { faible: "bg-[#4aa263]", moyen: "bg-sakia-sun", eleve: "bg-[#d2552a]" }[s.stressRisk];
   return (
     <Reveal>
       <div className="overflow-hidden rounded-3xl bg-sakia-green-deep text-white shadow-md">
-        <div className="relative p-5">
-          <DropIcon className="sk-sway pointer-events-none absolute -end-3 -top-3 h-28 w-28 text-white/10" />
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-white/70">{t("summary", { n: plan.days.length })}</h3>
-          <p className="font-display mt-1 text-2xl font-bold leading-tight sm:text-3xl">
-            {s.nextIrrigation ? `${t("nextIrrigation")}${colon} ${fmtDate(s.nextIrrigation)}` : t("noIrrigation")}
-          </p>
-        </div>
         <dl className="grid grid-cols-2 gap-px bg-white/10 text-sm sm:grid-cols-4">
           <Stat label={t("irrigations")} value={fmtNum(s.irrigationCount)} />
           <Stat label={t("totalWater")} value={t("perHa", { n: fmtNum(s.totalM3PerHa) })} />

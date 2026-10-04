@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { useLang } from "./LangProvider";
 import { LANGS } from "./i18n";
 import SakiaLogo from "./SakiaLogo";
@@ -18,6 +19,12 @@ const LINKS = [
 export default function Header() {
   const { lang, setLang, t } = useLang();
   const path = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  // Sur un téléphone, le menu est une bande qui défile au doigt : la page en cours est amenée dans la bande (sinon « À propos »,
+  // tout au bout, resterait caché).
+  useEffect(() => {
+    navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }, [path, lang]);
   if (path.startsWith("/story")) return null; // le film est une page à part
   return (
     <header className="bg-[#0d2e22] text-white">
@@ -44,7 +51,7 @@ export default function Header() {
           ))}
         </div>
       </div>
-      <nav aria-label="Sakia" className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-2 pb-2 pt-2">
+      <nav ref={navRef} aria-label="Sakia" className="sk-noscrollbar mx-auto flex max-w-5xl gap-1 overflow-x-auto px-2 pb-2 pt-2">
         {LINKS.map((l) => {
           const active = l.href === "/" ? path === "/" : path.startsWith(l.href);
           return (

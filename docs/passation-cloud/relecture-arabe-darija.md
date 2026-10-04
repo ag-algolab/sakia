@@ -106,3 +106,60 @@ Nouveautés de cette série : sous-titres du bouton d'écoute (`listenSubs`, `li
 ## `src/lib/voice/langs.ts` (1 lignes)
 
 - { code: "aeb", native: "الدارجة التونسية", english: "Tunisian Arabic", htmlLang: "ar-TN", rtl: true, locale: "ar-TN-u-nu-latn", validated: false }, // à valider par un Tunisien
+
+
+## Cure de texte du 4 octobre (poste UI, session locale) : `src/components/ui/i18n.ts` (26 clés)
+
+Textes raccourcis pour le jury (« le jury ne lit pas ») : la plupart sont des coupes de phrases déjà relues ou non, quelques-uns sont nouveaux (bande « réseau faible » : `speed*`).
+
+- `heroSub` (ar) : تخبركم «ساقية» متى وكم تسقون، بصوت بلكنة تونسية: لا حاجة إلى القراءة.
+- `heroSub` (aeb) : ساقية تقولك وقتاش تسقي وقدّاش، بصوت بلهجة تونسية: ما تحتاجش تقرا.
+- `door_web_line` (ar) : زر كبير وصور وصوت.
+- `door_web_line` (aeb) : زر كبير، تصاور، وصوت.
+- `locationPrivacy` (ar) : يبقى موقعكم على هاتفكم.
+- `locationPrivacy` (aeb) : موقعك يبقى في التلفون متاعك.
+- `lastWateringSet` (ar) : الخطة محسوبة انطلاقا من هذا التاريخ.
+- `lastWateringSet` (aeb) : الخطة محسوبة من هالتاريخ.
+- `fieldRequired` (ar) : اختاروا ولايتكم ومحصولكم.
+- `fieldRequired` (aeb) : اختار الولاية والزرعة.
+- `listenError` (ar) : الصوت غير متاح. انظروا إلى الصور أدناه.
+- `listenError` (aeb) : الصوت موش متوفّر. شوف التصاور اللي تحت.
+- `statWaterSrc` (ar) : محاكاة، {n} مواسم
+- `statWaterSrc` (aeb) : محاكاة، {n} مواسم
+- `statThirstyLabel` (ar) : أيام العطش في الموسم: الطريقة المعتادة → ساقية
+- `statReadMore` (ar) : أكثر من شخص واحد من كل أربعة.
+- `statReadMore` (aeb) : أكثر من واحد من أربعة.
+- `statWeatherCheck` (ar) : تم التحقق من الطقس مقارنة بمحطات تونسية.
+- `statWeatherCheck` (aeb) : الطقس تحقّقنا منو قدّام محطات تونسية.
+- `weekHint` (ar) : يبيّن كل أنبوب كمية الماء التي تحتفظ بها التربة للمحصول.
+- `weekHint` (aeb) : كل أنبوب يوريك قدّاش من الماء تحتفظ بيه الأرض للزرعة.
+- `computedOnDevice` (ar) : الخطة محسوبة على هذا الجهاز وتعمل دون إنترنت.
+- `computedOnDevice` (aeb) : الخطة تتحسب في التلفون وتخدم من غير انترنت.
+- `footerAbout` (ar) : قرار سقي واحد كل يوم للفلاحين الذين لا يقرؤون أو لا يملكون هاتفا ذكيا. نصيحة إرشادية.
+- `footerAbout` (aeb) : قرار سقي واحد كل نهار، للفلاحة اللي ما يقراوش ولا ما عندهمش سمارتفون. نصيحة للاسترشاد.
+- `proofBanner` (ar) : محاكاة، كأن التوقعات كانت دقيقة تماما. وليست تجربة في الحقل.
+- `proofBanner` (aeb) : محاكاة، كأنّ التوقّعات كانت صحيحة تماما. موش تجربة في الغيط.
+- `proofSub` (ar) : من 2015 إلى اليوم: السقي كل أسبوع، أو اتباع «ساقية».
+- `proofSub` (aeb) : من 2015 لليوم: السقي كل أسبوع، ولا اتباع ساقية.
+- `usualWayDef` (ar) : الطريقة المعتادة: الكمية نفسها كل 7 أيام مهما كان الطقس (فرضية منا).
+- `usualWayDef` (aeb) : الطريقة العادية: نفس الكمية كل 7 أيام كيفما كان الطقس (فرضية متاعنا).
+- `withSakiaDef` (ar) : مع ساقية: السقي فقط في اليوم الذي تحتاج فيه التربة.
+- `withSakiaDef` (aeb) : مع ساقية: تسقي برك النهار اللي الأرض تحتاج فيه.
+- `waterSavedSub` (ar) : بالمعدل في الموسم
+- `waterSavedSub` (aeb) : المعدّل في الموسم
+- `stressSub` (ar) : في الموسم: أيام كانت فيها التربة جافة أكثر من اللازم للمحصول.
+- `stressSub` (aeb) : في الموسم: نهارات الأرض كانت ناشفة برشا على الزرعة.
+- `thirstyNone` (ar) : لا عطش في الحالتين: المكسب هنا هو الماء الموفَّر.
+- `thirstyNone` (aeb) : ما فماش عطش في الزوز: الربح هو الماء اللي وفّرناه.
+- `speedTitle` (ar) : مصمَّم لشبكة ضعيفة
+- `speedTitle` (aeb) : مصنوع للشبكة الضعيفة
+- `speedFirst` (ar) : في الزيارة الأولى
+- `speedFirst` (aeb) : في أول زيارة
+- `speedAfter` (ar) : بعد ذلك
+- `speedAfter` (aeb) : من بعد
+- `speedOffline` (ar) : يعمل دون أي اتصال: الوحيد بين المواقع التي قسناها.
+- `speedOffline` (aeb) : يخدم من غير حتى اتصال: الوحيد في المواقع اللي قسناها.
+- `speedLink` (ar) : القياس مقارنة بـ5 مواقع
+- `speedLink` (aeb) : قسناه مع 5 مواقع
+- `sizeNote` (ar) : قبل الضغط
+- `sizeNote` (aeb) : قبل الضغط

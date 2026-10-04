@@ -44,6 +44,9 @@ export default function Footer() {
             <Link href="/lab" className={link} hrefLang="en">
               Lab (research, English)
             </Link>
+            <Link href="/speed" className={link} hrefLang="en">
+              Speed, measured (English)
+            </Link>
           </nav>
           <nav aria-label={t("footerNavChannels")} className="flex flex-col">
             <Link href="/bulletin" className={link}>
