@@ -4,7 +4,7 @@
 // Les morceaux filmés s'adaptent (accélérés au plus de 50 %). Si le total dépasse 59,5 s, les parties souples rétrécissent.
 // Rendu : node scripts/video/compose.mjs scripts/video/specs/demo.mjs
 // Instants des morceaux filmés : videos/build/capture/<séquence>/meta.json (repères notés pendant le tournage).
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 const X = 150; // colonne des textes
 const W = 860;
@@ -97,18 +97,32 @@ VO_AT[8] = A("offline", 0.2);
 VO_AT[9] = A("notsure", 0.2);
 VO_AT[10] = A("end", 0.3);
 
-// le morceau filmé de l'accueil : la voix de l'appli démarre 1,93 s après le début du morceau 12,9 s (toucher « écouter » à 13,33 s,
-// voix à 14,83 s) ; on cale le morceau pour que l'écran « en lecture » tombe avec le son
-const LISTEN_SEG_AT = APP_VOICE - 1.93;
-// l'appel : la sonnerie puis les touches, en accéléré
-const keyClips = [
-  { from: 7.6, to: 8.5, tap: 8.07, key: 2 },
-  { from: 17.1, to: 18.0, tap: 17.59, key: 1 },
-  { from: 25.1, to: 26.0, tap: 25.6, key: 2 },
-  { from: 32.9, to: 33.8, tap: 33.4, key: 2 },
-  { from: 45.4, to: 46.3, tap: 45.91, key: 2 },
-].slice(5 - (S.call.keysLen > 5 ? 5 : 3));
-const callSegs = [{ at: A("call"), clip: "call", from: 0.8, to: 2.2 }];
+// ---------------------------------------------------------------- instants des morceaux filmés, lus dans chaque séquence
+// (repères, touches et sons notés pendant le tournage) : refilmer le site ne demande aucune retouche de la partition
+const meta = (clip) => {
+  const m = JSON.parse(readFileSync(`videos/build/capture/${clip}/meta.json`, "utf8"));
+  const f0 = m.frames[0].t;
+  const rel = (t) => (t - f0) / 1000;
+  return { marks: Object.fromEntries(Object.entries(m.marks).map(([k, t]) => [k, rel(t)])), taps: m.taps.map((tp) => rel(tp.t)), audio: m.audio.map((a) => ({ ...a, t: rel(a.t), size: statSync(`videos/build/capture/${clip}/${a.file}`).size })), end: rel(m.frames.at(-1).t) };
+};
+const HOME = meta("home"), CALL = meta("call"), SMS = meta("sms"), OFF = meta("offline"), UNSURE = meta("notsure");
+const H_Q = HOME.marks.questions, H_L = HOME.marks.listen;
+const H_VOICE = (HOME.audio.find((a) => a.file) ?? { t: H_L + 1.9 }).t; // la voix de l'appli démarre ici dans la séquence
+const HOME_VOICE_FILE = (HOME.audio.find((a) => a.file) ?? { file: "audio-01.mp3" }).file;
+// le morceau « écouter » commence au repère « listen » ; la voix y démarre (H_VOICE − H_L) s plus tard : on cale l'écran sur le son
+const LISTEN_SEG_AT = APP_VOICE - (H_VOICE - H_L);
+// l'appel : la touche « appeler » puis chaque touche du clavier (dans l'ordre : 2, 1, 2, 2, 2)
+const KEYS = [2, 1, 2, 2, 2];
+const ADV = CALL.audio.reduce((best, a) => (a.file && (!best || (a.size ?? 0) > (best.size ?? 0)) ? a : best), null); // le conseil = le plus long
+const ADV_T = ADV ? ADV.t : CALL.marks.advice ?? 46.7;
+// où commence la phrase « Our advice: … » dans le son du conseil (sous-titres calés de la ligne vocale, même fichier que le son filmé)
+const ADV_LINES = existsSync("videos/build/call-advice-cache.json") ? JSON.parse(readFileSync("videos/build/call-advice-cache.json", "utf8")).lines : null;
+const ADV_FROM = (ADV_LINES?.find((l) => l.id === "advice")?.startMs ?? 8080) / 1000;
+const keyClips = CALL.taps
+  .slice(1, 6)
+  .map((tap, i) => ({ from: tap - 0.47, to: tap + 0.43, tap, key: KEYS[i] }))
+  .slice(S.call.keysLen > 5 ? 0 : 2);
+const callSegs = [{ at: A("call"), clip: "call", from: CALL.taps[0] - 0.7, to: CALL.taps[0] + 0.7 }];
 let kAt = A("call", 1.4);
 const keyStep = (S.call.keysLen - 1.4) / keyClips.length;
 const dtmf = [{ file: "videos/build/ring.wav", at: A("call", 0.75), gain: -6 }];
@@ -117,7 +131,7 @@ for (const k of keyClips) {
   dtmf.push({ file: `videos/build/dtmf-${k.key}.wav`, at: kAt + (k.tap - k.from) * ((keyStep) / (k.to - k.from)), gain: -4 });
   kAt += keyStep;
 }
-callSegs.push({ at: ADVICE, clip: "call", from: 55.0, to: 58.4, xfade: 0.2 });
+callSegs.push({ at: ADVICE, clip: "call", from: ADV_T + ADV_FROM + 0.2, to: ADV_T + ADV_FROM + 3.6, xfade: 0.2 });
 
 const fit = (len, avail) => Math.min(1.5, Math.max(1, len / avail)); // accélération d'un morceau filmé pour tenir dans sa scène
 
@@ -165,8 +179,8 @@ export default {
     {
       type: "phone", start: 0.15, end: E("choose"), fadeOut: 0, enterFrom: "bottom", ...PHONE,
       segments: [
-        { at: 0.15, clip: "home", from: 0.0, to: 3.6, rate: fit(3.6, S.hook.len - 0.15) },
-        { at: A("choose"), clip: "home", from: 3.6, to: 12.9, xfade: 0.01, rate: fit(9.3, S.choose.len) },
+        { at: 0.15, clip: "home", from: 0.0, to: H_Q, rate: fit(H_Q, S.hook.len - 0.15) },
+        { at: A("choose"), clip: "home", from: H_Q, to: H_L, xfade: 0.01, rate: fit(H_L - H_Q, S.choose.len) },
       ],
     },
     { type: "caption", start: VO_AT[0], end: E("hook") - 0.1, x: X, y: 300, w: W, size: 104, text: "Noor __can't read.__", stagger: 0.12 },
@@ -186,13 +200,13 @@ export default {
       y: [[VO_AT[4] - 0.1, PHONE.y], [VO_AT[4] + 1.2, PHONE.y - 175]],
       scale: [[VO_AT[4] - 0.1, 1], [VO_AT[4] + 1.2, 1.2]],
       segments: [
-        { at: A("listen"), clip: "home", from: 12.9, to: 12.95 },
-        { at: Math.max(A("listen") + 0.05, LISTEN_SEG_AT), clip: "home", from: 12.95, to: 23.0, xfade: 0.01 },
+        { at: A("listen"), clip: "home", from: H_L, to: H_L + 0.05 },
+        { at: Math.max(A("listen") + 0.05, LISTEN_SEG_AT), clip: "home", from: H_L + 0.05, to: H_L + 10.1, xfade: 0.01 },
       ],
     },
     { type: "caption", start: VO_AT[3], end: VO_AT[4] - 0.15, x: X, y: 330, w: W, text: "Sakia answers __out loud__, in a Tunisian-accented voice.", stagger: 0.08 },
     { type: "caption", start: VO_AT[4], end: E("listen") - 0.2, x: X, y: 330, w: W, text: "Then a seven-day plan, __in pictures.__", stagger: 0.08 },
-    { type: "caption", start: VO_AT[4] + 0.9, end: E("listen") - 0.2, x: X, y: 560, w: W, cls: "sub", text: "Wait today. Water on Tuesday: about 225 m³ per hectare.", stagger: 0.05 },
+    { type: "caption", start: VO_AT[4] + 0.9, end: E("listen") - 0.2, x: X, y: 560, w: W, cls: "sub", text: "Wait today. Water on Tuesday: 224 m³ per hectare.", stagger: 0.05 },
     { type: "note", start: VO_AT[4] + 1.1, end: E("listen") - 0.2, x: X, y: 960, w: W, text: "Real advice of 4 October 2026, Kairouan, from the Open-Meteo forecast and a fixed FAO-56 water balance." },
 
     // ---------------------------------------------------------------- 4. chaque matin, Telegram (vidéo du téléphone d'Anthony)
@@ -210,12 +224,12 @@ export default {
     { type: "caption", start: ADVICE, end: ADVICE + 3.1, x: X, y: 330, w: W, text: "…and hears the advice.", stagger: 0.08 },
     {
       type: "html", start: ADVICE + 0.2, end: ADVICE + 3.1, fx: "up",
-      html: `<div class="bubble"><b>SAKIA, ON THE LINE · TUNISIAN-ACCENTED ARABIC</b><p>“Our advice: irrigate on Tuesday 6 October, […] which is 225 cubic metres per hectare.”</p><p class="ar">نصيحتنا: اسقِ يوم الثلاثاء ستة أكتوبر، (…) أي مائتان وخمسة وعشرون متر مكعب للهكتار.</p></div>`,
+      html: `<div class="bubble"><b>SAKIA, ON THE LINE · TUNISIAN-ACCENTED ARABIC</b><p>“Our advice: irrigate on Tuesday 6 October, […] which is 224 cubic metres per hectare.”</p><p class="ar">نصيحتنا: اسقِ يوم الثلاثاء ستة أكتوبر، (…) أي مائتان وأربعة وعشرون متر مكعب للهكتار.</p></div>`,
     },
     { type: "caption", start: ADVICE + 3.3, end: E("call") - 0.2, x: X, y: 330, w: W, text: "…or gets a __text message__.", stagger: 0.08 },
     {
       type: "phone", start: ADVICE + 3.3, end: E("call"), fadeIn: 0.2, fadeOut: 0.3, ...PHONE,
-      segments: [{ at: ADVICE + 3.3, clip: "sms", from: 10.4, to: 11.4 }],
+      segments: [{ at: ADVICE + 3.3, clip: "sms", from: SMS.marks.read - 0.76, to: SMS.marks.read + 0.24 }],
       zoom: [
         [ADVICE + 3.9, { s: 1, ox: 0.5, oy: 0.5 }],
         [ADVICE + 4.6, { s: 1.3, ox: 0.5, oy: 0.27 }],
@@ -228,7 +242,7 @@ export default {
     { type: "caption", start: VO_AT[8], end: E("offline") - 0.2, x: X, y: 330, w: W, text: "No network? The installed app __still opens__, and recomputes the plan.", stagger: 0.07 },
     PLANE
       ? { type: "phone", start: A("offline"), end: E("offline"), fadeIn: 0.2, fadeOut: 0.2, statusBar: false, taps: false, ...PHONE, segments: [{ at: A("offline"), media: "plane", from: 0, to: 30 }] }
-      : { type: "phone", start: A("offline"), end: E("offline"), fadeIn: 0.2, fadeOut: 0.2, offline: true, ...PHONE, segments: [{ at: A("offline"), clip: "offline", from: 0.7, to: 6.7, rate: fit(6.0, S.offline.len) }] },
+      : { type: "phone", start: A("offline"), end: E("offline"), fadeIn: 0.2, fadeOut: 0.2, offline: true, ...PHONE, segments: [{ at: A("offline"), clip: "offline", from: OFF.marks.reopened + 0.1, to: OFF.marks.reopened + 6.1, rate: fit(6.0, S.offline.len) }] },
     { type: "html", start: A("offline", 0.4), end: E("offline") - 0.2, fx: "zoom", html: `<div class="plane">✈ Airplane mode</div>` },
 
     // ---------------------------------------------------------------- 7. pas sûr
@@ -236,7 +250,7 @@ export default {
     { type: "caption", start: VO_AT[9], end: E("notsure") - 0.2, x: X, y: 330, w: W, text: "Not enough data? Sakia says so: __ask a technician.__", stagger: 0.08 },
     {
       type: "phone", start: A("notsure"), end: E("notsure") + 0.1, fadeIn: 0.2, fadeOut: 0.4, ...PHONE,
-      segments: [{ at: A("notsure"), clip: "notsure", from: 9.2, to: 11.0 }],
+      segments: [{ at: A("notsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.86, to: UNSURE.marks.notsure + 0.94 }],
       zoom: [
         [A("notsure", 1.6), { s: 1, ox: 0.5, oy: 0.5 }],
         [A("notsure", 2.6), { s: 1.16, ox: 0.5, oy: 0.4 }],
@@ -255,10 +269,10 @@ export default {
   },
   audio: [
     // la voix de l'appli (le vrai message du jour, voix à l'accent tunisien), au moment où l'écran passe « en lecture »
-    { file: "capture:home/audio-01.mp3", at: APP_VOICE, from: 0, to: flex.appVoice, gain: 0, fadeOut: 0.7 },
+    { file: `capture:home/${HOME_VOICE_FILE}`, at: APP_VOICE, from: 0, to: flex.appVoice, gain: 0, fadeOut: 0.7 },
     ...dtmf,
     // la phrase du conseil au téléphone (fichier du jour de la ligne vocale, même plan que l'écran)
-    { file: "videos/build/call-advice-ar.mp3", at: ADVICE + 0.05, from: 8.08, to: 11.3, gain: 0, fadeOut: 0.6 },
+    { file: ADV ? `capture:call/${ADV.file}` : "videos/build/call-advice-ar.mp3", at: ADVICE + 0.05, from: ADV_FROM, to: ADV_FROM + 3.2, gain: 0, fadeOut: 0.6 },
     ...(TG ? [{ file: "media:tg", at: VO_AT[5] + v[5] + 0.3, from: 3.0, to: 3.0 + flex.tgAudio, gain: 0, fadeIn: 0.1, fadeOut: 0.4 }] : []),
     ...voEvents,
   ],

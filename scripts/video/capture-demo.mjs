@@ -184,10 +184,12 @@ await clip("call", { profile: "call", fresh: true }, async ({ cdp, log, mark, re
   await key("1", 7800); // Kairouan
   await key("2", 7600); // légumes
   await key("2", 12300); // piment
+  const lastKey = Date.now();
   await key("2", 1000); // arrosé hier ou avant-hier
   mark("advice");
-  // le conseil parlé (le plus gros fichier, ~90 Ko) doit avoir été lu jusqu'au bout
-  await waitFor(cdp, `(window.__plays || []).some((x) => x.size > 60000 && x.ended)`, 90000).catch(() => undefined);
+  // le conseil parlé (gros fichier, ~90 Ko) lancé APRÈS la dernière touche doit avoir été lu jusqu'au bout
+  // (la question « quand avez-vous arrosé ? » pèse aussi plus de 60 Ko : on ne s'arrête pas sur elle)
+  await waitFor(cdp, `(window.__plays || []).some((x) => x.t > ${lastKey} && x.size > 60000 && x.ended)`, 90000).catch(() => undefined);
   mark("adviceEnd");
   await sleep(1500);
   await rec.stop();
