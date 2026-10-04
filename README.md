@@ -97,6 +97,7 @@ The spoken advice is made once per region, crop and day, then shared: a schedule
 
 - **Weather:** Open-Meteo (forecast + ERA5 archive), reference evapotranspiration (FAO Penman–Monteith), at the governorate capital.
 - **Crop water use:** `ETc = Kc × ET0` with FAO-56 coefficients (and Pereira et al. 2024 for trees); root-zone depletion balance; irrigate the day the daily consumption would cross the stress threshold.
+- **Last irrigation:** when the farmer gives it, the simulation starts that day with a full root zone and applies **no irrigation until today** (the farmer has not watered since), so a crop left dry for a week is advised to be watered today, not tomorrow.
 - **Backtest:** replays each season of 2015–2026 with a fixed seasonal schedule (a benchmark hypothesis, not the State's actual calendar) versus the advised schedule. The relative-yield estimate (FAO-33) exists only for crops with a published Ky, **never for trees**.
 - Code: `src/lib/` (engine: `planCore.ts` is pure and runs in the browser), `src/app/api/` (plan, forecast, backtest, catalog, advice, voice, telegram, sms, ivr, agent).
 

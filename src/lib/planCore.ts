@@ -125,6 +125,7 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
     soil,
     system,
     initialDepletion: ago != null ? 0 : 0.5,
+    noIrrigationBefore: ago != null ? today : undefined, // dernier arrosage connu : rien n'a été arrosé entre ce jour-là et aujourd'hui
     policy: { type: "adaptive", trigger: 1 },
     irrigationSeason: crop.irrigationSeason,
   });
