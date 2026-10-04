@@ -177,6 +177,14 @@ export const CheckIcon = (p: P) => (
   </svg>
 );
 
+// Micro : « parler à Sakia » (l'agent vocal).
+export const MicIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" fillOpacity=".15" />
+    <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" />
+  </svg>
+);
+
 export const BellIcon = (p: P) => (
   <svg {...base(p)}>
     <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15L6 16.5z" fill="currentColor" fillOpacity=".15" />

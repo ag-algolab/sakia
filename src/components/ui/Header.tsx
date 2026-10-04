@@ -7,10 +7,11 @@ import { useLang } from "./LangProvider";
 import { LANGS } from "./i18n";
 import SakiaLogo from "./SakiaLogo";
 
+// Le bulletin (/bulletin) n'est plus dans le menu (décision d'Anthony, 4 oct.) : il faisait doublon avec le gros bouton d'écoute de
+// l'accueil, qui dit déjà le conseil du jour avec sous-titres. La page reste en ligne (liens directs, appli hors connexion).
 const LINKS = [
   { href: "/", key: "navAdvice" },
   { href: "/backtest", key: "navProof" },
-  { href: "/bulletin", key: "navBulletin" },
   { href: "/phone", key: "navPhone" },
   { href: "/telegram", key: "navTelegram" },
   { href: "/about", key: "navAbout" },

@@ -106,12 +106,12 @@ export default function BacktestPage() {
 
       <div className="relative z-10 mx-auto -mt-10 w-full max-w-5xl flex-1 space-y-6 px-4 pb-10 sm:-mt-12">
         {/* région et culture : les mêmes que sur l'accueil, obligatoires */}
-        <div className="grid gap-4 rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/5 md:grid-cols-2">
-          <div>
+        <div className="grid gap-4 rounded-3xl bg-white p-3 shadow-lg ring-1 ring-black/5 sm:p-4 md:grid-cols-2">
+          <div className="min-w-0">
             <p className="mb-2 text-lg font-bold text-sakia-ink">{t("qWhere")}</p>
             <RegionPicker value={region} onChange={(id) => onProfile({ region: id })} />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="mb-2 text-lg font-bold text-sakia-ink">{t("pickCrop")}</p>
             <CropPicker value={crop} onChange={(id) => onProfile({ crop: id, planting: "" })} />
           </div>
