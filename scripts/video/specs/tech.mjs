@@ -16,7 +16,7 @@ export const VO_LINES = [
   "Speech recognition lets Noor talk instead of type. Rules find the crop and the place.",
   "A fixed FAO-56 water balance, on the weather forecast, computes the advice, even inside the browser. A Tunisian-accented voice reads it.",
   "It's small: under 400 kilobytes on a first visit, and it works offline.",
-  "Open-Meteo weather, FAO-56, ElevenLabs voices. The limits: no field trial yet, and no weather station.",
+  "Open-Meteo weather, FAO-56, ElevenLabs voices. The limits: no field trial yet.",
   "We also tested a small model on satellite data: a modest gain, a failure in the Sahel. Both published.",
   "The numbers can't hallucinate. And when Sakia isn't sure, it says so.",
   // voix de synthèse : jamais « by me » dans la bouche d'un narrateur qui n'est pas Anthony

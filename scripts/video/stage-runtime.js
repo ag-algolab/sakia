@@ -100,7 +100,12 @@
       const SB = L.desktop || L.statusBar === false ? 0 : 40; // une vidéo d'écran de téléphone a déjà sa propre barre d'état
       if (!L.desktop && L.statusBar === false) el("div", "phone-notch", phone);
       if (SB) {
-        el("div", "phone-status", screen, `<span>${L.clock ?? "9:41"}</span><span class="sb-ic">${L.offline ? "✈" : "▂▄▆█"}&nbsp;&nbsp;▮</span>`);
+        // icônes dessinées comme sur un vrai téléphone : réseau (ou avion), wifi, batterie
+        const signal = `<svg viewBox="0 0 18 12" width="19" height="13"><rect x="0" y="8" width="3" height="4" rx="1" fill="#fff"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#fff"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#fff"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#fff"/></svg>`;
+        const plane = `<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#fff" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>`;
+        const wifi = `<svg viewBox="0 0 16 12" width="17" height="13"><path fill="#fff" d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.4 1.4a4.5 4.5 0 0 0-6.4 0zM1.2 4.6a9.6 9.6 0 0 1 13.6 0l-1.4 1.4a7.6 7.6 0 0 0-10.8 0z"/></svg>`;
+        const battery = `<svg viewBox="0 0 27 13" width="27" height="13"><rect x="0.5" y="0.5" width="22" height="12" rx="3.5" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2.5" y="2.5" width="16" height="8" rx="2" fill="#fff"/><path d="M24.5 4.5v4a2 2 0 0 0 0-4z" fill="#fff" fill-opacity=".45"/></svg>`;
+        el("div", "phone-status", screen, `<span>${L.clock ?? "9:41"}</span><span class="sb-ic">${L.offline ? plane : signal + wifi}${battery}</span>`);
         el("div", "phone-notch", phone);
         imgA.style.top = imgB.style.top = taps.style.top = SB + "px";
       }

@@ -98,7 +98,7 @@ html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#0b1b14
 .phone-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;transform-origin:50% 50%}
 .phone-notch{position:absolute;top:24px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:20px;background:#070807;z-index:3}
 .phone-status{position:absolute;left:0;right:0;top:0;height:40px;z-index:2;background:#0e2418;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:6px 34px 0 40px;box-sizing:border-box;font:700 17px Geist,"Segoe UI",sans-serif;letter-spacing:.02em}
-.phone-status .sb-ic{font-size:13px;letter-spacing:-1px}
+.phone-status .sb-ic{display:flex;align-items:center;gap:6px}
 .taps{position:absolute;inset:0;transform-origin:50% 50%;pointer-events:none}
 .tap{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:5px solid #f2b33d;background:rgba(242,179,61,.28);box-sizing:border-box}
 .caption{position:absolute;font-family:Fraunces,Georgia,serif;font-weight:800;font-size:78px;line-height:1.07;letter-spacing:-.012em;color:#f4efe6;text-wrap:balance}

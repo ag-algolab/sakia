@@ -23,7 +23,6 @@ export const VO_LINES = [
   "On Telegram, the plan arrives every morning, and Noor can listen to it.",
   "No smartphone? One phone call, a few keys, and the advice.",
   "Or by text message. Both are simulated here.",
-  "Not enough data? Sakia says so: ask a technician.",
   "Sakia. One decision a day.",
 ];
 const TAKES = "videos/build/takes/demo-vo.json";
@@ -52,7 +51,7 @@ const meta = (clip) => {
     audio: m.audio.map((a) => ({ ...a, t: rel(a.t), size: statSync(`videos/build/capture/${clip}/${a.file}`).size })),
   };
 };
-const HOME = meta("home"), CALL = meta("call"), SMS = meta("sms"), OFF = meta("offline"), UNSURE = meta("notsure");
+const HOME = meta("home"), CALL = meta("call"), SMS = meta("sms"), OFF = meta("offline");
 const H_Q = HOME.marks.questions, H_L = HOME.marks.listen;
 const HOME_VOICE = HOME.audio.find((a) => a.file) ?? { t: H_L + 1.9, file: "audio-01.mp3" };
 const ADV = CALL.audio.reduce((best, a) => (!best || a.size > best.size ? a : best), null); // le conseil = le plus gros son
@@ -65,7 +64,7 @@ const ADV_AR = (ADV_LINE?.text ?? "نصيحتنا: اسقِ اليوم").split("
 const KEY_LABELS = ["2 · Arabic", "1 · Kairouan", "2 · Vegetables", "2 · Pepper", `${process.env.DEMO_CALL_KEY ?? "3"} · Watered 3 to 5 days ago`];
 
 // ---------------------------------------------------------------- durées des scènes (souplesse si c'est trop long)
-const flex = { appVoice: 3.4, tgVoice: 2.2, chooseMin: 4.6, tempo: 1.0, keys: 5 };
+const flex = { appVoice: 3.4, tgVoice: 2.2, chooseMin: 8.2, tempo: 1.0, keys: 5 };
 function plan() {
   const v = voDur.map((d) => d / flex.tempo);
   const S = {};
@@ -87,12 +86,11 @@ function plan() {
   const adviceAt = Math.max(0.2 + v[8] + 0.25, keysLen);
   scene("call", adviceAt + 3.2 + 0.4, { keysLen, adviceAt });
   scene("sms", Math.max(4.2, 0.2 + v[9] + 0.6));
-  scene("notsure", Math.max(4.0, 0.2 + v[10] + 0.6));
-  scene("end", Math.max(3.2, 0.3 + v[11] + 0.9));
+  scene("end", Math.max(3.2, 0.3 + v[10] + 0.9));
   return { S, total: t, v };
 }
 let P = plan();
-for (const shrink of [() => (flex.appVoice = 2.8), () => (flex.keys = 3), () => (flex.tgVoice = 1.5), () => (flex.chooseMin = 4.2), () => (flex.tempo = 1.05), () => (flex.tempo = 1.1)]) {
+for (const shrink of [() => (flex.appVoice = 2.8), () => (flex.keys = 3), () => (flex.tgVoice = 1.5), () => (flex.chooseMin = 7.6), () => (flex.tempo = 1.05), () => (flex.tempo = 1.1)]) {
   if (P.total <= MAXLEN) break;
   shrink();
   P = plan();
@@ -117,8 +115,7 @@ VO_AT[7] = A("telegram", 0.2);
 VO_AT[8] = A("call", 0.2);
 const ADVICE = A("call", S.call.adviceAt);
 VO_AT[9] = A("sms", 0.2);
-VO_AT[10] = A("notsure", 0.2);
-VO_AT[11] = A("end", 0.3);
+VO_AT[10] = A("end", 0.3);
 
 // l'appel : « appeler », puis chaque touche (avec son sens écrit à côté), puis le conseil parlé
 const LISTEN_SEG_AT = APP_VOICE - (HOME_VOICE.t - H_L);
@@ -137,6 +134,16 @@ for (const k of keyClips) {
   kAt += keyStep;
 }
 callSegs.push({ at: ADVICE, clip: "call", from: ADV.t + ADV_FROM + 0.2, to: ADV.t + ADV_FROM + 3.6, xfade: 0.2 });
+
+// le choix sur le site : chaque toucher écrit à côté (région, culture, dernier arrosage), au rythme du morceau filmé
+const CH_FROM = H_Q - 0.2;
+const CH_RATE = Math.min(1.25, Math.max(1, (H_L - CH_FROM) / S.choose.len));
+const chT = (tap) => A("choose") + (tap - CH_FROM) / CH_RATE;
+const STEPS = [
+  [HOME.taps[1], "1", "Region: Kairouan"],
+  [HOME.taps[3], "2", "Crop: pepper"],
+  [HOME.taps[4], "3", "Last watering: 4 days ago"],
+].filter(([t]) => t != null);
 
 // barre des cinq façons : laquelle on regarde
 const WAYS = [
@@ -212,9 +219,9 @@ export default {
     // ---------------------------------------------------------------- 3. le site : choisir avec des images, écouter, le plan
     barLayer("web", A("choose"), E("listen")),
     { type: "chip", start: A("choose"), end: E("listen") - 0.2, x: X, y: 240, text: "REAL", tone: "real" },
-    { type: "phone", start: A("choose"), end: E("choose") + 0.02, fadeIn: 0.3, fadeOut: 0, enterFrom: "bottom", ...PHONE, segments: [{ at: A("choose"), clip: "home", from: H_Q, to: H_L, rate: fit(H_L - H_Q, S.choose.len) }] },
+    { type: "phone", start: A("choose"), end: E("choose") + 0.02, fadeIn: 0.3, fadeOut: 0, enterFrom: "bottom", ...PHONE, segments: [{ at: A("choose"), clip: "home", from: H_Q - 0.2, to: H_L, rate: CH_RATE }] },
     { type: "caption", start: VO_AT[3], end: E("choose") - 0.2, x: X, y: 320, w: W, text: "On the website, Noor chooses __with pictures.__", stagger: 0.07 },
-    { type: "caption", start: VO_AT[3] + 1.6, end: E("choose") - 0.2, x: X, y: 700, w: W, cls: "small", text: "No reading, no typing: Kairouan, pepper, watered 3 to 5 days ago.", stagger: 0.05 },
+    { type: "html", start: A("choose", 0.2), end: E("choose") - 0.1, fx: "none", fadeOut: 0.2, html: `<div class="keys">${STEPS.map(([t, n, label]) => `<span data-at="${(chT(t) - A("choose", 0.2)).toFixed(2)}" data-fx="pop" data-rot="-5"><b>${n}</b>${label}</span>`).join("")}</div>` },
     {
       type: "phone", start: A("listen"), end: E("listen"), fadeIn: 0, fadeOut: 0.3,
       x: PHONE.x,
@@ -250,12 +257,6 @@ export default {
               { at: A("telegram", S.telegram.tgMenu), media: "tg", from: TG_PLAN, to: TG_PLAN + S.telegram.tgPlan + 0.5, xfade: 0.15 },
               { at: A("telegram", S.telegram.tgVoiceAt), media: "tg", from: TG_VOICE, to: TG_VOICE + flex.tgVoice + 0.4, xfade: 0.15 },
             ],
-            zoom: [
-              [A("telegram", S.telegram.tgMenu + 0.3), { s: 1, ox: 0.5, oy: 0.5 }],
-              [A("telegram", S.telegram.tgMenu + 1.1), { s: 1.5, ox: 0.42, oy: 0.36 }],
-              [A("telegram", S.telegram.tgVoiceAt - 0.2), { s: 1.5, ox: 0.42, oy: 0.36 }],
-              [A("telegram", S.telegram.tgVoiceAt + 0.4), { s: 1, ox: 0.5, oy: 0.5 }],
-            ],
           },
           { type: "note", start: A("telegram", 0.4), end: E("telegram") - 0.2, x: PHONE.x + 120, y: PHONE.y + 420, cls: "tgtag", text: "Anthony's phone, 4 Oct" },
         ]
@@ -284,18 +285,6 @@ export default {
       ],
     },
     { type: "note", start: A("sms", 0.5), end: E("sms") - 0.2, x: X, y: 960, w: W, text: "Call and SMS are simulated in the browser: a real line needs a telephone operator." },
-
-    // ---------------------------------------------------------------- 8. pas sûr
-    { type: "chip", start: A("notsure"), end: E("notsure") - 0.2, x: X, y: 240, text: "SAFEGUARD", tone: "info" },
-    { type: "caption", start: VO_AT[10], end: E("notsure") - 0.2, x: X, y: 320, w: W, text: "Not enough data? Sakia says so: __ask a technician.__", stagger: 0.08 },
-    {
-      type: "phone", start: A("notsure"), end: E("notsure") + 0.1, fadeIn: 0.2, fadeOut: 0.4, ...PHONE,
-      segments: [{ at: A("notsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.86, to: UNSURE.marks.notsure + 0.94 }],
-      zoom: [
-        [A("notsure", 1.6), { s: 1, ox: 0.5, oy: 0.5 }],
-        [A("notsure", 2.6), { s: 1.16, ox: 0.5, oy: 0.4 }],
-      ],
-    },
 
     // ---------------------------------------------------------------- 9. fin
     {

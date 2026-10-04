@@ -20,7 +20,7 @@ const dir = path.resolve("videos/build/vo", `${which}-${voice}`);
 mkdirSync(dir, { recursive: true });
 // v3 / v4 : réglages réduits (pas de « style »), et pas de phrase d'avant / d'après (non prise en charge)
 const NEW_MODEL = /eleven_v[34]/.test(model);
-const SETTINGS = NEW_MODEL ? { stability: 0.5, similarity_boost: 0.8 } : { stability: 0.45, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
+const SETTINGS = NEW_MODEL ? { stability: Number(process.env.TTS_STABILITY ?? 0.5), similarity_boost: 0.8 } : { stability: 0.45, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
 
 let spent = 0;
 const parts = [];
