@@ -419,8 +419,14 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
           <p className="mt-2 text-sm text-sakia-brown">{t("sizes", { n: stats.promptCount, kb: stats.promptKb, planKb: stats.planKb })}</p>
         </section>
 
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-4">
-          <h2 className="text-lg font-bold text-sakia-green">{t("realTitle")}</h2>
+        {/* le détail technique est replié : le jury lit le titre, le curieux ouvre (rien n'est retiré) */}
+        <details className="group self-start rounded-xl border border-sakia-sand-dark bg-white p-4">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="text-lg font-bold text-sakia-green">{t("realTitle")}</h2>
+            <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
           <ul className="mt-2 list-disc space-y-1 ps-5 text-base">
             <li>{t("real1")}</li>
             <li>{t("real2")}</li>
@@ -428,10 +434,15 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             <li>{t("real4")}</li>
           </ul>
           <p className="mt-2 text-sm text-sakia-brown">{t("voiceFootnote", { voice: stats.voiceName })}</p>
-        </section>
+        </details>
 
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-4 md:col-span-2">
-          <h2 className="text-lg font-bold text-sakia-green">{t("plugTitle")}</h2>
+        <details className="group rounded-xl border border-sakia-sand-dark bg-white p-4 md:col-span-2">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="text-lg font-bold text-sakia-green">{t("plugTitle")}</h2>
+            <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
           <ol className="mt-2 list-decimal space-y-1 ps-5 text-base">
             <li>{t("plug1")}</li>
             <li>{t("plug2")}</li>
@@ -439,7 +450,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             <li>{t("plug4")}</li>
             <li>{t("plug5")}</li>
           </ol>
-        </section>
+        </details>
       </div>
     </main>
   );

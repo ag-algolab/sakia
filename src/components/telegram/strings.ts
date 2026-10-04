@@ -40,16 +40,16 @@ export type TgStrings = {
 const fr: TgStrings = {
   eyebrow: "Telegram",
   title: "Sakia sur Telegram",
-  lead: "Choisissez votre région et votre culture avec des boutons, puis recevez chaque matin le plan d'irrigation des 7 jours. Un bouton lit le bulletin à voix haute.",
+  lead: "Région et culture avec des boutons. Le plan des 7 jours chaque matin, lu à voix haute d'un bouton.",
   open: "Ouvrir",
   openHint: "S'ouvre dans Telegram, sur l'application ou sur le web.",
   demoTitle: "Essayez-le ici",
-  demoLead: "Sans compte Telegram : touchez les boutons ou écrivez, comme dans le vrai bot.",
+  demoLead: "Sans compte Telegram : touchez les boutons ou écrivez.",
   howTitle: "Comment ça marche",
   steps: [
     { title: "Ouvrez le bot", body: "Sur Telegram, appuyez sur « Démarrer » et choisissez l'anglais, l'arabe ou le français." },
     { title: "Touchez vos choix", body: "Votre région, votre culture, le dernier arrosage : tout se fait avec des boutons. Vous pouvez aussi écrire « zitoun kairouan »." },
-    { title: "Recevez le plan", body: "Le plan des 7 jours arrive chaque matin, avec un bouton pour le bulletin vocal. Il rappelle que le conseil est indicatif : la décision vous appartient." },
+    { title: "Recevez le plan", body: "Le plan des 7 jours chaque matin, avec un bouton pour le bulletin vocal. La décision vous appartient." },
   ],
   noteTitle: "À savoir sur cette démonstration",
   notes: [
@@ -80,16 +80,16 @@ const fr: TgStrings = {
 const en: TgStrings = {
   eyebrow: "Telegram",
   title: "Sakia on Telegram",
-  lead: "Pick your region and your crop with buttons, then get the 7-day irrigation plan every morning. One button reads the bulletin aloud.",
+  lead: "Region and crop with buttons. The 7-day plan every morning, read aloud with one button.",
   open: "Open",
   openHint: "Opens in Telegram, in the app or on the web.",
   demoTitle: "Try it here",
-  demoLead: "No Telegram account needed: tap the buttons or type, as in the real bot.",
+  demoLead: "No Telegram account needed: tap the buttons or type.",
   howTitle: "How it works",
   steps: [
     { title: "Open the bot", body: "On Telegram, tap “Start” and choose English, Arabic or French." },
     { title: "Tap your choices", body: "Your region, your crop, your last irrigation: all with buttons. You can also type “zitoun kairouan”." },
-    { title: "Get the plan", body: "The 7-day plan arrives every morning, with a button for the voice bulletin. It reminds you that the advice is indicative: the decision is yours." },
+    { title: "Get the plan", body: "The 7-day plan every morning, with a button for the voice bulletin. The decision stays yours." },
   ],
   noteTitle: "About this demo",
   notes: [
@@ -124,7 +124,7 @@ const ar: TgStrings = {
   open: "افتحوا",
   openHint: "يُفتح في تيليغرام، في التطبيق أو على الويب.",
   demoTitle: "جرّبوه هنا",
-  demoLead: "دون حساب على تيليغرام: اضغطوا على الأزرار أو اكتبوا، كما في البوت الحقيقي.",
+  demoLead: "دون حساب على تيليغرام: اضغطوا على الأزرار أو اكتبوا.",
   howTitle: "كيف يعمل",
   steps: [
     { title: "افتحوا البوت", body: "على تيليغرام، اضغطوا على «ابدأ» واختاروا الإنجليزية أو العربية أو الفرنسية." },
@@ -164,7 +164,7 @@ const aeb: TgStrings = {
   open: "افتح",
   openHint: "يتحلّ في تيليغرام، في التطبيق ولا في الويب.",
   demoTitle: "جرّبه هنا",
-  demoLead: "من غير حساب تيليغرام: اضغط على الأزرار ولا اكتب، كيما في البوت الحقيقي.",
+  demoLead: "من غير حساب تيليغرام: اضغط على الأزرار ولا اكتب.",
   howTitle: "كيفاش تخدم",
   steps: [
     { title: "افتح البوت", body: "في تيليغرام اضغط على «ابدأ» واختار الإنجليزية ولا العربية ولا الفرنسية." },

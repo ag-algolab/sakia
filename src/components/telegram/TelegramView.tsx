@@ -91,17 +91,25 @@ export default function TelegramView({ welcome }: { welcome: Welcome }) {
         </ol>
       </section>
 
+      {/* « À savoir sur cette démonstration » : replié derrière son titre (le jury ne lit pas cinq notes ; elles restent à une touche) */}
       <section aria-labelledby="tg-note" className="mx-auto w-full max-w-5xl px-4 pb-14 pt-4">
-        <Reveal className="rounded-2xl border-2 border-sakia-sand-dark bg-sakia-sand/60 p-5">
-          <h2 id="tg-note" className="font-display flex items-center gap-2 text-2xl font-bold leading-tight text-sakia-brown">
-            <InfoIcon className="h-6 w-6 shrink-0" />
-            {s.noteTitle}
-          </h2>
-          <ul className="mt-3 list-disc space-y-2 ps-5 text-base leading-relaxed text-sakia-ink marker:text-sakia-brown">
-            {s.notes.map((note, i) => (
-              <li key={i}>{withCommands(note)}</li>
-            ))}
-          </ul>
+        <Reveal>
+          <details className="group rounded-2xl border-2 border-sakia-sand-dark bg-sakia-sand/60 p-5">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+              <h2 id="tg-note" className="font-display flex items-center gap-2 text-2xl font-bold leading-tight text-sakia-brown">
+                <InfoIcon className="h-6 w-6 shrink-0" />
+                {s.noteTitle}
+              </h2>
+              <span aria-hidden className="text-3xl leading-none text-sakia-brown transition-transform group-open:rotate-45">
+                +
+              </span>
+            </summary>
+            <ul className="mt-3 list-disc space-y-2 ps-5 text-base leading-relaxed text-sakia-ink marker:text-sakia-brown">
+              {s.notes.map((note, i) => (
+                <li key={i}>{withCommands(note)}</li>
+              ))}
+            </ul>
+          </details>
         </Reveal>
       </section>
     </>

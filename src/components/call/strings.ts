@@ -12,11 +12,11 @@ const fr: Dict = {
   title: "Ligne vocale : appeler Sakia",
   langOrderTitle: "Langues",
   langOrder:
-    "La ligne parle français (touche 1) et arabe (touche 2). Les sous-titres sont en anglais. La voix arabe lit de l'arabe standard simple à accent tunisien, pas le dialecte tunisien ; son texte n'est pas validé par un locuteur tunisien.",
+    "Arabe (touche 2) ou français (touche 1), sous-titres en anglais. La voix arabe parle un arabe standard simple à accent tunisien ; son texte n'est pas validé par un locuteur tunisien.",
   intro:
-    "Pensé pour l'agriculteur qui ne lit pas : il appellerait, écouterait le conseil dans une voix à accent tunisien et choisirait avec les touches. Un téléphone basique et du réseau vocal suffiraient : pas d'internet, pas d'application, pas de lecture. C'est une simulation : aucune vraie ligne n'existe.",
+    "Pour l'agriculteur qui ne lit pas : appeler, écouter le conseil, choisir avec les touches. Un téléphone basique suffit. C'est une simulation : aucune vraie ligne n'existe.",
   stat:
-    "À Kairouan, 27,9 % des personnes de 10 ans et plus ne savent pas lire (recensement INS 2024, chiffre relayé par la presse ; 25,5 à 28,5 % dans les cinq gouvernorats les plus touchés), et un SMS ne sert à rien à qui ne lit pas. Dans le projet pilote ICT2Scale (ICARDA/GIZ), environ 15 à 16 % des 421 personnes interrogées disaient que les SMS arrivaient au bon moment (perception déclarée, pas une mesure de livraison).",
+    "À Kairouan, 27,9 % des personnes de 10 ans et plus ne savent pas lire (recensement INS 2024, chiffre relayé par la presse) : un SMS ne les atteint pas.",
   simulated: "SIMULATION : ce téléphone est dessiné. Aucun numéro réel, aucun vrai appel, aucun enregistrement de vos appels.",
   callBtn: "Appeler Sakia",
   keypad: "Touches du téléphone",
@@ -55,7 +55,7 @@ const fr: Dict = {
   guardNone: "Aucun conseil donné : les données météo sont trop anciennes. Demandez à un technicien agricole (CRDA).",
   guardAsk: "Je ne suis pas sûr : demandez à un technicien agricole (CRDA).",
   guardOk: "Aucune réserve du moteur sur ce conseil (données récentes, dernier arrosage connu).",
-  guardWaiting: "S'affichera après la lecture d'un conseil. Quand le moteur n'est pas sûr, l'appel le dit à voix haute.",
+  guardWaiting: "Quand le moteur n'est pas sûr, l'appel le dit à voix haute.",
   guardWhy: "Pourquoi :",
   reason_very_stale_data: "les données météo ont plus de 48 heures",
   reason_stale_data: "les données météo ont plus de 12 heures",
@@ -65,7 +65,7 @@ const fr: Dict = {
   reason_short_horizon: "la prévision ne couvre pas toute la semaine",
   prepTitle: "Écouter sans internet",
   prepText:
-    "Garde dans ce navigateur les {n} enregistrements ({size}) : les phrases du menu et les plans de démonstration. Ensuite la ligne marche sans internet (non vérifié en mode avion sur un téléphone). La page elle-même doit avoir été ouverte une fois avec internet.",
+    "Garde les {n} enregistrements ({size}) dans ce navigateur : ensuite la ligne marche sans internet (non vérifié en mode avion sur un téléphone).",
   prepBtn: "Préparer le hors-ligne",
   prepRunning: "Téléchargement : {done} / {total}",
   prepDone: "Prêt : {n} fichiers gardés dans ce navigateur.",
@@ -106,11 +106,11 @@ const en: Dict = {
   title: "Voice line: call Sakia",
   langOrderTitle: "Languages",
   langOrder:
-    "The line speaks French (key 1) and Arabic (key 2). The subtitles are in English. The Arabic voice reads simple standard Arabic with a Tunisian accent, not the Tunisian dialect; its text is not validated by a Tunisian speaker.",
+    "Arabic (key 2) or French (key 1), with English subtitles. The Arabic voice is simple standard Arabic with a Tunisian accent; its text is not validated by a Tunisian speaker.",
   intro:
-    "Designed for the farmer who cannot read: they would call, listen to the advice in a voice with a Tunisian accent, and choose with the keypad. A basic phone and a voice network would be enough: no internet, no app, no reading. This is a simulation: no real line exists.",
+    "For farmers who cannot read: call, listen to the advice, choose with the keypad. A basic phone is enough. This is a simulation: no real line exists.",
   stat:
-    "In Kairouan, 27.9% of people aged 10 and over cannot read (INS 2024 census, figure relayed by the press; 25.5 to 28.5% across the five most affected governorates), and an SMS is useless to someone who cannot read. In the ICT2Scale pilot (ICARDA/GIZ), about 15 to 16% of the 421 people surveyed said the SMS arrived at the right time (a survey perception, not a delivery measurement).",
+    "In Kairouan, 27.9% of people aged 10 and over cannot read (INS 2024 census, figure relayed by the press): a text message does not reach them.",
   simulated: "SIMULATION: this phone is drawn. No real number, no real call, and your calls are not recorded.",
   callBtn: "Call Sakia",
   keypad: "Phone keys",
@@ -149,7 +149,7 @@ const en: Dict = {
   guardNone: "No advice given: the weather data is too old. Ask an agricultural technician (CRDA).",
   guardAsk: "I am not sure: please ask an agricultural technician (CRDA).",
   guardOk: "The engine has no reservation about this advice (recent data, last irrigation known).",
-  guardWaiting: "Shown after an advice is read. When the engine is not sure, the call says so out loud.",
+  guardWaiting: "When the engine is not sure, the call says so out loud.",
   guardWhy: "Why:",
   reason_very_stale_data: "the weather data is more than 48 hours old",
   reason_stale_data: "the weather data is more than 12 hours old",
@@ -159,7 +159,7 @@ const en: Dict = {
   reason_short_horizon: "the forecast does not cover the whole week",
   prepTitle: "Listen without internet",
   prepText:
-    "Keeps the {n} recordings ({size}) in this browser: the menu sentences and the demo plans. After that the line works without internet (not checked in a phone's airplane mode). The page itself must have been opened once with internet.",
+    "Keeps the {n} recordings ({size}) in this browser: then the line works without internet (not checked in a phone's airplane mode).",
   prepBtn: "Get ready for offline",
   prepRunning: "Downloading: {done} / {total}",
   prepDone: "Ready: {n} files kept in this browser.",
@@ -202,9 +202,9 @@ const ar: Dict = {
   langOrder:
     "يتكلم الخط بالفرنسية (الزر 1) وبالعربية (الزر 2). الترجمة بالإنجليزية. الصوت العربي عربية فصحى بسيطة بلكنة تونسية، وليس باللهجة التونسية؛ ونصّه لم يراجعه متحدث تونسي.",
   intro:
-    "مصمَّم للفلاح الذي لا يقرأ: يتصل فيسمع النصيحة بصوت بلكنة تونسية ويختار بأزرار الهاتف. يكفي هاتف بسيط وشبكة صوتية: لا إنترنت ولا تطبيق ولا قراءة. هذه محاكاة فقط: لا يوجد أي خط حقيقي.",
+    "مصمَّم للفلاح الذي لا يقرأ: يتصل فيسمع النصيحة ويختار بأزرار الهاتف. يكفي هاتف بسيط. هذه محاكاة فقط: لا يوجد أي خط حقيقي.",
   stat:
-    "في القيروان، 27,9 % من الأشخاص البالغين 10 سنوات فأكثر لا يقرؤون (المعهد الوطني للإحصاء، تعداد 2024، رقم نقلته الصحافة؛ و25,5 إلى 28,5 % في الولايات الخمس الأكثر تضررا)، والرسالة النصية لا تنفع من لا يقرأ. في المشروع التجريبي ICT2Scale (ICARDA/GIZ)، قال حوالي 15 إلى 16 % من 421 شخصا شملهم الاستجواب إن الرسائل وصلت في الوقت المناسب (انطباع مصرَّح به، وليس قياسا لوصول الرسائل).",
+    "في القيروان، 27,9 % من الأشخاص البالغين 10 سنوات فأكثر لا يقرؤون (المعهد الوطني للإحصاء، تعداد 2024، رقم نقلته الصحافة)، والرسالة النصية لا تنفع من لا يقرأ.",
   simulated: "محاكاة: هذا الهاتف مرسوم. لا رقم حقيقي ولا مكالمة حقيقية ولا تسجيل لمكالماتكم.",
   callBtn: "اتصل بساقية",
   keypad: "أزرار الهاتف",
@@ -243,7 +243,7 @@ const ar: Dict = {
   guardNone: "لا نصيحة: بيانات الطقس قديمة جدا. اسألوا فنيا فلاحيا (CRDA).",
   guardAsk: "لست متأكدا: اسألوا فنيا فلاحيا (المندوبية الجهوية للتنمية الفلاحية).",
   guardOk: "لا تحفظ لدى المحرك على هذه النصيحة (بيانات حديثة، وآخر سقي معروف).",
-  guardWaiting: "يظهر بعد قراءة نصيحة. حين لا يكون المحرك متأكدا، تقول المكالمة ذلك بصوت مسموع.",
+  guardWaiting: "حين لا يكون المحرك متأكدا، تقول المكالمة ذلك بصوت مسموع.",
   guardWhy: "السبب:",
   reason_very_stale_data: "بيانات الطقس أقدم من 48 ساعة",
   reason_stale_data: "بيانات الطقس أقدم من 12 ساعة",
@@ -253,7 +253,7 @@ const ar: Dict = {
   reason_short_horizon: "التوقعات لا تغطي الأسبوع كله",
   prepTitle: "الاستماع بدون إنترنت",
   prepText:
-    "يحفظ في هذا المتصفح {n} تسجيلا ({size}): جمل القائمة وخطط العرض التجريبية. بعدها يعمل الخط بدون إنترنت (لم يُتحقق منه في وضع الطيران على هاتف). يجب أن تكونوا فتحتم الصفحة مرة واحدة مع الإنترنت.",
+    "يحفظ في هذا المتصفح {n} تسجيلا ({size}): بعدها يعمل الخط بدون إنترنت (لم يُتحقق منه في وضع الطيران على هاتف).",
   prepBtn: "التحضير للعمل بدون إنترنت",
   prepRunning: "جارٍ التحميل: {done} / {total}",
   prepDone: "جاهز: {n} ملفا محفوظا في هذا المتصفح.",
