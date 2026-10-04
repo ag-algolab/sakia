@@ -98,7 +98,7 @@ await clip("home", { profile: "demo", fresh: true }, async (c) => {
   await sleep(1500);
   await rec.start();
   mark("hero");
-  await sleep(1800);
+  await sleep(Number(process.env.HERO_DWELL ?? 7500)); // la page d'accueil vit (roue, soleil) pendant l'accroche de la vidéo
   await scrollTo(cdp, { text: "Your field", selector: "h2,h3,p,div", block: 0.12, durationMs: 1100 });
   await sleep(500);
   mark("questions");

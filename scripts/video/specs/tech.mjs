@@ -13,9 +13,9 @@ const MAXLEN = 59.5;
 
 export const VO_LINES = [
   "Under the hood: a farmer speaks, and a fixed calculation answers.",
-  "Speech recognition lets Noor talk instead of type. Rules find the crop and the place.",
+  "Speaking is optional. Rules find the crop and the place.",
   "A fixed FAO-56 water balance, on the weather forecast, computes the advice, even inside the browser. A Tunisian-accented voice reads it.",
-  "It's small: under 400 kilobytes on a first visit, and it works offline.",
+  "It's small: twenty times lighter than the national weather site, which did not even open on 2G. And it works offline.",
   "Open-Meteo weather, FAO-56, ElevenLabs voices. The limits: no field trial yet.",
   "We also tested a small model on satellite data: a modest gain, a failure in the Sahel. Both published.",
   "The numbers can't hallucinate. And when Sakia isn't sure, it says so.",
@@ -23,7 +23,9 @@ export const VO_LINES = [
   "Built this weekend by Anthony, with an AI coding assistant.",
 ];
 const TAKES = "videos/build/takes/tech-vo.json";
-const vo = existsSync(TAKES) ? JSON.parse(readFileSync(TAKES, "utf8")) : null;
+const voRaw = existsSync(TAKES) ? JSON.parse(readFileSync(TAKES, "utf8")) : null;
+const vo = voRaw && voRaw.takes?.length === VO_LINES.length && voRaw.takes.every((t, i) => t.text === VO_LINES[i]) ? voRaw : null;
+if (voRaw && !vo) console.log("voix off d'une ancienne version du texte : ignorée (relancer tts-vo.mjs tech)");
 const voDur = VO_LINES.map((line, i) => {
   const tk = vo?.takes?.find((t) => t.line === i && t.start != null);
   return tk ? tk.end - tk.start : line.split(/\s+/).length / 2.5 + 0.3;
@@ -68,6 +70,12 @@ for (const c of L.ch) {
   }
 }
 
+const PERF = JSON.parse(readFileSync("scripts/perf-results-2026-10-04.json", "utf8")).results;
+const pf = (site, profile) => PERF.find((r) => r.site === site && r.profile === profile);
+const SITES = [["sakia", "Sakia"], ["yrno", "yr.no"], ["meteoblue", "meteoblue"], ["meteotn", "National weather site (meteo.tn)"]];
+const MAXKB = Math.max(...SITES.map(([id]) => pf(id, "3G").cold.kb));
+const SMALL = ch.small;
+const ratio = Math.floor(pf("meteotn", "3G").cold.kb / pf("sakia", "3G").cold.kb);
 const filmSeg = (c) => ({ at: c.at, media: "film", from: c.film[0], to: Math.min(c.film[2], c.film[0] + c.len) });
 const LAB = ch.lab;
 
@@ -81,11 +89,32 @@ export default {
     .browser-bar{position:absolute;left:${960 - 617}px;top:${650 - 353 - 34}px;width:1234px;height:34px;border-radius:14px 14px 0 0;background:#1d2420;display:flex;align-items:center;gap:8px;padding:0 16px;box-sizing:border-box}
     .browser-bar i{width:12px;height:12px;border-radius:50%;background:#3b4440;display:block}
     .browser-bar span{margin-left:14px;font:600 16px Geist,sans-serif;color:#9fb5a5}
+    .opt{position:absolute;left:368px;top:254px;padding:8px 16px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 22px Geist,sans-serif;letter-spacing:.08em;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+    .cmp-title{position:absolute;left:96px;top:96px;font:900 76px/1.05 Fraunces,serif;color:#fff}
+    .cmp-rows{position:absolute;left:96px;top:250px;width:1728px;display:flex;flex-direction:column;gap:22px}
+    .cmp-row{display:grid;grid-template-columns:430px 1fr;align-items:center;gap:24px}
+    .cmp-row .n{font:700 30px Geist,sans-serif;color:#d6e6d2;text-align:right}
+    .cmp-row .barwrap{display:flex;align-items:center;gap:16px}.cmp-row .bar{display:block;height:46px;border-radius:12px;background:#5d6f64}.cmp-row .kb{font:800 28px Geist,sans-serif;color:#fff;white-space:nowrap}
+    .cmp-row.me .n{color:#fff;font-weight:900}.cmp-row.me .bar{background:#2f9a5a}.cmp-row.me .kb{color:#7ad48f}
+    .cmp-row.bad .bar{background:#c2410c}
+    .cmp-chips{position:absolute;left:96px;top:640px;display:flex;flex-direction:column;gap:18px}
+    .cmp-chips span{display:inline-block;align-self:flex-start;padding:14px 26px;border-radius:20px;background:rgba(255,255,255,.95);color:#14231a;font:800 36px Geist,sans-serif;box-shadow:0 14px 32px rgba(0,0,0,.35)}
+    .cmp-chips span b{color:#2f7d4a}.cmp-chips span.bad b{color:#c2410c}
+    .cmp-note{position:absolute;left:96px;top:1000px;font:500 22px Geist,sans-serif;color:rgba(244,239,230,.7)}
   `,
   media: { film: { file: FILM } },
   layers: [
     // ------------------------------------------------ le film technique, chapitres 1 à 4
     { type: "video", start: 0, end: LAB.at + 0.25, fadeIn: 0.001, fadeOut: 0.25, x: 0, y: 0, w: 1920, h: 1080, segments: ["intro", "steps", "small", "stack"].map((id) => filmSeg(ch[id])) },
+
+    // ------------------------------------------------ « parler » est facultatif : étiquette sur l'étape 1 du film
+    { type: "html", start: ch.steps.at + 2.2, end: ch.steps.at + ch.steps.len - 0.1, fx: "none", fadeOut: 0.2, html: `<div class="opt" data-at="0" data-fx="pop" data-rot="6">OPTIONAL</div>` },
+
+    // ------------------------------------------------ petit : comparaison mesurée avec les sites qui existent (page /speed)
+    {
+      type: "html", start: SMALL.at, end: SMALL.at + SMALL.len + 0.1, fadeIn: 0.3, fadeOut: 0.3, fx: "none",
+      html: `<div class="bg-tech"></div><div class="lab-kicker">FIRST VISIT, THROTTLED 3G · MEASURED 4 OCTOBER 2026</div><div class="cmp-title" data-at="0.1">Small enough for a weak connection</div><div class="cmp-rows">${SITES.map(([id, name], i) => { const kb = pf(id, "3G").cold.kb; const w = Math.max(8, Math.round((kb / MAXKB) * 1150)); return `<div class="cmp-row${id === "sakia" ? " me" : id === "meteotn" ? " bad" : ""}"><span class="n">${name}</span><span class="barwrap"><span class="bar" data-at="${(0.5 + i * 0.35).toFixed(2)}" data-fx="grow" style="width:${w}px"></span><span class="kb" data-at="${(0.9 + i * 0.35).toFixed(2)}">${kb.toLocaleString("en-GB")} KB</span></span></div>`; }).join("")}</div><div class="cmp-chips"><span data-at="2.4" data-fx="pop" data-rot="-4"><b>${ratio}× lighter</b> than the national weather site</span><span class="bad" data-at="3.6" data-fx="pop" data-rot="3">On 2G: Sakia opens in <b>${Math.round(pf("sakia", "2G").cold.loadSeconds)} s</b>, the national site <b>never opened</b> (150 s)</span><span data-at="4.8" data-fx="pop" data-rot="-3">No network at all: <b>only Sakia still works</b></span></div><div class="cmp-note">One run per site, real browser, processor slowed 4×. Method and raw results: sakia-opal.vercel.app/speed</div>`,
+    },
 
     // ------------------------------------------------ la page Lab, filmée sur le vrai site
     { type: "html", start: LAB.at, end: LAB.at + LAB.len + 0.2, fadeIn: 0.25, fadeOut: 0.25, fx: "none", html: `<div class="bg-tech"></div><div class="lab-kicker">RESEARCH · SHADOW MODE · DOES NOT CHANGE THE ADVICE</div>` },
@@ -104,11 +133,11 @@ export default {
     { type: "video", start: ch.safe.at, end: ch.safe.at + ch.safe.len + 0.2, fadeIn: 0.25, fadeOut: 0.6, x: 0, y: 0, w: 1920, h: 1080, segments: [filmSeg(ch.safe)] },
     ...(vo?.synthetic ? [{ type: "note", start: Math.max(0, L.total - 4.2), end: L.total + 0.2, x: 96, y: 1030, w: 1700, text: "Narration: synthetic voice (ElevenLabs)." }] : []),
   ],
-  music: { file: "videos/build/music-11.wav", gain: vo ? -24 : -21, duckGain: -8, fadeIn: 1.5, fadeOut: 2.5, duck: vo ? VO_AT.map((at, i) => ({ from: at - 0.1, to: at + voDur[i] / tempo + 0.1 })) : [] },
+  music: { file: "videos/build/music-cine-5.wav", gain: vo ? -21 : -18, duckGain: -8, fadeIn: 1.5, fadeOut: 2.5, duck: vo ? VO_AT.map((at, i) => ({ from: at - 0.1, to: at + voDur[i] / tempo + 0.1 })) : [] },
   audio: vo
     ? vo.takes
         .filter((t) => t.start != null)
-        .map((t) => ({ file: vo.file, at: VO_AT[t.line], from: t.start, to: t.end, gain: 0, fadeIn: 0.02, fadeOut: 0.05, rate: tempo !== 1 ? tempo : undefined, filter: "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" }))
+        .map((t) => ({ file: vo.file, at: VO_AT[t.line], from: t.start, to: t.end, gain: 0, fadeIn: 0.02, fadeOut: 0.05, rate: tempo !== 1 ? tempo : undefined, filter: vo.synthetic ? undefined : "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" }))
     : [],
 };
 console.log(`technique : ${L.total.toFixed(1)} s (${vo ? `voix off ${vo.synthetic ? "de synthèse" : "d'Anthony"}, tempo ${tempo}` : "sans voix off"})`);

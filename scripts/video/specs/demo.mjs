@@ -182,10 +182,10 @@ export default {
     .waybar span i{font-style:normal;font-size:20px}
     .waybar span.done{color:rgba(244,239,230,.75);border-color:rgba(242,179,61,.5)}
     .waybar span.on{background:#f4efe6;border-color:#f4efe6;color:#12301f;transform:scale(1.08)}
-    .ways{position:absolute;left:0;right:0;top:470px;display:flex;justify-content:center;gap:26px}
-    .way{width:250px;padding:24px 16px 20px;border-radius:30px;background:rgba(255,255,255,.95);text-align:center;box-shadow:0 20px 44px rgba(0,0,0,.35)}
-    .way i{display:block;font-style:normal;font-size:76px;line-height:1.1}
-    .way b{display:block;font:900 34px/1.1 Fraunces,serif;color:#14231a;margin-top:10px}
+    .ways{position:absolute;left:${X}px;top:500px;width:${W}px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .way{padding:18px 12px 16px;border-radius:26px;background:rgba(255,255,255,.95);text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+    .way i{display:block;font-style:normal;font-size:58px;line-height:1.1}
+    .way b{display:block;font:900 30px/1.1 Fraunces,serif;color:#14231a;margin-top:6px}
     .way em{display:inline-block;margin-top:12px;padding:6px 14px;border-radius:999px;font:800 17px Geist,sans-serif;font-style:normal;letter-spacing:.08em}
     .way em.r{background:#2f7d4a;color:#fff}.way em.s{background:#f2b33d;color:#2a1d05}
     .keys{position:absolute;left:${X}px;top:560px;width:${W}px;display:flex;flex-direction:column;gap:12px}
@@ -203,14 +203,20 @@ export default {
     { type: "bg", style: "green" },
 
     // ---------------------------------------------------------------- 1. accroche
-    { type: "phone", start: 0.15, end: E("hook") + 0.05, fadeOut: 0.35, enterFrom: "bottom", ...PHONE, segments: [{ at: 0.15, clip: "home", from: 0.0, to: H_Q, rate: fit(H_Q, S.hook.len - 0.15) }] },
+    {
+      type: "phone", start: 0.15, end: E("choose") + 0.02, fadeOut: 0, enterFrom: "bottom", ...PHONE,
+      segments: [
+        { at: Math.max(0.15, A("choose") - H_Q), clip: "home", from: 0.0, to: H_Q - 0.2, rate: Math.max(1, (H_Q - 0.2) / (A("choose") - 0.15)) },
+        { at: A("choose"), clip: "home", from: CH_FROM, to: H_L, xfade: 0.01, rate: CH_RATE },
+      ],
+    },
     { type: "caption", start: VO_AT[0], end: E("hook") - 0.1, x: X, y: 300, w: W, size: 104, text: "Noor __can't read.__", stagger: 0.12 },
     { type: "caption", start: VO_AT[0] + 0.9, end: E("hook") - 0.1, x: X, y: 440, w: W, cls: "small", text: "Two hectares near Kairouan, in central Tunisia. A well. Every morning, one question:", stagger: 0.05 },
     { type: "caption", start: VO_AT[1] + v[1] * 0.45, end: E("hook") - 0.1, x: X, y: 600, w: W, size: 72, text: "__Water today, or wait?__", stagger: 0.1 },
     { type: "note", start: VO_AT[0] + 0.5, end: E("hook") - 0.1, x: X, y: 960, w: W, text: "In Kairouan, more than 1 person in 4 aged 10 and over cannot read (INS, 2024 census)." },
 
     // ---------------------------------------------------------------- 2. une décision, cinq façons
-    { type: "caption", start: A("ways", 0.1), end: E("ways") - 0.1, x: 0, y: 230, w: 1920, size: 92, align: "center", text: "One decision. __Five ways__ to get it.", stagger: 0.09 },
+    { type: "caption", start: A("ways", 0.1), end: E("ways") - 0.1, x: X, y: 250, w: W, size: 84, text: "One decision. __Five ways__ to get it.", stagger: 0.09 },
     {
       type: "html", start: A("ways", 0.3), end: E("ways") - 0.05, fx: "none", fadeOut: 0.2,
       html: `<div class="ways">${WAYS.map(([id, ic, label], i) => `<div class="way" data-at="${(0.35 + i * 0.22).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 8 : -8}"><i>${ic}</i><b>${label}</b><em class="${id === "call" || id === "sms" ? "s" : "r"}">${id === "call" || id === "sms" ? "SIMULATED" : "REAL"}</em></div>`).join("")}</div>`,
@@ -219,7 +225,6 @@ export default {
     // ---------------------------------------------------------------- 3. le site : choisir avec des images, écouter, le plan
     barLayer("web", A("choose"), E("listen")),
     { type: "chip", start: A("choose"), end: E("listen") - 0.2, x: X, y: 240, text: "REAL", tone: "real" },
-    { type: "phone", start: A("choose"), end: E("choose") + 0.02, fadeIn: 0.3, fadeOut: 0, enterFrom: "bottom", ...PHONE, segments: [{ at: A("choose"), clip: "home", from: H_Q - 0.2, to: H_L, rate: CH_RATE }] },
     { type: "caption", start: VO_AT[3], end: E("choose") - 0.2, x: X, y: 320, w: W, text: "On the website, Noor chooses __with pictures.__", stagger: 0.07 },
     { type: "html", start: A("choose", 0.2), end: E("choose") - 0.1, fx: "none", fadeOut: 0.2, html: `<div class="keys">${STEPS.map(([t, n, label]) => `<span data-at="${(chT(t) - A("choose", 0.2)).toFixed(2)}" data-fx="pop" data-rot="-5"><b>${n}</b>${label}</span>`).join("")}</div>` },
     {
@@ -293,7 +298,7 @@ export default {
     },
   ],
   music: {
-    file: "videos/build/music-7.wav", gain: vo ? -22 : -19, duckGain: -10, fadeIn: 1.5, fadeOut: 2.5,
+    file: "videos/build/music-cine-3.wav", gain: vo ? -21 : -18, duckGain: -8, fadeIn: 1.5, fadeOut: 2.5,
     duck: [{ from: APP_VOICE - 0.2, to: APP_VOICE + flex.appVoice + 0.2 }, { from: ADVICE - 0.2, to: ADVICE + 3.4 }, ...(TG ? [{ from: A("telegram", S.telegram.tgVoiceAt) - 0.2, to: A("telegram", S.telegram.tgVoiceAt) + flex.tgVoice + 0.2 }] : []), ...(vo ? voDuck : [])],
   },
   audio: [

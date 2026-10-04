@@ -256,6 +256,12 @@
             const kk = E.back(clamp(dt / 0.42));
             c.style.opacity = clamp(dt / 0.12);
             c.style.transform = `scale(${0.25 + 0.75 * kk}) rotate(${(1 - kk) * (Number(c.dataset.rot ?? -10))}deg)`;
+          } else if (fx === "grow") {
+            // barre qui pousse depuis la gauche
+            const kk = E.out(clamp(dt / 0.9));
+            c.style.opacity = clamp(dt / 0.1);
+            c.style.transformOrigin = "left center";
+            c.style.transform = `scaleX(${Math.max(0.001, kk)})`;
           } else if (fx === "slide") {
             const kk = E.out(clamp(dt / 0.6));
             c.style.opacity = clamp(dt / 0.25);
