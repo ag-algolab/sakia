@@ -13,7 +13,7 @@ import { AlertIcon, RainIcon, RetryIcon, SproutIcon, SunIcon, ThermoIcon, Tunisi
 import ListenHero from "@/components/ui/ListenHero";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
-import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfile, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
+import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfileOrFirstVisit, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
 import type { Profile } from "@/components/ui/profile";
 import SpeedBand from "@/components/ui/SpeedBand";
 import { irrigationSeasonOf, outOfIrrigationSeason } from "@/components/ui/season";
@@ -70,8 +70,8 @@ function todayOf(plan: Plan | null): PlanDay | null {
 export default function Home() {
   const { t, fmtDate, fmtNum, colon } = useLang();
 
-  // Profil de l'agriculteur, gardé sur l'appareil. Région et culture n'ont AUCUNE valeur par défaut : elles sont obligatoires,
-  // et le questionnaire passe avant l'écoute (on n'écoute pas un conseil pour une région qu'on n'a pas dite).
+  // Profil de l'agriculteur, gardé sur l'appareil. Région et culture sont obligatoires et le questionnaire passe avant l'écoute ;
+  // à la toute première visite, le champ d'exemple est prérempli et affiché en clair (firstVisitProfile, décision d'Anthony du 4 oct.).
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [replay, setReplay] = useState(false);
@@ -131,7 +131,7 @@ export default function Home() {
   useEffect(() => {
     // Lu après l'hydratation : le serveur ne connaît pas le profil gardé sur l'appareil.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(loadProfile());
+    setProfile(loadProfileOrFirstVisit());
     setProfileLoaded(true);
   }, []);
   useEffect(() => {

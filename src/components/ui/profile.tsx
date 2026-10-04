@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { CROPS } from "@/lib/crops";
+import { CROPS, defaultCropForMonth } from "@/lib/crops";
 import { REGIONS } from "@/lib/regions";
 
 // Profil de l'agriculteur, gardé sur l'appareil (localStorage, clé « sakia-form ») : région, culture, sol, irrigation,
@@ -12,7 +12,8 @@ import { REGIONS } from "@/lib/regions";
 // <ProfileSync /> à chaque ouverture d'une page, pour que tout lecteur de `ago` (le poste Bulletin) ait une valeur à jour.
 // Au-delà de 7 jours, le moteur ne sait pas représenter l'état du sol : on redemande (« pas sûr »).
 //
-// Région et culture n'ont PAS de valeur par défaut : la personne les choisit (obligatoire).
+// Région et culture sont obligatoires. À la PREMIÈRE visite seulement (ni région ni culture gardées), un champ d'exemple est
+// prérempli et affiché en clair (« Your field : Kairouan · Pepper · 6 d ago », bouton « Change ») : voir firstVisitProfile.
 
 export const PROFILE_KEY = "sakia-form";
 export const SOILS = ["sableux", "limoneux", "argileux"] as const;
@@ -77,6 +78,23 @@ export function loadProfile(): Profile {
   } catch {
     return EMPTY_PROFILE;
   }
+}
+
+// Le champ d'exemple de la première visite. Décision d'Anthony (4 oct., 09 h 30) : « par défaut, Kairouan, Pepper, arrosé lundi :
+// ça dit d'arroser aujourd'hui, puis encore dans la semaine ». La culture est celle de la saison (le piment en octobre : la même que
+// le bouton d'exemple), le dernier arrosage 6 jours avant le jour de la visite. Vérifié le 4 oct. : arroser aujourd'hui (319 m³/ha)
+// et jeudi (206 m³/ha).
+export const FIRST_VISIT_AGO = "6";
+
+export function firstVisitProfile(today: string = tunisToday()): Profile {
+  return { ...EMPTY_PROFILE, region: "kairouan", crop: defaultCropForMonth(Number(today.slice(5, 7))), agoDate: dateFromAgo(FIRST_VISIT_AGO, today) };
+}
+
+// Profil gardé ; s'il n'a ni région ni culture (première visite), le champ d'exemple (sol, système et semis gardés s'ils existent).
+export function loadProfileOrFirstVisit(): Profile {
+  const p = loadProfile();
+  if (p.region || p.crop) return p;
+  return { ...firstVisitProfile(), soil: p.soil, system: p.system, planting: p.planting };
 }
 
 export function saveProfile(p: Profile) {

@@ -10,7 +10,7 @@ import CropArt from "./CropArt";
 import CropPicker from "./CropPicker";
 import { AlertIcon, DropIcon, PinIcon } from "./icons";
 import { useLang } from "./LangProvider";
-import { tunisToday } from "./profile";
+import { FIRST_VISIT_AGO, tunisToday } from "./profile";
 import type { Profile } from "./profile";
 import RegionPicker from "./RegionPicker";
 
@@ -22,7 +22,7 @@ import RegionPicker from "./RegionPicker";
 // Sol, système d'arrosage et date de semis (cultures annuelles seulement) sont repliés : des valeurs par défaut suffisent.
 // Une fois les réponses données et gardées sur l'appareil, le questionnaire se replie en une ligne de résumé.
 
-const EXAMPLE_AGO = "3"; // dernier arrosage de l'exemple : il y a 3 jours
+const EXAMPLE_AGO = FIRST_VISIT_AGO; // dernier arrosage de l'exemple : le même que le champ prérempli de la première visite
 
 function Q({
   n,
@@ -233,9 +233,9 @@ export default function FieldQuestions({
       </details>
 
       {!complete && <p className="mt-4 text-sm font-bold text-sakia-alert">{t("fieldRequired")}</p>}
-      {/* pour qui veut juste voir (le jury, un technicien) : un exemple en un geste. Rien n'est prérempli : la personne le choisit.
-          L'exemple doit montrer un VRAI conseil d'arrosage : la culture de saison (le piment en octobre, racines courtes : il boit vite)
-          arrosée il y a 3 jours, donc un arrosage dans les prochains jours (et pas « pas sûr », faute de dernier arrosage). */}
+      {/* pour qui veut juste voir (le jury, un technicien) : un exemple en un geste, si région et culture ont été vidées (à la première
+          visite, ce même exemple est déjà prérempli). Il montre un VRAI conseil d'arrosage : la culture de saison (le piment en octobre,
+          racines courtes : il boit vite) arrosée il y a 6 jours, donc arroser aujourd'hui (et pas « pas sûr », faute de dernier arrosage). */}
       {!profile.region && !profile.crop && exampleCrop && exampleRegion && (
         <button
           type="button"
