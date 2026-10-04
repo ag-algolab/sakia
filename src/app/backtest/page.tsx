@@ -221,8 +221,8 @@ export default function BacktestPage() {
                           {x.year}
                         </span>
                         <div className="space-y-1" dir="ltr">
-                          <Bar value={x.fixed.grossMm} max={maxMm} color="bg-sakia-sand-dark" unit={t("mm")} fmt={fmtNum} />
-                          <Bar value={x.adaptive.grossMm} max={maxMm} color="bg-[#2b8fd6]" unit={t("mm")} fmt={fmtNum} delay={150} />
+                          <Bar value={x.fixed.grossMm} max={maxMm} color="bg-sakia-sand-dark" label={fmtNum(m3PerHa(x.fixed.grossMm))} />
+                          <Bar value={x.adaptive.grossMm} max={maxMm} color="bg-[#2b8fd6]" label={fmtNum(m3PerHa(x.adaptive.grossMm))} delay={150} />
                         </div>
                       </Reveal>
                     ))}
@@ -335,27 +335,24 @@ function WaterTile({ s, cropObj, regionObj }: { s: BacktestResult["summary"]; cr
       <p className="relative text-sm text-white/70">
         {t("waterSavedSub")} · {s.seasons} {t("seasons")}
       </p>
+      {/* téléphone : nom et volume sur une ligne, la barre dessous en pleine largeur ; écran large : tout sur une ligne */}
       <div className="relative mt-auto space-y-2 pt-5" dir="ltr">
-        <div className="flex items-center gap-3">
-          <span className="w-28 shrink-0 text-xs font-semibold text-white/75">{t("fixedLabel")}</span>
-          <div className="h-4 flex-1 rounded-full bg-white/10">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:flex-nowrap">
+          <span className="shrink-0 text-xs font-semibold text-white/75 sm:w-28">{t("fixedLabel")}</span>
+          <div className="order-last h-4 basis-full rounded-full bg-white/10 sm:order-none sm:flex-1 sm:basis-auto">
             <div className="sk-bar-x h-4 w-full rounded-full bg-sakia-sand-dark" />
           </div>
-          <span className="w-16 shrink-0 text-end text-xs font-bold">
-            {fmtNum(s.meanGrossFixed)} {t("mm")}
-          </span>
+          <span className="ms-auto shrink-0 whitespace-nowrap text-end text-xs font-bold sm:ms-0 sm:w-24">{t("perHa", { n: fmtNum(m3PerHa(s.meanGrossFixed)) })}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="w-28 shrink-0 text-xs font-semibold text-white/75">{t("adaptiveLabel")}</span>
-          <div className="h-4 flex-1 rounded-full bg-white/10">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:flex-nowrap">
+          <span className="shrink-0 text-xs font-semibold text-white/75 sm:w-28">{t("adaptiveLabel")}</span>
+          <div className="order-last h-4 basis-full rounded-full bg-white/10 sm:order-none sm:flex-1 sm:basis-auto">
             <div
               className="sk-bar-x h-4 rounded-full bg-[#4aa9e8]"
               style={{ width: `${s.meanGrossFixed > 0 ? (s.meanGrossAdaptive / s.meanGrossFixed) * 100 : 0}%`, ["--d" as string]: "250ms" }}
             />
           </div>
-          <span className="w-16 shrink-0 text-end text-xs font-bold">
-            {fmtNum(s.meanGrossAdaptive)} {t("mm")}
-          </span>
+          <span className="ms-auto shrink-0 whitespace-nowrap text-end text-xs font-bold sm:ms-0 sm:w-24">{t("perHa", { n: fmtNum(m3PerHa(s.meanGrossAdaptive)) })}</span>
         </div>
       </div>
     </Reveal>
@@ -422,29 +419,19 @@ function Legend({ color, label }: { color: string; label: string }) {
   );
 }
 
-function Bar({
-  value,
-  max,
-  color,
-  unit,
-  fmt,
-  delay = 0,
-}: {
-  value: number;
-  max: number;
-  color: string;
-  unit: string;
-  fmt: (n: number, d?: number) => string;
-  delay?: number;
-}) {
+// Le moteur compte l'eau en millimètres (1 mm = 1 litre par m²) ; la page l'affiche en m³ par hectare, l'unité des doses de
+// l'accueil (« mm » ne parlait à personne, 4 oct.). 1 mm sur un hectare = 10 m³ ; arrondi au mm d'abord, pas de fausse précision.
+function m3PerHa(mm: number): number {
+  return Math.round(mm) * 10;
+}
+
+function Bar({ value, max, color, label, delay = 0 }: { value: number; max: number; color: string; label: string; delay?: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-4 flex-1 rounded-full bg-sakia-sand/70">
         <div className={`sk-bar-x h-4 rounded-full ${color}`} style={{ width: `${Math.max(1, (value / max) * 100)}%`, ["--d" as string]: `${delay}ms` }} />
       </div>
-      <span className="w-16 text-end text-xs font-semibold text-sakia-ink">
-        {fmt(value)} {unit}
-      </span>
+      <span className="w-16 text-end text-xs font-semibold text-sakia-ink">{label}</span>
     </div>
   );
 }

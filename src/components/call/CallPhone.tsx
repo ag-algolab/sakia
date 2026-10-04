@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useLang } from "@/components/ui/LangProvider";
 import { getCrop } from "@/lib/crops";
+import { digitsForDisplay } from "@/lib/voice/numberDisplay";
 import type { DemoItem } from "@/lib/ivr/demo";
 import { KEYS } from "@/lib/ivr/flow";
 import type { CallState, Key } from "@/lib/ivr/flow";
@@ -247,7 +248,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                     {/* la phrase dite, si elle n'est pas déjà l'anglais affiché au-dessus */}
                     {c.now.text !== c.now.en && (
                       <p className="mt-2 border-t border-sakia-green/20 pt-2 text-lg text-sakia-brown" lang={c.now.lang} dir={c.now.lang === "ar" ? "rtl" : "ltr"}>
-                        {c.now.text}
+                        {digitsForDisplay(c.now.text)}
                       </p>
                     )}
                   </div>
@@ -354,7 +355,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                   <li key={l.id} className={`rounded-lg px-2 py-1 ${i === lastPlan.active ? "bg-sakia-green-light" : ""} ${l.id === "unsure" ? "border-l-4 border-sakia-alert bg-sakia-alert-light" : ""}`}>
                     <p className="text-lg" lang="en" dir="ltr">{l.en}</p>
                     {l.text !== l.en && (
-                      <p className="text-base text-sakia-brown" lang={lastPlan.lang} dir={lastPlan.lang === "ar" ? "rtl" : "ltr"}>{l.text}</p>
+                      <p className="text-base text-sakia-brown" lang={lastPlan.lang} dir={lastPlan.lang === "ar" ? "rtl" : "ltr"}>{digitsForDisplay(l.text)}</p>
                     )}
                   </li>
                 ))}
@@ -373,14 +374,14 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                   {e.kind === "prompt" && (
                     <>
                       <span lang="en" dir="ltr" className="block">☸ {e.en}</span>
-                      {e.text !== e.en && <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.text}</span>}
+                      {e.text !== e.en && <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{digitsForDisplay(e.text)}</span>}
                     </>
                   )}
                   {e.kind === "plan" && (
                     <>
                       <span lang="en" dir="ltr" className="block">☸ {e.lines.map((l) => l.en).join(" ")}</span>
                       {e.lines.some((l) => l.text !== l.en) && (
-                        <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.lines.map((l) => l.text).join(" ")}</span>
+                        <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{digitsForDisplay(e.lines.map((l) => l.text).join(" "))}</span>
                       )}
                     </>
                   )}

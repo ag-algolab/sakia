@@ -11,6 +11,7 @@ import { MicIcon } from "@/components/ui/icons";
 import { useLang } from "@/components/ui/LangProvider";
 import { dateFromAgo, loadProfile, saveProfile, tunisToday } from "@/components/ui/profile";
 import { getCrop } from "@/lib/crops";
+import { digitsForDisplay } from "@/lib/voice/numberDisplay";
 import { getRegion } from "@/lib/regions";
 import { AgentCall } from "./agentClient";
 import type { AgentEvent, AgentToolResult } from "./agentClient";
@@ -166,7 +167,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
             {lines.map((l) => (
               <li key={l.id} className={`rounded-lg px-3 py-2 text-lg ${l.who === "you" ? "ms-8 bg-sakia-sand" : "me-8 bg-sakia-green-light"}`}>
                 <span className="block text-xs font-bold uppercase tracking-wide text-sakia-brown">{l.who === "you" ? t("you") : t("agent")}</span>
-                <span dir="auto">{l.text}</span>
+                <span dir="auto">{digitsForDisplay(l.text)}</span>
               </li>
             ))}
             <li ref={logEnd} aria-hidden />
@@ -201,7 +202,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
           </p>
           {tool.result.spoken_text !== tool.result.english_text && (
             <p className="text-base text-sakia-brown" lang={answerLang} dir={answerLang === "ar" ? "rtl" : "ltr"}>
-              {tool.result.spoken_text}
+              {digitsForDisplay(tool.result.spoken_text)}
             </p>
           )}
           {tool.result.ask_a_person && <p className="rounded-lg border-2 border-sakia-alert bg-sakia-alert-light p-2 font-bold text-sakia-alert">⚠ {t("guardAsk")}</p>}

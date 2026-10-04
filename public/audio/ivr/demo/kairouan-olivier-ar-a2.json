@@ -26,7 +26,7 @@
    "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
    "startMs": 11800,
    "endMs": 16320,
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",
@@ -55,7 +55,7 @@
   {
    "id": "advice",
    "text": "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.",
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",
