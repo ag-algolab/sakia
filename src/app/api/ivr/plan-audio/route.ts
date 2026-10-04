@@ -5,6 +5,7 @@
 import { BudgetError, planClip } from "@/lib/ivr/clip";
 import { clientIp, parsePlanQuery, tooMany } from "@/lib/ivr/request";
 import { buildPlan } from "@/lib/plan";
+import { chargeLiveVoice } from "@/lib/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   if (tooMany(clientIp(request))) return Response.json({ error: "trop de demandes, réessayez dans une minute" }, { status: 429 });
   try {
     const plan = await buildPlan({ regionId: q.regionId, cropId: q.cropId, asOf: q.asOf, lastIrrigationDaysAgo: q.ago ?? undefined });
-    const clip = await planClip(plan, q.lang, q.detail);
+    const clip = await planClip(plan, q.lang, q.detail, (chars) => chargeLiveVoice(request, chars));
     return new Response(new Uint8Array(clip.audio), {
       headers: {
         "content-type": clip.mime,

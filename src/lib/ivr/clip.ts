@@ -36,7 +36,10 @@ export function planSubtitles(plan: Plan, lang: IvrLang, detail = false): { id: 
 }
 
 // Synthétise des lignes de texte (avec cache et plafond de caractères) et rend l'audio et les sous-titres calés.
-export async function linesClip(spoken: SpokenLine[], english: Map<string, string>): Promise<PlanClip> {
+// `charge` : en ligne, les plafonds persistants du jour (par visiteur et commun, voir chargeLiveVoice) ; sans lui (scripts
+// locaux), le registre de caractères du dossier. Le registre suivi dans le dépôt ne peut pas servir en ligne : il est en
+// lecture seule et garde le total des essais faits avant la mise en ligne (il bloquait toute voix nouvelle).
+export async function linesClip(spoken: SpokenLine[], english: Map<string, string>, charge?: (chars: number) => Promise<boolean>): Promise<PlanClip> {
   const text = spoken.map((l) => l.text).join(" ");
   if (text.length > MAX_CHARS) throw new Error(`texte trop long (${text.length} caractères)`);
 
@@ -45,7 +48,9 @@ export async function linesClip(spoken: SpokenLine[], english: Map<string, strin
   let hit = readClip(key);
   const source: "cache" | "live" = hit ? "cache" : "live";
   if (!hit) {
-    reserveChars(text.length); // refuse si le budget serait dépassé
+    if (charge) {
+      if (!(await charge(text.length))) throw new BudgetError("plafond de voix du jour atteint");
+    } else reserveChars(text.length); // refuse si le budget serait dépassé
     const { audio, alignment, cost } = await ttsWithTimestamps(text, voiceId, MODEL_ID);
     recordCredits(cost);
     hit = {
@@ -72,7 +77,7 @@ export async function linesClip(spoken: SpokenLine[], english: Map<string, strin
   };
 }
 
-export async function planClip(plan: Plan, lang: IvrLang, detail = false): Promise<PlanClip> {
+export async function planClip(plan: Plan, lang: IvrLang, detail = false, charge?: (chars: number) => Promise<boolean>): Promise<PlanClip> {
   const linesOf = detail ? ivrDetailLines : ivrPlanLines;
-  return linesClip(linesOf(plan, lang), new Map(linesOf(plan, "en").map((l) => [l.id, l.text])));
+  return linesClip(linesOf(plan, lang), new Map(linesOf(plan, "en").map((l) => [l.id, l.text])), charge);
 }

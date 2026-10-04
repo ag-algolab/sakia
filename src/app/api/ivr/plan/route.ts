@@ -6,6 +6,7 @@
 import { BudgetError, planClip, planSubtitles } from "@/lib/ivr/clip";
 import { clientIp, parsePlanQuery, tooMany } from "@/lib/ivr/request";
 import { buildPlan } from "@/lib/plan";
+import { chargeLiveVoice } from "@/lib/usage";
 import { SELECTED_VOICE } from "@/lib/voice/voices";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
   };
 
   try {
-    const clip = await planClip(plan, q.lang, q.detail);
+    const clip = await planClip(plan, q.lang, q.detail, (chars) => chargeLiveVoice(request, chars));
     return Response.json({
       ...common,
       source: clip.source,

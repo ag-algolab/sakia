@@ -4,7 +4,22 @@
 // false, ne rien dépenser et servir l'enregistrement de secours. En cas de panne de la base, on REFUSE (on protège les crédits).
 // SERVEUR SEULEMENT. Table `usage_counters` : voir docs/supabase.sql.
 
+import { createHash } from "node:crypto";
+
 type Row = { amount: number };
+
+// Adresse du visiteur, hachée avec un sel : sert seulement de clé de compteur journalier (jamais stockée en clair).
+export function visitorKey(request: Request): string {
+  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "inconnue";
+  return createHash("sha256").update(`${process.env.CRON_SECRET ?? "sakia"}|${ip}`).digest("hex").slice(0, 16);
+}
+
+// Une voix fabriquée à la demande (conseil de la ligne vocale) : plafond par visiteur, PUIS plafond commun du jour,
+// le même compteur que les conseils parlés de l'accueil (« tts_live »). false : ne rien fabriquer.
+export async function chargeLiveVoice(request: Request, chars: number): Promise<boolean> {
+  if (!(await chargeUsage(`tts_ip:${visitorKey(request)}`, chars, LIMITS.ttsCharsPerIp))) return false;
+  return chargeUsage("tts_live", chars, LIMITS.ttsChars);
+}
 
 function base(): { url: string; key: string } | null {
   const url = process.env.SUPABASE_URL;
