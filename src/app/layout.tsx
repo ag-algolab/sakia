@@ -50,9 +50,26 @@ export const viewport: Viewport = {
   themeColor: "#0d2e22",
 };
 
+// Lu AVANT la première image, pour que la page naisse directement dans la bonne langue et à la bonne taille (sans cela : un éclair
+// d'anglais de gauche à droite, puis un saut de mise en page quand la langue gardée et le profil sont lus, plus d'une seconde
+// sur un téléphone modeste). Il ne fait que lire l'appareil : rien n'est envoyé.
+//  - langue gardée (ou ?lang=) autre que l'anglais : lang et dir de <html> tout de suite, et la page reste masquée jusqu'à ce que
+//    LangProvider ait appliqué cette langue (data-lang-pending ; garde-fou en CSS : elle se démasque seule au bout de 2,5 s) ;
+//  - profil complet (région et culture) gardé : data-profile, pour que l'espace réservé au questionnaire de l'accueil ait déjà
+//    la hauteur du résumé et non celle du questionnaire (voir FieldQuestions).
+// Même logique de lecture que LangProvider et components/ui/profile.tsx : à garder alignées.
+const EARLY = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get("lang"),l=q||localStorage.getItem("sakia-lang");if(l==="fr"||l==="ar"||l==="aeb"){d.lang=l==="aeb"?"ar-TN":l;d.dir=l==="fr"?"ltr":"rtl";d.setAttribute("data-lang-pending","")}var f=JSON.parse(localStorage.getItem("sakia-form")||"null");if(f&&f.region&&f.crop)d.setAttribute("data-profile","1")}catch(e){}})()`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${fraunces.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} ${fraunces.variable} h-full antialiased`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: EARLY }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <LangProvider>
           <MotionRoot />

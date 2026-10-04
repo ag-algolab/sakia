@@ -46,6 +46,18 @@ input {
   font: inherit;
 }
 
+/* Langue gardée autre que l'anglais : la page est masquée le temps que la langue soit appliquée (script de layout.tsx), au lieu de
+   montrer un éclair d'anglais. Garde-fou : si rien ne lève le masque (script bloqué, erreur), il se lève seul au bout de 2,5 s. */
+html[data-lang-pending] body {
+  visibility: hidden;
+  animation: sk-unmask 0s linear 2.5s forwards;
+}
+@keyframes sk-unmask {
+  to {
+    visibility: visible;
+  }
+}
+
 :focus-visible {
   outline: 3px solid #1d74b6;
   outline-offset: 2px;
