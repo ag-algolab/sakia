@@ -1,0 +1,405 @@
+/* Film « Sakia, l'histoire » : mise en page sur une scène fixe de 1920 × 1080, mise à l'échelle par le composant.
+   Couleurs en dur et contrastées : texte blanc sur fond sombre, encre verte sur fond clair (jamais de gris sur couleur). */
+
+.film-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #030806;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--font-cairo), var(--font-geist-sans), "Segoe UI", Tahoma, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.film-root.film-hide-cursor {
+  cursor: none;
+}
+
+.film-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: 0 0;
+  overflow: hidden;
+}
+
+.film-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.film-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, 0.26) 100%);
+}
+
+/* Thèmes de scène */
+.f-dark {
+  --ink: #ffffff;
+  --ink2: #dbe8de;
+  --accent: #f2b33d;
+  --water: #7fc8f2;
+  --paper: #ffffff;
+  --paper-ink: #14301f;
+  color: var(--ink);
+}
+.f-light {
+  --ink: #14301f;
+  --ink2: #34452f;
+  --accent: #7a2e0a;
+  --water: #0e4a75;
+  --paper: #ffffff;
+  --paper-ink: #14301f;
+  color: var(--ink);
+}
+
+/* Typographie (valeurs en pixels de la scène 1920 × 1080) */
+.f-kicker {
+  position: absolute;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.f-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+.f-h1 {
+  font-size: 170px;
+}
+.f-h2 {
+  font-size: 104px;
+}
+.f-body {
+  font-size: 54px;
+  font-weight: 600;
+  line-height: 1.22;
+}
+.f-src {
+  position: absolute;
+  left: 140px;
+  bottom: 74px;
+  width: 1320px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink2);
+}
+.f-abs {
+  position: absolute;
+}
+.f-ar {
+  font-family: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.f-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 26px;
+  border-radius: 999px;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.f-badge-dark {
+  background: #06120d;
+  color: #f2b33d;
+  border: 3px solid #f2b33d;
+}
+.f-badge-real {
+  background: #123524;
+  color: #ffffff;
+}
+.f-badge-sim {
+  background: #7a2e0a;
+  color: #ffffff;
+}
+
+.f-card {
+  position: absolute;
+  background: var(--paper);
+  color: var(--paper-ink);
+  border-radius: 40px;
+  box-shadow: 0 26px 70px rgba(10, 30, 20, 0.28);
+}
+
+/* Contrôles du lecteur (hors scène, à l'échelle de l'écran) */
+.film-ui {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 36px 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(0deg, rgba(3, 8, 6, 0.95) 0, rgba(3, 8, 6, 0.9) 75%, rgba(3, 8, 6, 0) 100%);
+  transition: opacity 0.35s ease;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.film-ui[data-hidden="true"]:not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+.film-btn {
+  white-space: nowrap;
+  flex: none;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  background: #0d2e22;
+  color: #ffffff;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.film-btn:hover {
+  background: #14503a;
+}
+.film-btn:focus-visible {
+  outline: 4px solid #f2b33d;
+  outline-offset: 3px;
+}
+.film-btn[aria-pressed="true"] {
+  background: #f2b33d;
+  color: #06120d;
+  border-color: #f2b33d;
+}
+.film-scrub {
+  position: relative;
+  flex: 1;
+  min-width: 160px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+.film-scrub input[type="range"] {
+  width: 100%;
+  height: 56px;
+  margin: 0;
+  background: transparent;
+  accent-color: #f2b33d;
+  cursor: pointer;
+}
+.film-ticks {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 10px;
+  pointer-events: none;
+}
+.film-ticks i {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 10px;
+  margin-left: -1px;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.film-poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  background: rgba(3, 8, 6, 0.5);
+  z-index: 5;
+}
+.film-poster .film-play {
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  border: 6px solid #ffffff;
+  background: #f2b33d;
+  color: #06120d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(242, 179, 61, 0.7);
+  animation: film-pulse 2.2s ease-out infinite;
+}
+.film-poster .film-play:focus-visible {
+  outline: 5px solid #ffffff;
+  outline-offset: 6px;
+}
+.film-poster p {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+}
+@keyframes film-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(242, 179, 61, 0.65);
+  }
+  100% {
+    box-shadow: 0 0 0 46px rgba(242, 179, 61, 0);
+  }
+}
+
+.film-cam {
+  position: absolute;
+  left: 1540px;
+  top: 710px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 6px dashed #ffffff;
+  box-shadow: 0 0 0 4px #06120d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(6, 18, 13, 0.55);
+  z-index: 4;
+}
+
+.film-rotate {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  background: rgba(3, 8, 6, 0.86);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  z-index: 6;
+  pointer-events: none;
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  .film-rotate {
+    display: flex;
+  }
+}
+
+@keyframes film-eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Écrans étroits : on garde lecture, chapitres et barre ; le reste se range. */
+@media (max-width: 1100px) {
+  .film-ui {
+    gap: 8px;
+    padding: 10px 12px 12px;
+    font-size: 16px;
+  }
+  .film-ui .film-opt {
+    display: none;
+  }
+  .film-btn {
+    height: 48px;
+    min-width: 48px;
+    padding: 0 12px;
+  }
+  .film-scrub,
+  .film-scrub input[type="range"] {
+    height: 48px;
+  }
+}
+
+.film-time {
+  min-width: 124px;
+  text-align: center;
+  white-space: nowrap;
+}
+.film-chapter {
+  min-width: 230px;
+  white-space: nowrap;
+}
+@media (max-width: 1500px) {
+  .film-chapter {
+    display: none;
+  }
+}
+
+/* Texte pour les lecteurs d'écran : hors de l'image, mais lu. */
+.film-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-poster .film-play {
+    animation: none;
+  }
+}
+
+/* Mouvements décoratifs du film (copie volontaire : le film ne dépend d'aucun fichier de l'interface). */
+@keyframes film-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+@keyframes film-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes film-spin-back {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .film-sway {
+    animation: film-sway 5s ease-in-out infinite;
+  }
+  .film-spin {
+    animation: film-spin 32s linear infinite;
+  }
+  .film-spin-fast {
+    animation: film-spin 14s linear infinite;
+  }
+  .film-spin-rev {
+    animation: film-spin-back 120s linear infinite;
+  }
+}

@@ -27,6 +27,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
       const asked = new URLSearchParams(window.location.search).get("lang");
       const saved = asked ?? localStorage.getItem("sakia-lang");
       if (saved === "fr" || saved === "ar" || saved === "en" || saved === "aeb") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- lu après l'hydratation : le serveur ne connaît pas le choix de la personne
         setLangState(saved);
         if (asked) localStorage.setItem("sakia-lang", saved);
       }

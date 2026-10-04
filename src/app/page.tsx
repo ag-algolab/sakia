@@ -2,144 +2,132 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Assumptions from "@/components/ui/Assumptions";
-import { CropSelect, Field, regionName, selectClass, useCatalog } from "@/components/ui/catalog";
-import { Chips, Segmented } from "@/components/ui/controls";
+import FieldQuestions from "@/components/ui/FieldQuestions";
+import FiveDoors from "@/components/ui/FiveDoors";
 import HeroPanorama from "@/components/ui/HeroPanorama";
 import HeroScene from "@/components/ui/HeroScene";
-import { AlertIcon, DropIcon, HandIcon, RainIcon, SunIcon, ThermoIcon } from "@/components/ui/icons";
+import { AlertIcon, DropIcon, RainIcon, SproutIcon, ThermoIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
 import RainReport from "@/components/ui/RainReport";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
+import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfile, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
+import type { Profile } from "@/components/ui/profile";
 import StatBand from "@/components/ui/StatBand";
-import WaterTank from "@/components/ui/WaterTank";
+import WeekView from "@/components/ui/WeekView";
 import { usePlan } from "@/components/phone/usePlan";
-import type { Confidence, Plan, PlanDay } from "@/lib/plan";
+import { CROPS } from "@/lib/crops";
+import type { Confidence, Plan } from "@/lib/plan";
 import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
-import type { LocalReport } from "@/lib/weather";
 
 // Les types viennent du moteur (import de type seulement : aucune logique dupliquée).
 const REPLAY_DATE = "2026-07-17";
 const REPLAY_SCENE = { crop: "tomate", ago: "7" };
 const STALE_AFTER_HOURS = 5;
 
-// Vraie date AAAA-MM-JJ (le champ date du navigateur en donne une, mais une valeur mémorisée ou collée peut être fausse).
-// L'écran et la voix reçoivent la même valeur, ou aucune : sinon ils pourraient se contredire.
-function validDate(s: string): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
-  const d = new Date(`${s}T00:00:00Z`);
-  return Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s ? "" : s;
-}
-
-type Form = {
-  region: string;
-  crop: string;
-  soil: string;
-  system: string;
-  ago: string; // "" = inconnu
-  planting: string;
-};
-
-const DEFAULT_FORM: Form = { region: "kairouan", crop: "olivier", soil: "limoneux", system: "goutte", ago: "", planting: "" };
-
 export default function Home() {
-  const { lang, t, fmtDate, fmtNum, colon } = useLang();
-  const catalog = useCatalog();
-  const [form, setForm] = useState<Form>(DEFAULT_FORM);
+  const { t, fmtDate, fmtNum, colon } = useLang();
+
+  // Profil de l'agriculteur, gardé sur l'appareil. Région et culture n'ont AUCUNE valeur par défaut : elles sont obligatoires,
+  // et le questionnaire passe avant l'écoute (on n'écoute pas un conseil pour une région qu'on n'a pas dite).
+  const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [replay, setReplay] = useState(false);
+  const [attention, setAttention] = useState(0); // augmente quand on touche « écouter » trop tôt
+  const [now, setNow] = useState<number | null>(null);
   // Rejeu : plan calculé par le serveur (météo observée). Sinon : plan calculé SUR L'APPAREIL (usePlan, poste Téléphone),
   // donc qui continue de marcher hors connexion avec la dernière météo gardée.
-  const [replayPlan, setReplayPlan] = useState<Plan | null>(null);
-  const [replayLoading, setReplayLoading] = useState(false);
-  const [replayFailed, setReplayFailed] = useState(false);
-  const [replayBytes, setReplayBytes] = useState<number | null>(null);
+  const [replayRes, setReplayRes] = useState<{ key: string; plan?: Plan; bytes?: number; failed?: boolean } | null>(null);
   const [reload, setReload] = useState(0);
-  const [now, setNow] = useState<number | null>(null);
-  const local = usePlan({
-    regionId: form.region,
-    cropId: form.crop,
-    soil: form.soil as SoilName,
-    system: form.system as IrrigationSystem,
-    planting: validDate(form.planting) || undefined,
-    lastIrrigationDaysAgo: form.ago === "" ? undefined : Number(form.ago),
-  });
-  const plan = replay ? replayPlan : local.plan;
-  const loading = replay ? replayLoading : local.status === "loading";
-  const failed = replay ? replayFailed : local.status === "error";
-  const bytes = useMemo(
-    () => (replay ? replayBytes : local.plan ? new TextEncoder().encode(JSON.stringify(local.plan)).length : null),
-    [replay, replayBytes, local.plan],
+
+  const today = useMemo(() => (now == null ? null : tunisToday(new Date(now))), [now]);
+  // Le dernier arrosage est gardé comme une DATE ; « il y a N jours » est recalculé chaque jour (au-delà de 7 jours : à redemander).
+  const agoInfo = useMemo(() => (today ? agoFromDate(profile.agoDate, today) : { ago: "", stale: false }), [profile.agoDate, today]);
+
+  const chosen = !!profile.region && !!profile.crop;
+  const ready = replay || chosen;
+  const annual = CROPS.find((c) => c.id === profile.crop)?.kind === "annual";
+
+  // Ce qui part vraiment au calcul et à la voix. En rejeu : la scène de la vidéo (tomate, dernier arrosage 7 jours avant).
+  const eff = useMemo(
+    () =>
+      replay
+        ? { region: profile.region || "kairouan", crop: REPLAY_SCENE.crop, soil: profile.soil, system: profile.system, planting: "", ago: REPLAY_SCENE.ago }
+        : {
+            region: profile.region,
+            crop: profile.crop,
+            soil: profile.soil,
+            system: profile.system,
+            planting: annual ? validDate(profile.planting) : "", // la date de semis ne concerne que les cultures annuelles
+            ago: agoInfo.ago,
+          },
+    [replay, profile, annual, agoInfo.ago],
   );
 
-  // Le formulaire est gardé sur l'appareil : réglé une fois (par la personne ou par un technicien), il est là à chaque visite.
-  const [formLoaded, setFormLoaded] = useState(false);
+  const local = usePlan({
+    regionId: eff.region || "kairouan", // valeurs de repli : le résultat est ignoré tant que région et culture ne sont pas choisies
+    cropId: eff.crop || "olivier",
+    soil: eff.soil as SoilName,
+    system: eff.system as IrrigationSystem,
+    planting: eff.planting || undefined,
+    lastIrrigationDaysAgo: eff.ago === "" ? undefined : Number(eff.ago),
+  });
+  // Rejeu : la réponse est rangée sous la clé de la demande ; tant qu'il n'y en a pas pour la clé courante, on charge.
+  // (replayKey vient plus bas dans le fichier : il ne dépend que de eff et de reload.)
+  const effKey = JSON.stringify(eff);
+  const replayKey = `${effKey}#${reload}`;
+  const replayCur = replayRes && replayRes.key === replayKey ? replayRes : null;
+  const replayPlan = replayCur?.plan ?? replayRes?.plan ?? null; // le plan précédent reste affiché pendant le rechargement
+  const plan = !ready ? null : replay ? replayPlan : local.plan;
+  const loading = !ready ? false : replay ? replayCur == null : local.status === "loading";
+  const failed = !ready ? false : replay ? !!replayCur?.failed : local.status === "error";
+  const bytes = useMemo(
+    () => (replay ? (replayCur?.bytes ?? replayRes?.bytes ?? null) : local.plan ? new TextEncoder().encode(JSON.stringify(local.plan)).length : null),
+    [replay, replayCur, replayRes, local.plan],
+  );
+
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- lecture du stockage de l'appareil APRÈS l'hydratation : le serveur ne l'a pas, la lire avant créerait un écart serveur/navigateur */
-    try {
-      const saved = JSON.parse(localStorage.getItem("sakia-form") ?? "null") as Partial<Form> | null;
-      if (saved && typeof saved === "object") setForm((f) => ({ ...f, ...saved }));
-    } catch {}
-    setFormLoaded(true);
-    /* eslint-enable react-hooks/set-state-in-effect */
+    // Lu après l'hydratation : le serveur ne connaît pas le profil gardé sur l'appareil.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProfile(loadProfile());
+    setProfileLoaded(true);
   }, []);
   useEffect(() => {
-    if (!formLoaded || replay) return; // le rejeu (tomate, 7 jours) ne doit pas écraser le vrai profil
-    try {
-      localStorage.setItem("sakia-form", JSON.stringify(form));
-    } catch {}
-  }, [form, formLoaded, replay]);
+    if (profileLoaded) saveProfile(profile); // le rejeu ne touche jamais au profil : il a ses propres valeurs (eff)
+  }, [profile, profileLoaded]);
 
-  const set = (k: keyof Form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  // Scène de démo : tomate, dernier arrosage il y a 7 jours (le moteur y montre des irrigations).
-  // On garde le formulaire d'avant pour le restaurer au retour.
-  const [savedForm, setSavedForm] = useState<Form | null>(null);
-  const toggleReplay = () => {
-    if (!replay) {
-      setSavedForm(form);
-      setForm((f) => ({ ...f, crop: REPLAY_SCENE.crop, ago: REPLAY_SCENE.ago }));
-      setReplay(true);
-    } else {
-      if (savedForm) setForm(savedForm);
-      setReplay(false);
-    }
-  };
+  const onProfile = useCallback((patch: Partial<Profile>) => setProfile((p) => ({ ...p, ...patch })), []);
+  const onAgo = useCallback((v: string) => setProfile((p) => ({ ...p, agoDate: v === "" ? "" : dateFromAgo(v, tunisToday()) })), []);
+  const onLockedTap = useCallback(() => {
+    setAttention((n) => n + 1);
+    document.getElementById("field")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
 
   useEffect(() => {
     if (!replay) return;
     const ctrl = new AbortController();
-    const q = new URLSearchParams({ region: form.region, crop: form.crop, soil: form.soil, system: form.system });
-    if (form.ago !== "") q.set("ago", form.ago);
-    if (validDate(form.planting)) q.set("planting", validDate(form.planting));
+    const e = JSON.parse(effKey) as typeof eff;
+    const q = new URLSearchParams({ region: e.region, crop: e.crop, soil: e.soil, system: e.system });
+    if (e.ago !== "") q.set("ago", e.ago);
+    if (e.planting) q.set("planting", e.planting);
     q.set("asOf", REPLAY_DATE);
-    // début de chargement d'une nouvelle demande : l'écran passe en « chargement » et efface l'échec précédent
-    /* eslint-disable react-hooks/set-state-in-effect -- état de chargement posé au lancement de la requête, volontaire */
-    setReplayLoading(true);
-    setReplayFailed(false);
-    /* eslint-enable react-hooks/set-state-in-effect */
     fetch(`/api/plan?${q}`, { signal: ctrl.signal })
       .then(async (r) => {
         if (!r.ok) throw new Error(String(r.status));
         const text = await r.text();
         return { plan: JSON.parse(text) as Plan, bytes: new TextEncoder().encode(text).length };
       })
-      .then(({ plan: p, bytes: b }) => {
-        setReplayPlan(p);
-        setReplayBytes(b);
-        setReplayLoading(false);
-      })
-      .catch((e) => {
-        if (e.name === "AbortError") return;
-        setReplayFailed(true);
-        setReplayLoading(false);
+      .then(({ plan: p, bytes: b }) => setReplayRes({ key: replayKey, plan: p, bytes: b }))
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setReplayRes((prev) => ({ key: replayKey, plan: prev?.plan, bytes: prev?.bytes, failed: true }));
       });
     return () => ctrl.abort();
-  }, [form, replay, reload]);
+  }, [replay, effKey, replayKey]);
 
-  // Horloge pour « mis à jour il y a X heures » (rafraîchie chaque minute).
+  // Horloge pour « mis à jour il y a X heures » et pour « il y a N jours » (rafraîchie chaque minute).
   useEffect(() => {
-    // l'heure n'est lue qu'après l'hydratation (le serveur n'a pas la même horloge que l'appareil)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- première lecture de l'horloge de l'appareil, volontaire
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- l'heure se lit après l'hydratation (le serveur n'a pas la même)
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
@@ -160,7 +148,7 @@ export default function Home() {
 
   // Un seul repère <main> pour toute la page (héros compris) : un lecteur d'écran saute ainsi directement au contenu.
   return (
-    <main className="flex flex-1 flex-col">
+    <main className="sk-type flex flex-1 flex-col">
       {/* ---------- héros : l'aube sur Kairouan ---------- */}
       <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
         {/* téléphone et tablette : texte, puis scène */}
@@ -168,7 +156,7 @@ export default function Home() {
           <h1 className="font-display text-[2.2rem] font-bold leading-[1.04]">{t("heroTitle")}</h1>
           <p className="mt-3 max-w-md text-base leading-snug text-white/90">{t("heroSub")}</p>
           <div className="relative mt-3">
-            <HeroScene className={`pointer-events-none block h-auto w-full overflow-visible ${hot ? "sk-haze" : ""}`} />
+            <HeroScene hot={hot} className="pointer-events-none block w-full" />
           </div>
         </div>
 
@@ -179,21 +167,40 @@ export default function Home() {
             <p className="mt-4 max-w-xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-[1500px]">
-            <HeroPanorama className={`block h-auto w-full overflow-visible ${hot ? "sk-haze" : ""}`} />
+            <HeroPanorama hot={hot} className="block w-full" />
           </div>
         </div>
       </section>
 
-      {/* ---------- bouton d'écoute : la première chose à toucher ---------- */}
-      <div className="relative z-20 mx-auto -mt-12 w-full max-w-3xl px-4 md:-mt-6">
-        <ListenHero query={{ ...form, planting: validDate(form.planting), asOf: replay ? REPLAY_DATE : undefined }} plan={plan} />
+      {/* ---------- d'abord les questions (où, quelle culture, dernier arrosage), PUIS l'écoute ---------- */}
+      <div className="relative z-20 mx-auto -mt-12 w-full max-w-3xl space-y-4 px-4 md:-mt-6">
+        {!replay && (
+          <FieldQuestions
+            profile={profile}
+            ago={agoInfo.ago}
+            agoStale={agoInfo.stale}
+            loaded={profileLoaded && today !== null}
+            attention={attention}
+            onProfile={onProfile}
+            onAgo={onAgo}
+          />
+        )}
+        <ListenHero
+          key={JSON.stringify([eff.region, eff.crop, eff.ago, eff.soil, eff.system, eff.planting, replay])}
+          locked={!ready}
+          onLockedTap={onLockedTap}
+          query={{ region: eff.region, crop: eff.crop, ago: eff.ago, soil: eff.soil, system: eff.system, planting: eff.planting, asOf: replay ? REPLAY_DATE : undefined }}
+          plan={plan}
+        />
       </div>
+
+      <FiveDoors />
 
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
         {/* rejeu de la canicule : la scène de la vidéo */}
         <button
           type="button"
-          onClick={toggleReplay}
+          onClick={() => setReplay((r) => !r)}
           className={`sk-press flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-start shadow-md ${
             replay
               ? "border-2 border-sakia-green bg-white text-sakia-green"
@@ -220,14 +227,14 @@ export default function Home() {
           <p
             role="status"
             className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-              stale ? "border border-sakia-alert bg-sakia-alert-light text-sakia-alert" : "bg-sakia-green-light text-sakia-green"
+              stale ? "border border-sakia-alert bg-sakia-alert-light text-sakia-alert" : "bg-sakia-green-light text-sakia-green-deep"
             }`}
           >
             {stale ? `⚠ ${t("stale", { h: fmtAge(ageMin) })}` : ageMin < 2 ? t("freshJustNow") : t("fresh", { h: fmtAge(ageMin) })}
           </p>
         )}
 
-        {!replay && (local.status === "no-data" || local.status === "too-old") && (
+        {ready && !replay && (local.status === "no-data" || local.status === "too-old") && (
           <div role="alert" className="rounded-2xl border-4 border-sakia-alert bg-sakia-alert-light p-4 text-sakia-alert">
             <p className="text-lg font-extrabold">⚠ {t(local.status === "no-data" ? "noDataOffline" : "savedTooOld")}</p>
             <p className="mt-2 text-sm font-semibold">{t("askPerson")}</p>
@@ -250,101 +257,26 @@ export default function Home() {
 
       {/* ---------- pourquoi c'est important ---------- */}
       <div className="mt-8">
-        <StatBand crop={form.crop} />
+        <StatBand region={eff.region || "kairouan"} crop={eff.crop || "olivier"} example={!eff.region || !eff.crop} />
       </div>
 
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
-        {/* ---------- votre champ ---------- */}
-        <section aria-labelledby="field-title" className="space-y-4">
-          <Reveal>
-            <h2 id="field-title" className="font-display text-3xl font-bold text-sakia-green-deep">
-              {t("yourField")}
-            </h2>
-          </Reveal>
-
-          <Reveal
-            className={`rounded-3xl border-2 p-4 ${
-              form.ago === "" ? "border-sakia-alert bg-sakia-alert-light" : "border-sakia-green/40 bg-sakia-green-light"
-            }`}
-          >
-            <p className="text-lg font-bold text-sakia-ink">{t("lastWatering")}</p>
-            <p className={`mb-3 text-sm font-semibold ${form.ago === "" ? "text-sakia-alert" : "text-sakia-green"}`}>
-              {form.ago === "" ? `⚠ ${t("lastWateringMissing")}` : t("lastWateringSet")}
-            </p>
-            <Chips
-              label={t("lastWatering")}
-              value={form.ago}
-              tone={form.ago === "" ? "alert" : "green"}
-              onChange={set("ago")}
-              options={[
-                { value: "", label: t("unknown") },
-                { value: "0", label: t("today") },
-                ...[1, 2, 3, 4, 5, 6, 7].map((n) => ({ value: String(n), label: t("daysAgo", { n }) })),
-              ]}
-            />
-          </Reveal>
-
-          {/* deux questions seulement : la culture et le dernier arrosage ; le reste est replié */}
-          <Reveal delay={80} className="space-y-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <CropSelect catalog={catalog} value={form.crop} onChange={set("crop")} />
-
-            <details className="group rounded-2xl border border-sakia-sand-dark/70 bg-sakia-sand/40">
-              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-base font-bold text-sakia-ink [&::-webkit-details-marker]:hidden">
-                <span>
-                  {t("fieldMore")}
-                  <span className="mt-0.5 block text-sm font-medium text-sakia-brown">
-                    {catalog ? regionName(catalog.regions.find((r) => r.id === form.region) ?? { id: form.region, nameFr: form.region, nameAr: form.region }, lang) : form.region}
-                    {" · "}
-                    {t(form.soil)}
-                    {" · "}
-                    {t(form.system)}
-                  </span>
-                </span>
-                <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
-                  +
-                </span>
-              </summary>
-              <div className="grid grid-cols-1 gap-4 px-4 pb-4 pt-2 sm:grid-cols-2">
-                <Field label={t("region")}>
-                  <select className={selectClass} value={form.region} onChange={(e) => set("region")(e.target.value)}>
-                    {!catalog && <option value={form.region}>{form.region}</option>}
-                    {catalog?.regions.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {regionName(r, lang)}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label={t("planting")} hint={t("plantingHint")}>
-                  <input type="date" className={selectClass} value={form.planting} onChange={(e) => set("planting")(e.target.value)} />
-                </Field>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold text-sakia-brown">{t("soil")}</span>
-                  <Segmented
-                    label={t("soil")}
-                    value={form.soil}
-                    onChange={set("soil")}
-                    options={["sableux", "limoneux", "argileux"].map((s) => ({ value: s, label: t(s) }))}
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold text-sakia-brown">{t("system")}</span>
-                  <Segmented
-                    label={t("system")}
-                    value={form.system}
-                    onChange={set("system")}
-                    options={["goutte", "aspersion", "gravitaire"].map((s) => ({ value: s, label: t(s) }))}
-                  />
-                </div>
-              </div>
-            </details>
-          </Reveal>
-        </section>
-
         {/* ---------- signaler la pluie (solidarité locale) ---------- */}
-        {!replay && <RainReport regionId={form.region} />}
+        {!replay && chosen && <RainReport regionId={profile.region} />}
 
         {/* ---------- les 7 prochains jours ---------- */}
+        {!ready && (
+          <section aria-label={t("planTitle")}>
+            <div className="rounded-3xl border-2 border-dashed border-sakia-sand-dark bg-white/60 p-6 text-center">
+              <SproutIcon className="mx-auto h-12 w-12 text-sakia-green" />
+              <p className="mt-2 text-lg font-bold text-sakia-brown">{t("planEmpty")}</p>
+              <button type="button" onClick={onLockedTap} className="sk-press mt-3 min-h-12 rounded-full bg-sakia-green px-6 text-base font-bold text-white">
+                {t("choose")}
+              </button>
+            </div>
+          </section>
+        )}
+
         {plan && (
           <section aria-labelledby="plan-title" className={loading ? "space-y-4 opacity-60" : "space-y-4"} aria-busy={loading}>
             {plan.confidence.level !== "none" && (
@@ -361,17 +293,9 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-                  <Summary plan={plan} />
-                  <Reveal>
-                    <WaterTank days={plan.days} />
-                  </Reveal>
-                </div>
-                <ol className="grid gap-3 lg:grid-cols-2">
-                  {plan.days.map((d, i) => (
-                    <DayCard key={d.date} day={d} index={i} report={plan.localReports?.find((r) => r.date === d.date)} />
-                  ))}
-                </ol>
+                <Summary plan={plan} />
+                <Notes confidence={plan.confidence} />
+                <WeekView plan={plan} />
               </>
             )}
             <Assumptions items={plan.assumptions} />
@@ -398,7 +322,7 @@ export default function Home() {
           </section>
         )}
 
-        {loading && !plan && <p className="py-8 text-center text-base text-sakia-brown">{t("loading")}</p>}
+        {ready && loading && !plan && <p className="py-8 text-center text-base text-sakia-brown">{t("loading")}</p>}
       </div>
     </main>
   );
@@ -431,6 +355,30 @@ function AskPerson({ confidence }: { confidence: Confidence }) {
         </div>
       )}
       <p className="mt-3 text-sm font-semibold">{none ? t("noAdvice") : t("planStillReadable")}</p>
+    </section>
+  );
+}
+
+// Remarques sans alarme : pluie possible, très forte chaleur. Le conseil ne change pas (ce n'est pas un « pas sûr »), on le dit simplement.
+function Notes({ confidence }: { confidence: Confidence }) {
+  const { t } = useLang();
+  const notes = (confidence.notes ?? []).filter((n) => n === "uncertain_rain" || n === "extreme_heat");
+  if (notes.length === 0) return null;
+  return (
+    <section aria-label={t("noteTitle")} className="rounded-2xl bg-sakia-sand p-4 text-sakia-brown">
+      <h3 className="text-sm font-bold uppercase tracking-wide text-sakia-brown/80">{t("noteTitle")}</h3>
+      <ul className="mt-2 space-y-2">
+        {notes.map((n) => (
+          <li key={n} className="flex items-start gap-3 text-base font-semibold leading-snug">
+            {n === "extreme_heat" ? (
+              <ThermoIcon className="mt-0.5 h-6 w-6 shrink-0 text-sakia-sun-deep" />
+            ) : (
+              <RainIcon className="mt-0.5 h-6 w-6 shrink-0 text-sakia-water" />
+            )}
+            <span>{t(`note_${n}`)}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -474,78 +422,5 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
       <dt className="text-white/70">{label}</dt>
       <dd className="mt-0.5 text-lg font-extrabold">{value}</dd>
     </div>
-  );
-}
-
-function DayCard({ day, index, report }: { day: PlanDay; index: number; report?: LocalReport }) {
-  const { t, fmtDate, fmtNum, colon } = useLang();
-  const irrigate = day.action === "irriguer";
-  const rainy = day.rain >= 1;
-  const scorching = Number.isFinite(day.tmax) && day.tmax >= 40;
-  // Petits écrans (320-360 px) : pictogramme et pastille plus compacts, pour que la date et les mesures aient la place de respirer.
-  return (
-    <Reveal
-      as="li"
-      delay={Math.min(index, 4) * 70}
-      className={`overflow-hidden rounded-3xl border-2 ${
-        irrigate ? "border-sakia-water bg-sakia-water-light" : "border-transparent bg-white shadow-sm ring-1 ring-black/5"
-      }`}
-    >
-      <div className="flex items-center gap-3 p-4 sm:gap-4">
-        <span
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl sm:h-16 sm:w-16 ${
-            rainy ? "bg-sakia-water-light text-sakia-water" : scorching ? "bg-sakia-alert-light text-sakia-alert" : "bg-[#fdf1cf] text-sakia-sun-deep"
-          }`}
-        >
-          {rainy ? (
-            <RainIcon className="h-8 w-8 sm:h-10 sm:w-10" />
-          ) : (
-            <SunIcon className={`h-8 w-8 sm:h-10 sm:w-10 ${scorching ? "sk-spin" : ""}`} />
-          )}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-base font-bold leading-tight text-sakia-ink sm:text-lg">{fmtDate(day.date)}</p>
-          {/* Chaque mesure est insécable (« 42 °C » ne se coupe jamais) et passe à la ligne d'un bloc. L'unité °C est isolée
-              en lecture gauche-droite : sinon, en arabe, elle s'afficherait à l'envers (« C° 42 »). */}
-          <p className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-sakia-brown">
-            <span className="whitespace-nowrap">
-              {t("rain")} {fmtNum(day.rain, 1)}
-              {"\u00A0"}
-              {t("mm")}
-            </span>
-            {Number.isFinite(day.tmax) && (
-              <span className={`whitespace-nowrap ${scorching ? "font-bold text-sakia-alert" : ""}`}>
-                {t("tmax")} <bdi dir="ltr">{fmtNum(day.tmax)}&nbsp;°C</bdi>
-              </span>
-            )}
-          </p>
-        </div>
-        <span
-          className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-extrabold sm:gap-2 sm:px-4 sm:py-2 sm:text-base ${
-            irrigate ? "bg-sakia-water text-white" : "bg-sakia-sand text-sakia-brown"
-          }`}
-        >
-          {irrigate ? <DropIcon className="h-4 w-4 sm:h-5 sm:w-5" /> : <HandIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-          {irrigate ? t("irrigate") : t("wait")}
-        </span>
-      </div>
-      {irrigate && (
-        <p className="border-t border-sakia-water/20 bg-white/50 px-4 py-3 text-xl font-extrabold text-sakia-water-deep">
-          {t("dose")}
-          {colon}{" "}
-          {day.litersPerTree != null ? t("perTree", { n: fmtNum(day.litersPerTree) }) : t("perHa", { n: fmtNum(day.m3PerHa) })}
-          {day.litersPerTree != null && (
-            <span className="ms-2 text-sm font-medium text-sakia-brown">({t("perHa", { n: fmtNum(day.m3PerHa) })})</span>
-          )}
-        </p>
-      )}
-      {report && (
-        <p className="flex items-start gap-2 border-t border-sakia-water/20 bg-sakia-water-light/70 px-4 py-3 text-sm font-semibold leading-snug text-sakia-water-deep">
-          <RainIcon className="mt-0.5 h-5 w-5 shrink-0" />
-          {t("rainInPlan", { n: fmtNum(report.n), mm: fmtNum(report.medianMm, 1), model: fmtNum(report.modelMm, 1) })}
-        </p>
-      )}
-      {day.estimated && <p className="px-4 pb-3 text-xs font-semibold text-sakia-alert">{t("estimated")}</p>}
-    </Reveal>
   );
 }

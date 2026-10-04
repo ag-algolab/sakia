@@ -50,9 +50,6 @@ export type Strings = {
   whyTitle: string;
   why: string;
   audioSize: string; // {kb}
-  arabicNote: string;
-  koreanNote: string;
-  darijaNote: string;
   inclusionTitle: string;
   inclusion: string;
   justTitle: string;
@@ -91,6 +88,9 @@ export type Strings = {
   rainRule: string;
   // volet « Options » et texte complet
   options: string;
+  placeTitle: string;
+  choose: string;
+  placeNeed: string;
   fullText: string;
   // récompense : remercier les personnes qui signalent la pluie
   rewardThanks: string;
@@ -144,9 +144,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "Why a drawn presenter, not a video?",
     why: "The whole bulletin is one audio file of 130 to 200 KB. The presenter is drawn as vector graphics in your browser, and the mouth follows the loudness of the sound. A generated video would weigh tens of megabytes: too heavy for a weak mobile network. Small AI: small file, same message.",
     audioSize: "This bulletin: {kb} KB of audio",
-    arabicNote: "Arabic text: simple standard Arabic, to be validated by a Tunisian speaker. Tunisian dialect is not claimed.",
-    koreanNote: "Korean text: written by us, to be validated by a Korean speaker.",
-    darijaNote: "Tunisian Arabic (Darija): written by us in simple everyday words, avoiding Moroccan forms, and read by a voice with a Tunisian accent. To be validated by a Tunisian speaker: a few words may be off.",
     inclusionTitle: "Why Darija?",
     inclusion: "Many farmers around Kairouan cannot read, and speak Darija, not the standard Arabic of the news. A bulletin in standard Arabic would not reach them, so the first voice here is Tunisian Darija, then French, standard Arabic, English and Korean.",
     justTitle: "Just for you",
@@ -188,6 +185,9 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     rainErrInvalid: "The report was not accepted (day too old or invalid).",
     rainRule: "Anonymous: no name, no address. One report per person, per region and per day. When 3 or more different people agree for a day, their middle value replaces the forecast for that day.",
     options: "Options",
+    placeTitle: "Where are you, and what do you grow? The bulletin is about your fields.",
+    choose: "Choose…",
+    placeNeed: "Choose your region and your crop to hear your bulletin.",
     fullText: "Full text of the bulletin",
     rewardThanks: "Thank you, neighbour!",
     rewardCountOne: "You have helped on 1 day.",
@@ -238,9 +238,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "Pourquoi un présentateur dessiné, pas une vidéo ?",
     why: "Tout le bulletin tient dans un fichier audio de 130 à 200 Ko. Le présentateur est dessiné en vectoriel dans votre navigateur et sa bouche suit le volume du son. Une vidéo générée pèserait des dizaines de mégaoctets : trop lourd pour un réseau mobile faible. Petite IA : petit fichier, même message.",
     audioSize: "Ce bulletin : {kb} Ko d'audio",
-    arabicNote: "Texte arabe : arabe standard simple, à valider par un locuteur tunisien. Le dialecte tunisien n'est pas annoncé.",
-    koreanNote: "Texte coréen : écrit par nos soins, à valider par un locuteur coréen.",
-    darijaNote: "Arabe tunisien (darija) : écrit par nos soins en mots simples du quotidien, sans formes marocaines, et lu par une voix à accent tunisien. À valider par un locuteur tunisien : quelques mots peuvent être inexacts.",
     inclusionTitle: "Pourquoi la darija ?",
     inclusion: "Beaucoup d'agriculteurs autour de Kairouan ne savent pas lire et parlent la darija, pas l'arabe standard des journaux. Un bulletin en arabe standard ne les atteindrait pas : la première voix ici est donc la darija tunisienne, puis le français, l'arabe standard, l'anglais et le coréen.",
     justTitle: "Juste pour vous",
@@ -282,6 +279,9 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     rainErrInvalid: "Le signalement n'a pas été accepté (jour trop ancien ou invalide).",
     rainRule: "Anonyme : aucun nom, aucune adresse. Un seul signalement par personne, par région et par jour. Quand au moins 3 personnes différentes sont d'accord pour un jour, leur valeur médiane remplace la prévision pour ce jour.",
     options: "Options",
+    placeTitle: "Où êtes-vous et que cultivez-vous ? Le bulletin parle de vos champs.",
+    choose: "Choisir…",
+    placeNeed: "Choisissez votre région et votre culture pour entendre votre bulletin.",
     fullText: "Texte complet du bulletin",
     rewardThanks: "Merci, voisin !",
     rewardCountOne: "Vous avez aidé 1 jour.",
@@ -332,9 +332,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "لماذا مقدّم مرسوم وليس فيديو؟",
     why: "النشرة كلها ملف صوتي واحد بحجم بين 130 و200 كيلوبايت. المقدّم يُرسم برسومات متجهية داخل المتصفح، وفمه يتبع شدة الصوت. الفيديو المولَّد يزن عشرات الميغابايت: ثقيل جدا على شبكة هاتف محمول ضعيفة. ذكاء اصطناعي صغير: ملف صغير والرسالة نفسها.",
     audioSize: "هذه النشرة: {kb} كيلوبايت من الصوت",
-    arabicNote: "النص العربي: عربية فصحى مبسطة، بانتظار مراجعة شخص تونسي يتحدث العربية. لا ندّعي أنه بالدارجة التونسية.",
-    koreanNote: "النص الكوري: كتبناه بأنفسنا، بانتظار مراجعة شخص يتحدث الكورية.",
-    darijaNote: "الدارجة التونسية: كتبناها بأنفسنا بكلمات بسيطة من الحياة اليومية، دون صيغ مغربية، ويقرؤها صوت بلكنة تونسية. بانتظار مراجعة شخص تونسي: قد تكون بعض الكلمات غير دقيقة.",
     inclusionTitle: "لماذا الدارجة؟",
     inclusion: "كثير من الفلاحين حول القيروان لا يقرؤون ويتكلمون بالدارجة وليس بالفصحى التي تسمعونها في الأخبار. نشرة بالفصحى لن تصلهم، لذلك الصوت الأول هنا هو الدارجة التونسية، ثم الفرنسية والفصحى والإنجليزية والكورية.",
     justTitle: "خصيصا لكم",
@@ -376,6 +373,9 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     rainErrInvalid: "لم يُقبل البلاغ (يوم قديم أو غير صالح).",
     rainRule: "مجهول: لا اسم ولا عنوان. بلاغ واحد لكل شخص ولكل ولاية ولكل يوم. عندما يتفق ثلاثة أشخاص مختلفين أو أكثر على يوم ما، تعوّض قيمتهم الوسطى التوقعات لذلك اليوم.",
     options: "خيارات",
+    placeTitle: "أين أنتم وماذا تزرعون؟ النشرة تخص حقولكم.",
+    choose: "اختاروا…",
+    placeNeed: "اختاروا ولايتكم ومحصولكم لسماع نشرتكم.",
     fullText: "النص الكامل للنشرة",
     rewardThanks: "شكرا يا جار!",
     rewardCountOne: "ساعدتم في يوم واحد.",
@@ -426,9 +426,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "왜 영상이 아니라 그려진 진행자일까요?",
     why: "방송 전체가 130~200KB의 오디오 파일 하나입니다. 진행자는 브라우저에서 벡터 그래픽으로 그려지고, 입은 소리 크기를 따라 움직입니다. 생성형 영상은 수십 메가바이트라 느린 모바일 네트워크에는 너무 무겁습니다. 작은 AI: 작은 파일, 같은 메시지.",
     audioSize: "이 방송: 오디오 {kb}KB",
-    arabicNote: "아랍어 텍스트: 쉬운 현대 표준 아랍어이며 튀니지 원어민의 검토가 필요합니다. 튀니지 방언이라고 주장하지 않습니다.",
-    koreanNote: "한국어 텍스트: 저희가 작성했으며 한국어 원어민의 검토가 필요합니다.",
-    darijaNote: "튀니지 아랍어(다리자): 일상의 쉬운 단어로 직접 작성했고 모로코식 표현은 피했으며, 튀니지 억양의 음성이 읽습니다. 튀니지 원어민의 검토가 필요합니다. 일부 단어가 정확하지 않을 수 있습니다.",
     inclusionTitle: "왜 다리자인가요?",
     inclusion: "카이루안 주변에는 글을 읽지 못하는 농민이 많고, 이들은 뉴스의 표준 아랍어가 아니라 다리자를 씁니다. 표준 아랍어 방송으로는 이분들께 닿지 않으므로, 이곳의 첫 음성은 튀니지 다리자이며 그다음이 프랑스어, 표준 아랍어, 영어, 한국어입니다.",
     justTitle: "여러분을 위해",
@@ -470,6 +467,9 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     rainErrInvalid: "신고가 받아들여지지 않았습니다(너무 오래된 날짜이거나 올바르지 않음).",
     rainRule: "익명입니다: 이름도 주소도 없습니다. 사람마다, 지역마다, 하루에 한 번만 신고할 수 있습니다. 서로 다른 3명 이상이 같은 날에 동의하면 그 중간값이 그날의 예보를 대신합니다.",
     options: "옵션",
+    placeTitle: "어디에 계시고 무엇을 재배하시나요? 방송은 당신의 밭 이야기입니다.",
+    choose: "선택…",
+    placeNeed: "방송을 들으려면 지역과 작물을 선택해 주세요.",
     fullText: "방송 전체 텍스트",
     rewardThanks: "고맙습니다, 이웃님!",
     rewardCountOne: "1일 동안 도와주셨습니다.",
@@ -497,5 +497,8 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainBtn: "نزلت الشتا",
     rainAsk: "قدّاش نزلت الشتا عندكم؟",
     rewardThanks: "يعيشك يا جار!",
+    placeTitle: "وين تسكن، وشنوة تزرع؟ النشرة على أرضك.",
+    choose: "اختار…",
+    placeNeed: "اختار الولاية والزرع باش تسمع النشرة متاعك.",
   },
 };
