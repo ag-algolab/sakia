@@ -11,6 +11,9 @@ const SITE = process.env.SITE ?? "https://sakia-opal.vercel.app";
 const ROOT = path.resolve("videos/build/capture");
 const PROFILES = path.resolve(process.env.TEMP ?? ".", "sakia-capture-profiles");
 const only = process.argv.slice(2);
+// réponses du parcours (mêmes choix que la vidéo Telegram d'Anthony) : dernier arrosage à l'écran et touche de l'appel
+const LAST = process.env.DEMO_LAST ?? "Wed"; // il y a 4 jours (Telegram « 3-5 days ago »)
+const CALL_AGO_KEY = process.env.DEMO_CALL_KEY ?? "3"; // « il y a 3 à 5 jours »
 
 const hydrated = `(() => { const b = document.querySelector("button"); return !!b && Object.keys(b).some((k) => k.startsWith("__react")); })()`;
 
@@ -99,7 +102,7 @@ await clip("home", { profile: "demo", fresh: true }, async (c) => {
   await scrollTo(cdp, { text: "Your field", selector: "h2,h3,p,div", block: 0.12, durationMs: 1100 });
   await sleep(500);
   mark("questions");
-  await questionnaire(c, { last: "Fri" });
+  await questionnaire(c, { last: LAST });
   mark("continue");
   await tapText(cdp, { text: "Continue", exact: true }, log, { pauseBefore: 300 });
   await sleep(1400);
@@ -185,7 +188,7 @@ await clip("call", { profile: "call", fresh: true }, async ({ cdp, log, mark, re
   await key("2", 7600); // légumes
   await key("2", 12300); // piment
   const lastKey = Date.now();
-  await key("2", 1000); // arrosé hier ou avant-hier
+  await key(CALL_AGO_KEY, 1000); // dernier arrosage (même réponse que sur le site et Telegram)
   mark("advice");
   // le conseil parlé (gros fichier, ~90 Ko) lancé APRÈS la dernière touche doit avoir été lu jusqu'au bout
   // (la question « quand avez-vous arrosé ? » pèse aussi plus de 60 Ko : on ne s'arrête pas sur elle)
@@ -206,7 +209,7 @@ await clip("sms", { profile: "sms", fresh: true }, async (c) => {
   await scrollTo(cdp, { text: "Sign up for the morning SMS", selector: "h2,h3,p,div", block: 0.08, durationMs: 10 });
   await rec.start();
   mark("signup");
-  await questionnaire(c, { last: "Fri" });
+  await questionnaire(c, { last: LAST });
   await tapText(cdp, { text: "See the 6 a.m. SMS" }, log, { pauseBefore: 300 });
   await sleep(900);
   await frameOn(cdp, "SAKIA", 70, 1200); // le téléphone à touches entier
