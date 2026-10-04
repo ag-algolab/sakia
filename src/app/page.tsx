@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Assumptions from "@/components/ui/Assumptions";
+import { regionName } from "@/components/ui/catalog";
+import { moodOf } from "@/components/ui/Farmer";
+import type { DayMood } from "@/components/ui/Farmer";
 import FieldQuestions from "@/components/ui/FieldQuestions";
 import FiveDoors from "@/components/ui/FiveDoors";
 import HeroPanorama from "@/components/ui/HeroPanorama";
 import HeroScene from "@/components/ui/HeroScene";
-import { AlertIcon, RainIcon, SproutIcon, ThermoIcon, TunisiaFlagIcon } from "@/components/ui/icons";
+import { AlertIcon, RainIcon, RetryIcon, SproutIcon, SunIcon, ThermoIcon, TunisiaFlagIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
@@ -18,7 +21,8 @@ import StatBand from "@/components/ui/StatBand";
 import WeekView from "@/components/ui/WeekView";
 import { usePlan } from "@/components/phone/usePlan";
 import { CROPS } from "@/lib/crops";
-import type { Confidence, Plan } from "@/lib/plan";
+import type { Confidence, Plan, PlanDay } from "@/lib/plan";
+import { getRegion } from "@/lib/regions";
 import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
 
 // Les types viennent du moteur (import de type seulement : aucune logique dupliquée).
@@ -30,11 +34,37 @@ const STALE_AFTER_HOURS = 5;
 function CountryTag() {
   const { t } = useLang();
   return (
-    <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-black/20 py-1 ps-1.5 pe-3 text-sm font-semibold tracking-wide text-white/90 ring-1 ring-white/20">
+    <p className="inline-flex items-center gap-2 rounded-full bg-black/20 py-1 ps-1.5 pe-3 text-sm font-semibold tracking-wide text-white/90 ring-1 ring-white/20">
       <TunisiaFlagIcon className="h-4 w-6 rounded-[3px]" />
       {t("heroTag")}
     </p>
   );
+}
+
+// Le temps du jour, à côté du pays : « Kairouan · today · 28 °C ». C'est ce qui change d'un jour à l'autre (avec le paysage et
+// l'agriculteur, Farmer.tsx) : le site n'a plus l'air identique tous les jours. Rejeu : la date de la canicule à la place de « today ».
+function WeatherTag({ plan, day, mood, replay }: { plan: Plan | null; day: PlanDay | null; mood: DayMood; replay: boolean }) {
+  const { t, lang, fmtNum, fmtDate } = useLang();
+  const region = plan ? getRegion(plan.regionId) : undefined;
+  if (!plan || !region) return null;
+  const Icon = mood.sky === "rain" ? RainIcon : mood.sky === "heat" ? ThermoIcon : SunIcon;
+  const when = replay ? fmtDate(plan.today, { day: "numeric", month: "long" }) : t("today");
+  const temp = day && Number.isFinite(day.tmax) ? ` · ${fmtNum(Math.round(day.tmax))} °C` : "";
+  return (
+    <p className="inline-flex items-center gap-2 rounded-full bg-black/20 py-1 ps-2 pe-3 text-sm font-semibold text-white/90 ring-1 ring-white/20">
+      <Icon className="h-4 w-4 shrink-0" />
+      <span>
+        {regionName(region, lang)} · {when}
+        <span dir="ltr">{temp}</span>
+      </span>
+    </p>
+  );
+}
+
+// La journée du plan : le jour « aujourd'hui » du plan (ou le premier jour s'il manque).
+function todayOf(plan: Plan | null): PlanDay | null {
+  if (!plan) return null;
+  return plan.days.find((d) => d.date === plan.today) ?? plan.days[0] ?? null;
 }
 
 export default function Home() {
@@ -114,6 +144,13 @@ export default function Home() {
     setAttention((n) => n + 1);
     document.getElementById("field")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
+  // Rejeu de la canicule, aller et retour : on remonte en haut de page, là où tout change (ciel, agriculteur, réponse).
+  // Sans ça, on restait sur le bouton et on ne voyait pas ce qui avait changé (Anthony, 4 oct.).
+  const toggleReplay = useCallback(() => {
+    setReplay((r) => !r);
+    const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: still ? "auto" : "smooth" });
+  }, []);
 
   useEffect(() => {
     if (!replay) return;
@@ -156,32 +193,43 @@ export default function Home() {
   const ageMin = plan && now != null ? Math.max(0, (now - Date.parse(plan.dataFetchedAt)) / 60000) : null;
   const stale = ageMin != null && ageMin > STALE_AFTER_HOURS * 60;
 
-  const hot = replay;
+  // Le haut de page suit la météo du jour, celle du plan affiché (avant tout choix : le plan de repli, Kairouan, calculé sur
+  // l'appareil). L'agriculteur prend la houe seulement quand LE plan de la personne (région et culture choisies) dit d'arroser.
+  const heroPlan = replay ? replayPlan : local.plan;
+  const heroDay = todayOf(heroPlan);
+  const mood = moodOf(heroDay, replay, (replay || chosen) && heroDay?.action === "irriguer");
+  const sky = mood.sky === "heat" ? "sk-hero-heat" : mood.sky === "rain" ? "sk-hero-rain" : "sk-hero-sky";
+  const tags = (
+    <div className="mb-3 flex flex-wrap items-center gap-2">
+      <CountryTag />
+      <WeatherTag plan={heroPlan} day={heroDay} mood={mood} replay={replay} />
+    </div>
+  );
 
   // Un seul repère <main> pour toute la page (héros compris) : un lecteur d'écran saute ainsi directement au contenu.
   return (
     <main className="sk-type flex flex-1 flex-col">
-      {/* ---------- héros : l'aube sur Kairouan ---------- */}
-      <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
+      {/* ---------- héros : Kairouan, avec le temps du jour ---------- */}
+      <section className={`${sky} relative overflow-hidden text-white transition-colors`}>
         {/* téléphone et tablette : texte, puis scène */}
         <div className="relative mx-auto max-w-3xl px-4 pt-6 md:hidden">
-          <CountryTag />
+          {tags}
           <h1 className="font-display text-[2.2rem] font-bold leading-[1.04]">{t("heroTitle")}</h1>
           <p className="mt-3 max-w-md text-base leading-snug text-white/90">{t("heroSub")}</p>
           <div className="relative mt-3">
-            <HeroScene hot={hot} className="pointer-events-none block w-full" />
+            <HeroScene mood={mood} className="pointer-events-none block w-full" />
           </div>
         </div>
 
         {/* ordinateur : panorama pleine largeur, texte posé sur le ciel */}
         <div className="relative hidden md:block">
           <div className="relative z-10 mx-auto max-w-5xl px-6 pt-12" style={{ paddingBottom: "min(19vw, 300px)" }}>
-            <CountryTag />
+            {tags}
             <h1 className="font-display text-6xl font-bold leading-[1.03]">{t("heroTitle")}</h1>
             <p className="mt-4 max-w-4xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-[1500px]">
-            <HeroPanorama hot={hot} className="block w-full" />
+            <HeroPanorama mood={mood} className="block w-full" />
           </div>
         </div>
       </section>
@@ -212,20 +260,36 @@ export default function Home() {
       <SpeedBand />
 
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-5 px-4 pt-5">
-        {/* rejeu de la canicule : la scène de la vidéo */}
+        {/* rejeu de la canicule : la scène de la vidéo. Un vrai bouton qui se voit : rond « lecture » à droite qui pulse, la main au
+            survol, le bouton qui se soulève (Anthony, 4 oct. : « on ne voit pas qu'elle est cliquable »). */}
         <button
           type="button"
-          onClick={() => setReplay((r) => !r)}
-          className={`sk-press flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-start shadow-md ${
+          onClick={toggleReplay}
+          className={`group sk-press flex min-h-16 w-full items-center gap-3 rounded-2xl px-4 py-3 text-start shadow-md transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sakia-sun ${
             replay
               ? "border-2 border-sakia-green bg-white text-sakia-green"
-              : "bg-gradient-to-r from-[#a63d16] to-[#e0832a] text-white"
+              : "bg-gradient-to-r from-[#a63d16] to-[#e0832a] text-white hover:brightness-110"
           }`}
         >
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/10">
             <ThermoIcon className="h-6 w-6" />
           </span>
-          <span className="font-display text-base font-bold leading-tight sm:text-lg">{replay ? t("replayBack") : t("replayButton")}</span>
+          <span className="min-w-0 flex-1 font-display text-base font-bold leading-tight sm:text-lg">{replay ? t("replayBack") : t("replayButton")}</span>
+          <span
+            aria-hidden
+            className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-md transition-transform group-hover:scale-110 ${
+              replay ? "bg-sakia-green text-white" : "bg-white text-[#a63d16]"
+            }`}
+          >
+            {!replay && <span className="sk-ripple absolute inset-0 rounded-full bg-white" />}
+            {replay ? (
+              <RetryIcon className="relative h-5 w-5" />
+            ) : (
+              <svg viewBox="0 0 24 24" className="relative ml-0.5 h-5 w-5" fill="currentColor">
+                <path d="M7 4.5v15l12.5-7.5z" />
+              </svg>
+            )}
+          </span>
         </button>
 
         {replay && (
