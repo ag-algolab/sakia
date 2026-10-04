@@ -5,7 +5,7 @@
 // Lancer : node --env-file=.env.local scripts/video/tts-vo.mjs <demo|tech> <voice_id> [modèle] [--only=8,9] [--render]
 // --only : ne refait que ces phrases (numéros à partir de 0) ; les autres gardent exactement leur prise précédente.
 // Sortie : videos/build/vo/<demo|tech>-<voix>.wav et videos/build/takes/<demo|tech>-vo.json
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -26,19 +26,23 @@ const SETTINGS = NEW_MODEL ? { stability: Number(process.env.TTS_STABILITY ?? 0.
 const GAP = 0.5; // silence entre deux phrases dans le fichier mis bout à bout
 const fileOf = (i) => path.join(dir, `${String(i).padStart(2, "0")}.mp3`);
 const probe = (file) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]).toString().trim());
-const ONLY = (process.argv.find((a) => a.startsWith("--only=")) ?? "").slice(7).split(",").filter(Boolean).map(Number);
-// phrases gardées : début et fin de la parole retrouvés dans les prises précédentes (mêmes fichiers, donc mêmes durées)
+// --only=8,9 : ne refait que ces phrases ; --only=none : n'en refait aucune (recolle seulement les fichiers existants)
+const onlyArg = (process.argv.find((a) => a.startsWith("--only=")) ?? "").slice(7);
+const ONLY = onlyArg === "none" ? [-1] : onlyArg.split(",").filter(Boolean).map(Number);
+// phrases gardées : début et fin de la parole mesurés dans le son lui-même (silences de tête et de queue), sans dépendre
+// d'un ancien fichier de repères
+const speechBounds = (file) => {
+  const dur = probe(file);
+  const out = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", file, "-af", "silencedetect=n=-42dB:d=0.06", "-f", "null", "-"], { encoding: "utf8" }).stderr ?? "";
+  const starts = [...out.matchAll(/silence_start: ([\d.]+)/g)].map((m) => Number(m[1]));
+  const ends = [...out.matchAll(/silence_end: ([\d.]+)/g)].map((m) => Number(m[1]));
+  const first = starts.length && starts[0] < 0.02 && ends.length ? ends[0] : 0;
+  const lastStart = starts.at(-1);
+  const last = lastStart != null && lastStart > first && (ends.length < starts.length || (ends.at(-1) ?? 0) >= dur - 0.02) ? lastStart : dur;
+  return { first, last, dur };
+};
 const kept = [];
-if (ONLY.length) {
-  const prev = JSON.parse(readFileSync(`videos/build/takes/${which}-vo.json`, "utf8"));
-  let off = 0;
-  for (const [i] of VO_LINES.entries()) {
-    const dur = probe(fileOf(i));
-    const tk = prev.takes.find((t) => t.line === i);
-    kept[i] = { first: tk.start - off + 0.04, last: tk.end - off - 0.12, dur };
-    off += dur + GAP;
-  }
-}
+if (ONLY.length) for (const [i] of VO_LINES.entries()) if (!ONLY.includes(i)) kept[i] = speechBounds(fileOf(i));
 
 let spent = 0;
 const parts = [];

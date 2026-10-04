@@ -17,7 +17,8 @@ const FILM = "C:/Users/antho/Videos/sakia-film";
 // ---------------------------------------------------------------- la voix off
 export const VO_LINES = [
   "Meet Noor, a farmer near Kairouan, Tunisia.",
-  "Like more than one in four here, Noor can't read.",
+  // ne pas savoir lire, ET l'information qui n'arrive pas au champ (décision d'Anthony) ; l'écran montre le bulletin barré
+  "Over one in four here can't read, and written bulletins don't reach the field.",
   "And the aquifer is pumped at more than twice what it renews.",
   "Every morning: irrigate today, or wait?",
   "Sakia answers.",
@@ -92,7 +93,7 @@ function plan() {
   scene("noor", Math.max(3.6, 0.3 + v[0] + 0.25));
   scene("read", Math.max(3.4, 0.15 + v[1] + 0.25));
   scene("aquifer", Math.max(3.4, 0.15 + v[2] + 0.25));
-  scene("question", Math.max(3.4, 0.15 + v[3] + 0.45));
+  scene("question", Math.max(3.4, 0.15 + v[3] + 0.35));
   // le site, un seul plan : l'accueil (« Sakia answers »), les trois touches, « Continue » jusqu'à la voix, la voix, le plan
   const heroLen = Math.max(1.3, 0.2 + v[4] + 0.15);
   const chooseAt = heroLen;
@@ -105,13 +106,13 @@ function plan() {
   scene("web", planAt + v[7] + 0.5, { heroLen, chooseAt, listenAt, listenLen, vo6At, appVoiceAt, planAt });
   // les quatre autres téléphones, côte à côte : chacun arrive quand la voix le nomme, et reste
   for (const [id, i] of [["app", 8], ["telegram", 9], ["call", 10], ["sms", 11]]) scene(id, Math.max(flex.panel, 0.15 + v[i] + 0.6));
-  scene("unsure", Math.max(3.6, 0.15 + v[12] + 0.4));
-  scene("proof", Math.max(4.6, 0.15 + v[13] + 0.5));
-  scene("end", Math.max(3.0, 0.3 + v[14] + 0.8));
+  scene("unsure", Math.max(3.6, 0.15 + v[12] + 0.3));
+  scene("proof", Math.max(4.6, 0.15 + v[13] + 0.4));
+  scene("end", Math.max(3.0, 0.3 + v[14] + 0.6));
   return { S, total: t, v };
 }
 let P = plan();
-for (const shrink of [() => (flex.appVoice = 2.2), () => (flex.panel = 2.3), () => (flex.chRate = 1.35), () => (flex.tempo = 1.04), () => (flex.tempo = 1.08)]) {
+for (const shrink of [() => (flex.appVoice = 2.2), () => (flex.panel = 2.3), () => (flex.chRate = 1.35), () => (flex.appVoice = 2.0), () => (flex.tempo = 1.04), () => (flex.tempo = 1.08)]) {
   if (P.total <= MAXLEN) break;
   shrink();
   P = plan();
@@ -197,11 +198,13 @@ const filmLayer = (media, start, end, from, to) => ({
 // un téléphone qui joue sa séquence filmée jusqu'au bout de son temps à l'écran (aucune image tenue)
 const fill = (from, to, span) => ({ from, to, rate: (to - from) / span });
 
-// 27,9 % : le film va de 0,3 s à READ_TO ; le 4e personnage devient jaune à 2,53 s (film), au moment où la voix dit « Noor »
+// 27,9 % : le film joue à vitesse normale et finit sur le bulletin barré et « A written bulletin does not reach them. »
+// (vers 4,1 s du chapitre), qui reste lisible plus d'une seconde ; le 4e personnage devient jaune à 2,53 s
 const READ_SPAN = E("read") + 0.4 - (A("read") - 0.15);
-const READ_RATE = (2.53 - 0.3) / Math.min(READ_SPAN - 0.8, VO_AT[1] + 0.65 * v[1] - (A("read") - 0.15));
-const READ_TO = 0.3 + READ_SPAN * READ_RATE;
-const READ_YELLOW = A("read") - 0.15 + (2.53 - 0.3) / READ_RATE;
+const READ_TO = Math.min(6.4, Math.max(5.4, 0.3 + READ_SPAN));
+const READ_FROM = Math.max(0, READ_TO - READ_SPAN);
+const READ_RATE = (READ_TO - READ_FROM) / READ_SPAN;
+const READ_YELLOW = A("read") - 0.15 + (2.53 - READ_FROM) / READ_RATE;
 
 const voEvents = vo
   ? vo.takes
@@ -231,7 +234,7 @@ export default {
     .glabel i{font-style:normal;font-size:26px}
     .glabel em{font-style:normal;font:800 15px Geist,sans-serif;letter-spacing:.08em;padding:5px 10px;border-radius:999px}
     .glabel em.r{background:#2f9a5a;color:#fff}.glabel em.s{background:#f2b33d;color:#2a1d05}
-    .noor-tag{position:absolute;left:1740px;top:418px;transform:translateX(-50%);padding:10px 26px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 40px Fraunces,serif;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+    .noor-tag{position:absolute;left:1740px;top:122px;transform:translateX(-50%);padding:10px 26px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 40px Fraunces,serif;box-shadow:0 12px 30px rgba(0,0,0,.4)}
     .pr-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
     .pr-tag{font:800 26px Geist,sans-serif;letter-spacing:.12em;color:#2a1d05;background:#f2b33d;padding:10px 22px;border-radius:999px}
     .pr-big{font:900 230px/1 Fraunces,serif;color:#f2b33d;margin-top:34px;letter-spacing:-.02em}
@@ -249,10 +252,10 @@ export default {
     // ---------------------------------------------------------------- 1. le problème : chapitres du film, tenus sur leur image clé
     // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage devenu jaune ; « 230 % » ; « Irrigate today… or wait? »,
     // pris après la disparition du bloc « Meet Noor » pour qu'il ne repasse pas pendant le fondu)
-    // (ralentis : « Meet Noor. » puis ses deux premières lignes ; 27,9 % jusqu'au bulletin barré ; 230 % avant la phrase suivante ;
-    // la question jusqu'à la fin du chapitre)
-    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 5.45),
-    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, READ_TO),
+    // (« Meet Noor. » un peu ralenti, le soleil qui se lève ; 27,9 % jusqu'au bulletin barré, à vitesse normale ; 230 % avant la
+    // phrase suivante ; la question jusqu'à la fin du chapitre)
+    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 2.85 + 0.72 * (E("noor") + 0.4)),
+    filmLayer("read", A("read") - 0.15, E("read") + 0.4, READ_FROM, READ_TO),
     // le personnage devenu jaune, c'est Noor : son nom surgit dessous à ce moment-là
     { type: "html", start: READ_YELLOW, end: E("read") + 0.3, fx: "none", fadeIn: 0.01, fadeOut: 0.3, html: `<div class="noor-tag" data-at="0" data-fx="pop" data-rot="-6">Noor</div>` },
     filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 4.05),
