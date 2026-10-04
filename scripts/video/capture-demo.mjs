@@ -171,6 +171,8 @@ await clip("notsure", { profile: "notsure", fresh: true }, async (c) => {
 await clip("call", { profile: "call", fresh: true }, async ({ cdp, log, mark, rec }) => {
   await goto(cdp, `${SITE}/call`);
   await waitFor(cdp, hydrated, 30000);
+  // sans « ancrage du défilement » : quand les sous-titres grandissent, la page ne descend plus (le haut de l'écran restait coupé)
+  await cdp.eval(`(() => { const s = document.createElement("style"); s.textContent = "*{overflow-anchor:none !important}"; document.head.appendChild(s); return true; })()`);
   await sleep(1500);
   const key = async (k, wait) => {
     await tapText(cdp, { selector: "button", text: k, exact: true, scroll: false }, log, { pauseBefore: 200 });
@@ -182,10 +184,11 @@ await clip("call", { profile: "call", fresh: true }, async ({ cdp, log, mark, re
   await rec.start();
   mark("phone");
   await sleep(1200);
-  await tapText(cdp, { text: "Call Sakia" }, log, { pauseBefore: 300 });
+  // sans défilement : sinon la page descend pour centrer le bouton et le haut du téléphone (les sous-titres) sort de l'écran
+  await tapText(cdp, { text: "Call Sakia", scroll: false }, log, { pauseBefore: 300 });
   mark("call");
   await sleep(6300);
-  await key("2", 9300); // arabe à l'accent tunisien, sous-titres anglais
+  await key("3", 9300); // arabe à l'accent tunisien, sous-titres anglais (menu : 1 anglais, 2 français, 3 arabe)
   await key("1", 7800); // Kairouan
   await key("2", 7600); // légumes
   await key("2", 12300); // piment

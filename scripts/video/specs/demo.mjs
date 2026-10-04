@@ -1,9 +1,11 @@
 // Partition de la vidéo « Product demo » (≤ 60 s), écrite comme un PITCH calé sur le barème Banque mondiale
 // (docs/WB-EXIGENCES.md) : le problème (Noor ne lit pas, la nappe est surexploitée), la solution qui marche de bout en bout
-// (le vrai site, filmé, en un seul plan continu), la langue locale nommée, la même réponse par quatre autres chemins dont un
+// (le vrai site, filmé, en un seul plan continu), la langue locale nommée, la même réponse sur quatre autres téléphones dont un
 // SANS RÉSEAU, le garde-fou « pas sûr : demander à une personne » (éliminatoire), la preuve chiffrée (simulation), la fin.
-// Visuels : chapitres du film /story (problème, preuve), séquences filmées du vrai site, vidéo Telegram d'Anthony.
-// La partition se cale sur la voix off (videos/build/takes/demo-vo.json, tts-vo.mjs). Rendu : node scripts/video/compose.mjs scripts/video/specs/demo.mjs
+// Règle d'Anthony (4 oct., 09 h 20) : peu de choses à l'écran, chacune assez longtemps pour être vue ; jamais de téléphone
+// coupé par un zoom. Visuels : chapitres du film /story (tenus sur leur image clé), séquences filmées du vrai site, vidéo
+// Telegram d'Anthony. La partition se cale sur la voix off (videos/build/takes/demo-vo.json, tts-vo.mjs).
+// Rendu : node scripts/video/compose.mjs scripts/video/specs/demo.mjs
 import { existsSync, readFileSync, statSync } from "node:fs";
 
 const X = 150; // colonne des textes
@@ -39,9 +41,9 @@ const voDur = VO_LINES.map((line, i) => {
   return tk ? tk.end - tk.start : line.split(/\s+/).length / 2.4 + 0.3;
 });
 
-// vidéo Telegram d'Anthony : plan à 15,6 s
+// vidéo Telegram d'Anthony (4 oct., 07:24) : question « dernier arrosage » à 11,5 s, plan à 15,6 s, « Voice bulletin » touché
+// à 18 s, message vocal arrivé à 26 s puis lu
 const TG = ["C:/Users/antho/Downloads/telegram.mp4", "C:/Users/antho/Videos/sakia-film/rushes/telegram.mp4"].find((f) => existsSync(f));
-const TG_PLAN = 15.6;
 
 // ---------------------------------------------------------------- morceaux filmés du site (repères, touches, sons)
 const meta = (clip) => {
@@ -63,13 +65,12 @@ const HOME_VOICE = HOME.audio.find((a) => a.file) ?? { t: HOME.marks.listen + 1.
 const HERO_TO = 8.04, Q_FROM = 9.294;
 if (!HOME.capturedAt?.startsWith("2026-10-04T07:04")) console.log("ATTENTION : nouvelle prise « home » : revérifier HERO_TO / Q_FROM (raccord du défilement)");
 const CH_TO = HOME.taps[5] + 0.3; // « Continue » touché
-const ADV = CALL.audio.reduce((best, a) => (!best || a.size > best.size ? a : best), null);
-const ADV_JSON = existsSync("videos/build/call-advice-cache.json") ? JSON.parse(readFileSync("videos/build/call-advice-cache.json", "utf8")) : null;
-const ADV_LINE = ADV_JSON?.lines?.find((l) => l.id === "advice");
-const ADV_FROM = (ADV_LINE?.startMs ?? 9760) / 1000;
+// appel : la question « quand avez-vous arrosé ? », la touche 3, puis « Irrigation advice for Kairouan, crop: Pepper. » ;
+// on s'arrête avant le chiffre (la tranche « 3 à 5 jours » compte 5 jours à l'appel, 4 jours sur les autres canaux)
+const CALL_KEY = CALL.taps.at(-1);
 
 // ---------------------------------------------------------------- scènes (durées calées sur la voix)
-const flex = { appVoice: 2.6, panel: 2.5, tempo: 1.0, chRate: 1.4 };
+const flex = { appVoice: 2.6, panel: 2.5, tempo: 1.0, chRate: 1.25 };
 function plan() {
   const v = voDur.map((d) => d / flex.tempo);
   const S = {};
@@ -92,7 +93,7 @@ function plan() {
   const listenLen = appVoiceAt - listenAt;
   const planAt = appVoiceAt + flex.appVoice;
   scene("web", planAt + v[7] + 0.5, { heroLen, chooseAt, listenAt, listenLen, vo6At, appVoiceAt, planAt });
-  // les quatre autres chemins, un téléphone après l'autre
+  // les quatre autres téléphones, côte à côte : chacun arrive quand la voix le nomme, et reste
   for (const [id, i] of [["app", 8], ["telegram", 9], ["call", 10], ["sms", 11]]) scene(id, Math.max(flex.panel, 0.15 + v[i] + 0.6));
   scene("unsure", Math.max(3.6, 0.15 + v[12] + 0.4));
   scene("proof", Math.max(4.6, 0.15 + v[13] + 0.5));
@@ -100,7 +101,7 @@ function plan() {
   return { S, total: t, v };
 }
 let P = plan();
-for (const shrink of [() => (flex.chRate = 1.5), () => (flex.appVoice = 2.0), () => (flex.panel = 2.2), () => (flex.tempo = 1.04), () => (flex.tempo = 1.08)]) {
+for (const shrink of [() => (flex.appVoice = 2.2), () => (flex.panel = 2.3), () => (flex.chRate = 1.35), () => (flex.tempo = 1.04), () => (flex.tempo = 1.08)]) {
   if (P.total <= MAXLEN) break;
   shrink();
   P = plan();
@@ -144,25 +145,31 @@ const STEPS = [
   [HOME.taps[4], "3", "Last watered: 4 days ago"],
 ];
 
-// d'un chemin à l'autre, le téléphone glisse (entre par la droite, sort par la gauche), toujours au même endroit ;
-// les deux bougent ensemble (même fenêtre de 0,45 s) : il y a toujours un téléphone à l'écran
-const SW0 = 0.3, SW1 = 0.15;
-const swipeIn = (id) => [[A(id) - SW0, PHONE.x + 900], [A(id) + SW1, PHONE.x]];
-const swipeOut = (id) => [[E(id) - SW0, PHONE.x], [E(id) + SW1, PHONE.x - 1500]];
-const swipe = (id) => ({ x: [...swipeIn(id), ...swipeOut(id)] });
-const WAYS = [
-  ["web", "🌐", "Website"],
-  ["app", "📲", "App"],
-  ["telegram", "✈️", "Telegram"],
-  ["call", "📞", "Call"],
-  ["sms", "💬", "SMS"],
+// ---------------------------------------------------------------- les quatre téléphones, côte à côte, entiers (aucun zoom)
+const GRID = { y: 600, scale: 0.84, xs: [255, 725, 1195, 1665] };
+const G_END = E("sms"); // tous restent jusqu'à la fin de la scène
+const gridPhone = (i, id, extra) => ({ type: "phone", start: A(id), end: G_END + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", x: GRID.xs[i], y: GRID.y, scale: GRID.scale, ...extra });
+const GRID_LABELS = [
+  ["app", "📲", "App, no network", "REAL"],
+  ["telegram", "✈️", "Telegram", "REAL"],
+  ["call", "📞", "Phone call", "SIMULATED"],
+  ["sms", "💬", "SMS", "SIMULATED"],
 ];
-const bar = (active) =>
-  `<div class="waybar">${WAYS.map(([id, ic, label], i) => `<span class="${id === active ? "on" : i < WAYS.findIndex((w) => w[0] === active) ? "done" : ""}"><i>${ic}</i>${label}</span>`).join("")}</div>`;
-const barLayer = (active, start, end) => ({ type: "html", start, end, fx: "none", fadeIn: 0.2, fadeOut: 0.15, html: bar(active) });
-// un chapitre du film en plein écran ; le suivant s'ouvre par-dessus
-const filmLayer = (media, start, end, from, rate = 1) => ({ type: "video", start, end, fadeIn: 0.35, fadeOut: 0.01, x: 0, y: 0, w: 1920, h: 1080, segments: [{ at: start, media, from, to: from + (end - start) * rate + 0.5, rate }] });
-const NOOR_Q = 7.7; // dans 01-meet-noor : « Irrigate today… or wait? » remplace « Meet Noor. » (chapitre de 11,0 s)
+// Telegram : le dernier arrosage choisi, le plan, « Voice bulletin », le message vocal qui arrive et se lit (accéléré, sans saute)
+const TG_LEN = G_END - A("telegram");
+const TG_V0 = 2.9, TG_W = 1.6; // message vocal (25,5 → 29,5 s à ×1,4) ; attente « sending audio » (19 → 25,5 s à ×4)
+const tgSegs = [
+  { at: A("telegram"), media: "tg", from: 11.5, to: 19.0, rate: 7.5 / Math.max(1.5, TG_LEN - TG_V0 - TG_W) },
+  { at: A("telegram") + Math.max(1.5, TG_LEN - TG_V0 - TG_W), media: "tg", from: 19.0, to: 25.5, rate: 6.5 / TG_W, xfade: 0.01 },
+  { at: A("telegram") + Math.max(1.5, TG_LEN - TG_V0 - TG_W) + TG_W, media: "tg", from: 25.5, to: 29.5, rate: 4.0 / TG_V0, xfade: 0.01 },
+];
+
+// un chapitre du film en plein écran, joué jusqu'à son image clé puis tenu (moins de texte à lire), avec une lente avancée
+const filmLayer = (media, start, end, from, hold, origin) => ({
+  type: "video", start, end, fadeIn: 0.35, fadeOut: 0.01, x: 0, y: 0, w: 1920, h: 1080, origin,
+  zoom: [[start, 1], [end, 1.05]],
+  segments: [{ at: start, media, from, to: hold }],
+});
 
 const voEvents = vo
   ? vo.takes
@@ -178,43 +185,42 @@ export default {
   duration: Math.round(P.total * 100) / 100,
   css: `
     .end-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-    .end-logo{width:150px;height:150px;color:#f4efe6;margin-bottom:26px}
+    .end-logo{width:170px;height:170px;color:#f4efe6;margin-bottom:28px}
     .end-logo svg{width:100%;height:100%}
-    .end-name{font:900 120px/1 Fraunces,serif;letter-spacing:-.02em;color:#fff}
-    .end-tag{font:800 64px/1.1 Fraunces,serif;color:#f2b33d;margin-top:18px}
-    .end-doors{font:600 38px/1.35 Geist,sans-serif;color:#d6e6d2;margin-top:34px;max-width:1300px}
-    .end-url{font:700 34px Geist,sans-serif;color:#fff;margin-top:40px;padding:14px 30px;border-radius:999px;background:rgba(255,255,255,.1)}
-    .end-small{font:500 22px/1.4 Geist,sans-serif;color:rgba(244,239,230,.7);margin-top:34px;max-width:1250px}
-    .waybar{position:absolute;left:${X}px;top:150px;display:flex;gap:10px}
-    .waybar span{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:2px solid rgba(255,255,255,.22);color:rgba(244,239,230,.55);font:700 21px Geist,sans-serif;white-space:nowrap}
-    .waybar span i{font-style:normal;font-size:20px}
-    .waybar span.done{color:rgba(244,239,230,.75);border-color:rgba(242,179,61,.5)}
-    .waybar span.on{background:#f4efe6;border-color:#f4efe6;color:#12301f;transform:scale(1.08)}
+    .end-name{font:900 132px/1 Fraunces,serif;letter-spacing:-.02em;color:#fff}
+    .end-tag{font:800 72px/1.1 Fraunces,serif;color:#f2b33d;margin-top:20px}
+    .end-url{font:700 36px Geist,sans-serif;color:#fff;margin-top:48px;padding:14px 32px;border-radius:999px;background:rgba(255,255,255,.1)}
+    .end-small{font:500 22px/1.4 Geist,sans-serif;color:rgba(244,239,230,.7);margin-top:40px;max-width:1300px}
     .keys{position:absolute;left:${X}px;top:520px;width:${W}px;display:flex;flex-direction:column;gap:12px}
     .keys span{display:inline-flex;align-self:flex-start;align-items:center;gap:14px;padding:12px 22px;border-radius:18px;background:rgba(255,255,255,.95);color:#14231a;font:800 32px Geist,sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.3);transform-origin:left center}
     .keys span b{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:12px;background:#12301f;color:#fff;font:900 28px Geist,sans-serif}
     .lang{position:absolute;left:${X}px;top:520px;display:inline-flex;align-items:center;gap:14px;padding:14px 26px;border-radius:20px;background:#f2b33d;color:#2a1d05;font:800 34px Geist,sans-serif;box-shadow:0 14px 32px rgba(0,0,0,.35);transform-origin:left center}
-    .plane{position:absolute;left:${PHONE.x + 170}px;top:${PHONE.y - 470}px;display:flex;align-items:center;gap:12px;padding:12px 22px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 26px Geist,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    .note.tgtag{padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font:700 20px Geist,sans-serif;width:auto}
+    .glabel{position:absolute;top:118px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;white-space:nowrap;font:800 26px Geist,sans-serif;color:#fff}
+    .glabel i{font-style:normal;font-size:26px}
+    .glabel em{font-style:normal;font:800 15px Geist,sans-serif;letter-spacing:.08em;padding:5px 10px;border-radius:999px}
+    .glabel em.r{background:#2f9a5a;color:#fff}.glabel em.s{background:#f2b33d;color:#2a1d05}
+    .pr-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .pr-tag{font:800 26px Geist,sans-serif;letter-spacing:.12em;color:#2a1d05;background:#f2b33d;padding:10px 22px;border-radius:999px}
+    .pr-big{font:900 230px/1 Fraunces,serif;color:#f2b33d;margin-top:34px;letter-spacing:-.02em}
+    .pr-sub{font:700 54px/1.2 Geist,sans-serif;color:#fff;margin-top:22px}
   `,
   media: {
     noor: { file: `${FILM}/01-meet-noor.mp4` },
     read: { file: `${FILM}/02a-problem-literacy.mp4` },
     aquifer: { file: `${FILM}/02b-problem-aquifer.mp4` },
-    proof: { file: `${FILM}/06-proof.mp4` },
     ...(TG ? { tg: { file: TG, scale: "-2:1296" } } : {}),
   },
   layers: [
     { type: "bg", style: "green" },
 
-    // ---------------------------------------------------------------- 1. le problème : chapitres du film (Noor, la lecture, la nappe, la question)
-    filmLayer("noor", 0, E("noor") + 0.4, 2.85),
-    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3),
-    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3),
-    { ...filmLayer("noor", A("question") - 0.15, E("question"), NOOR_Q, Math.min(1, (11.0 - NOOR_Q) / (S.question.len + 0.15))), fadeOut: 0.35 },
+    // ---------------------------------------------------------------- 1. le problème : chapitres du film, tenus sur leur image clé
+    // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage en jaune ; « 230 % » ; « Irrigate today… or wait? »)
+    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 4.95, "12% 22%"),
+    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.5, "18% 18%"),
+    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 3.7, "22% 22%"),
+    { ...filmLayer("noor", A("question") - 0.15, E("question"), 7.7, 9.6, "12% 26%"), fadeOut: 0.35 },
 
     // ---------------------------------------------------------------- 2. la solution, sur le vrai site (un seul plan continu)
-    barLayer("web", A("web", 0.3), E("web")),
     { type: "chip", start: A("web", 0.3), end: E("web") - 0.2, x: X, y: 240, text: "REAL · WORKS END TO END", tone: "real" },
     { type: "caption", start: VO_AT[4], end: WEB("chooseAt") - 0.05, x: X, y: 320, w: W, size: 96, text: "__Sakia__ answers.", stagger: 0.12 },
     { type: "caption", start: VO_AT[5], end: VO_AT[6] - 0.05, x: X, y: 320, w: W, text: "Three taps, __with pictures.__", stagger: 0.08 },
@@ -222,55 +228,38 @@ export default {
     { type: "caption", start: VO_AT[6], end: VO_AT[7] - 0.05, x: X, y: 320, w: W, text: "The answer, __spoken.__", stagger: 0.1 },
     { type: "html", start: APP_VOICE - 0.3, end: VO_AT[7] - 0.05, fx: "none", fadeOut: 0.2, html: `<div class="lang" data-at="0" data-fx="pop" data-rot="-4">🔊 AI voice · Tunisian Arabic</div>` },
     {
-      type: "phone", start: A("web"), end: E("web") + SW1, fadeIn: 0.2, fadeOut: 0.01, enterFrom: "bottom",
-      y: PHONE.y,
-      x: swipeOut("web"),
+      type: "phone", start: A("web"), end: E("web") + 0.1, fadeIn: 0.2, fadeOut: 0.35, enterFrom: "bottom", ...PHONE,
       zoom: [[VO_AT[7] - 0.1, { s: 1, ox: 0.5, oy: 0.5 }], [VO_AT[7] + 0.9, { s: 1.3, ox: 0.5, oy: 0.6 }]],
       segments: webSegs,
     },
     { type: "caption", start: VO_AT[7], end: E("web") - 0.2, x: X, y: 320, w: W, text: "Irrigate __today:__ 214 m³ per hectare.", stagger: 0.07 },
-    { type: "note", start: VO_AT[7] + 0.5, end: E("web") - 0.2, x: X, y: 960, w: W, text: "Real advice of 4 October 2026, Kairouan: Open-Meteo forecast and a fixed FAO-56 water balance." },
 
-    // ---------------------------------------------------------------- 3. la même réponse, quatre autres chemins
-    barLayer("app", A("app"), E("app")),
-    { type: "chip", start: A("app"), end: E("app") - 0.1, x: X, y: 240, text: "REAL · NO NETWORK", tone: "real" },
-    { type: "caption", start: VO_AT[8], end: E("app") - 0.1, x: X, y: 320, w: W, text: "The same answer in the app, __even offline.__", stagger: 0.07 },
-    { type: "phone", start: A("app") - SW0, end: E("app") + SW1, fadeIn: 0.01, fadeOut: 0.01, offline: true, y: PHONE.y, ...swipe("app"), segments: [{ at: A("app"), clip: "offline", from: OFF.marks.reopened + 0.4, to: OFF.marks.reopened + 0.4 + S.app.len + 0.5 }] },
-    { type: "html", start: A("app", 0.4), end: E("app") - 0.2, fx: "zoom", html: `<div class="plane">✈ No network</div>` },
-
-    barLayer("telegram", A("telegram"), E("telegram")),
-    { type: "chip", start: A("telegram"), end: E("telegram") - 0.1, x: X, y: 240, text: "REAL", tone: "real" },
-    { type: "caption", start: VO_AT[9], end: E("telegram") - 0.1, x: X, y: 320, w: W, size: 96, text: "On __Telegram.__", stagger: 0.12 },
-    ...(TG
-      ? [
-          { type: "phone", start: A("telegram") - SW0, end: E("telegram") + SW1, fadeIn: 0.01, fadeOut: 0.01, statusBar: false, taps: false, y: PHONE.y, ...swipe("telegram"), segments: [{ at: A("telegram"), media: "tg", from: TG_PLAN, to: TG_PLAN + S.telegram.len + 0.5 }] },
-          { type: "note", start: A("telegram", 0.4), end: E("telegram") - 0.1, x: X, y: 520, cls: "tgtag", text: "Filmed on Anthony's phone, 4 October" },
-        ]
-      : []),
-
-    barLayer("call", A("call"), E("call")),
-    { type: "chip", start: A("call"), end: E("call") - 0.1, x: X, y: 240, text: "SIMULATED", tone: "sim" },
-    { type: "caption", start: VO_AT[10], end: E("call") - 0.1, x: X, y: 320, w: W, text: "With a __simple phone call.__", stagger: 0.08 },
-    { type: "phone", start: A("call") - SW0, end: E("call") + SW1, fadeIn: 0.01, fadeOut: 0.01, y: PHONE.y, ...swipe("call"), zoom: { s: 1.3, ox: 0.5, oy: 0.39 }, segments: [{ at: A("call"), clip: "call", from: ADV.t + ADV_FROM - 0.2, to: ADV.t + ADV_FROM - 0.2 + S.call.len + 0.5 }] },
-
-    barLayer("sms", A("sms"), E("sms")),
-    { type: "chip", start: A("sms"), end: E("sms") - 0.1, x: X, y: 240, text: "SIMULATED", tone: "sim" },
-    { type: "caption", start: VO_AT[11], end: E("sms") - 0.1, x: X, y: 320, w: W, text: "Or by __text message.__", stagger: 0.08 },
-    { type: "phone", start: A("sms") - SW0, end: E("sms") + SW1, fadeIn: 0.01, fadeOut: 0.01, y: PHONE.y, ...swipe("sms"), segments: [{ at: A("sms"), clip: "sms", from: SMS.marks.read - 0.2, to: SMS.marks.read + 0.3 }], zoom: [[A("sms", 0.5), { s: 1, ox: 0.5, oy: 0.5 }], [A("sms", 1.1), { s: 1.3, ox: 0.5, oy: 0.27 }]] },
-    { type: "note", start: A("call", 0.4), end: E("sms") - 0.1, x: X, y: 960, w: W, text: "Call and SMS are simulated in the browser: a real line needs a telephone operator." },
+    // ---------------------------------------------------------------- 3. la même réponse sur quatre autres téléphones, qui restent à l'écran
+    { type: "caption", start: VO_AT[8], end: G_END, x: 0, y: 26, w: 1920, align: "center", size: 64, text: "The same answer, __on every phone.__", stagger: 0.07 },
+    ...GRID_LABELS.map(([id, ic, name, tag], i) => ({
+      type: "html", start: A(id), end: G_END + 0.3, fx: "none", fadeIn: 0.2, fadeOut: 0.3,
+      html: `<div class="glabel" style="left:${GRID.xs[i]}px" data-at="0.1" data-fx="pop" data-rot="-4"><i>${ic}</i>${name}<em class="${tag === "REAL" ? "r" : "s"}">${tag}</em></div>`,
+    })),
+    gridPhone(0, "app", { offline: true, segments: [{ at: A("app"), clip: "offline", from: OFF.marks.reopened + 0.4, to: OFF.marks.reopened + 3.9 }] }),
+    ...(TG ? [gridPhone(1, "telegram", { statusBar: false, taps: false, segments: tgSegs })] : []),
+    gridPhone(2, "call", { segments: [{ at: A("call"), clip: "call", from: CALL_KEY - 1.5, to: CALL_KEY + 3.6 }] }),
+    gridPhone(3, "sms", { segments: [{ at: A("sms"), clip: "sms", from: SMS.marks.phone - 0.2, to: SMS.marks.read + 0.3 }] }),
 
     // ---------------------------------------------------------------- 4. le garde-fou (éliminatoire dans le barème)
-    { type: "chip", start: A("unsure"), end: E("unsure") - 0.1, x: X, y: 240, text: "SAFEGUARD", tone: "info" },
+    { type: "chip", start: A("unsure", 0.1), end: E("unsure") - 0.1, x: X, y: 240, text: "SAFEGUARD", tone: "info" },
     { type: "caption", start: VO_AT[12], end: E("unsure") - 0.1, x: X, y: 320, w: W, text: "Not sure? Sakia __says so__, and asks a person to check.", stagger: 0.07 },
-    { type: "phone", start: A("unsure") - SW0, end: E("unsure") + 0.4, fadeIn: 0.01, fadeOut: 0.01, y: PHONE.y, x: swipeIn("unsure"), segments: [{ at: A("unsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.3, to: UNSURE.marks.notsure + 1.0 }], zoom: [[A("unsure", 0.4), { s: 1, ox: 0.5, oy: 0.5 }], [A("unsure", 1.2), { s: 1.18, ox: 0.5, oy: 0.42 }]] },
+    { type: "phone", start: A("unsure"), end: E("unsure") + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", ...PHONE, segments: [{ at: A("unsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.3, to: UNSURE.marks.notsure + 1.0 }], zoom: [[A("unsure", 0.8), { s: 1, ox: 0.5, oy: 0.5 }], [A("unsure", 1.8), { s: 1.15, ox: 0.5, oy: 0.42 }]] },
 
-    // ---------------------------------------------------------------- 5. la preuve (chapitre du film : simulation sur la météo observée)
-    filmLayer("proof", A("proof") - 0.1, E("proof") + 0.4, 0.6),
+    // ---------------------------------------------------------------- 5. la preuve : un seul chiffre
+    {
+      type: "html", start: A("proof"), end: E("proof"), fadeIn: 0.35, fadeOut: 0.3, fx: "zoom",
+      html: `<div class="pr-wrap"><div class="pr-tag" data-at="0.15">SIMULATION · 11 SEASONS OF OBSERVED WEATHER · KAIROUAN</div><div class="pr-big" data-at="${(0.15 + 0.38 * v[13]).toFixed(2)}" data-fx="pop" data-rot="-3">3 to 27 %</div><div class="pr-sub" data-at="${(0.15 + 0.62 * v[13]).toFixed(2)}">less water pumped, depending on the crop</div></div>`,
+    },
 
     // ---------------------------------------------------------------- 6. fin
     {
       type: "html", start: A("end", 0.05), end: E("end"), fadeIn: 0.4, fadeOut: 0.01, fx: "zoom",
-      html: `<div class="end-wrap"><div class="end-logo" data-at="0">{{WHEEL}}</div><div class="end-name" data-at="0.15">Sakia</div><div class="end-tag" data-at="0.4">One decision a day.</div><div class="end-doors" data-at="0.8">Can't read? Listen. No smartphone? Call. No network? It's already on your phone.</div><div class="end-url" data-at="1.2">sakia-opal.vercel.app</div><div class="end-small" data-at="1.5">Call and SMS are simulated in the browser. Web, app and Telegram are real. Noor is a persona from the challenge brief. The advice is indicative: a person decides.${vo?.synthetic ? " Narration: synthetic voice (ElevenLabs)." : ""}</div></div>`,
+      html: `<div class="end-wrap"><div class="end-logo" data-at="0">{{WHEEL}}</div><div class="end-name" data-at="0.15">Sakia</div><div class="end-tag" data-at="0.4">One decision a day.</div><div class="end-url" data-at="0.9">sakia-opal.vercel.app</div><div class="end-small" data-at="1.2">Call and SMS simulated in the browser · Noor is a persona from the challenge brief · Indicative advice: a person decides${vo?.synthetic ? " · Synthetic narration (ElevenLabs)" : ""}</div></div>`,
     },
   ],
   music: {

@@ -307,6 +307,8 @@
       Object.assign(imgB.style, { position: "absolute", left: 0, top: 0, opacity: 0 });
       const img = el("img", null, box);
       if (back) img.style.objectFit = imgB.style.objectFit = "contain";
+      // point fixe de l'avancée lente (zoom) : près du texte du film, pour qu'il ne sorte pas de l'image
+      img.style.transformOrigin = imgB.style.transformOrigin = L.origin ?? "50% 50%";
       Object.assign(box.style, { left: (L.x ?? 0) + "px", top: (L.y ?? 0) + "px", width: (L.w ?? 1920) + "px", height: (L.h ?? 1080) + "px" });
       return (t) => {
         const p = presence(L, t);
