@@ -1,123 +1,132 @@
-# Sakia — a daily irrigation decision by voice, SMS and chat, for smallholders in Tunisia
+# Sakia
 
-**Challenge:** World Bank × Hack-Nation 7 — *Small AI for Development*, **Agriculture** track.
-**Live demo:** https://sakia-opal.vercel.app — **Telegram bot:** https://t.me/sakia_tn_bot
-**Referral code:** `WBGSmallAIGADS`
-**Team:** AG Algo Lab — Anthony Gocmen (solo, based in Tunisia).
+**One irrigation decision a day, said out loud, for farmers in Tunisia who don't read and don't have a smartphone.**
 
-> **Problem statement.** Because of Sakia, a smallholder in Kairouan who irrigates from their own well will know which day to irrigate and how much, from the weather forecast, through a short call or message that needs no smartphone and no reading, instead of deciding by habit or by waiting for rain. We know because, in a past SMS pilot, generic messages were judged "too general" and only about 15–16 % of 421 surveyed farmers said they arrived at the right time, and because replaying our rule on 11–12 seasons of observed weather (not on past forecasts, so forecast errors are left out) used 3 to 27 % less pumped water than a fixed weekly schedule we defined as a benchmark, with almost no water-stress days (a simulation for Kairouan, not a field measurement).
+- **Live:** https://sakia-opal.vercel.app
+- **Telegram bot:** https://t.me/sakia_tn_bot
+- **Challenge:** World Bank × Hack-Nation 7, *Small AI for Development*, Agriculture track. Referral code `WBGSmallAIGADS`
+- **Built solo** by Anthony Gocmen (AG Algo Lab). I live in Tunisia.
 
-*Not a weather bulletin. A decision. Tell Sakia your crop, it tells you when to irrigate.*
+## The problem
 
-## What is real, and what is simulated
+Tunisia is short of water, and farming uses most of it: 75.5 % of the country's water withdrawals (FAO AQUASTAT, 2022). In Kairouan, in central Tunisia, the aquifer is pumped at about 230 % of what refills it (press report, African Manager, 2024).
 
-| Piece | Status |
+Most smallholders there pump from their own well, and they decide when to water by habit, or by waiting for rain. Water too early and you pay for pumping you didn't need. Water too late and the crop suffers.
+
+The science to do better exists. It just doesn't reach them in a form they can use. In Kairouan, 27.9 % of people aged 10 and over can't read (17.3 % nationally, 2024 census, INS). When a pilot sent weekly SMS to farmers in the region, the messages were judged "too general", and only 15–16 % of 421 surveyed farmers said they arrived at the right time (ICARDA/GIZ, ICT2Scale, 2019–2021).
+
+**In one sentence:** with Sakia, a smallholder in Kairouan knows which day to water and how much, from the weather forecast, through a voice message or a call that needs no smartphone and no reading, instead of guessing.
+
+## What Sakia does
+
+You tell it three things: where your field is, what you grow, and when you last watered. It answers with one decision, for example **"Water today: 319 m³ per hectare"**, or **"Wait"**. Every day.
+
+- **It talks.** The advice is read in Tunisian Arabic, with subtitles in the language of the screen (English by default). Nobody has to read.
+- **It works on the phone people already have:** a phone call with a keypad menu, an SMS, a Telegram bot, or a web app you can install.
+- **It works offline.** The plan is computed on the phone itself, from the last weather it saved.
+- **It says when it doesn't know.** If the data isn't good enough, it says *"I'm not sure, ask an agricultural technician (CRDA)"* instead of guessing. The farmer always decides.
+
+## Isn't there already an app for that?
+
+The closest one is **Irey Aqua** (INGC, with IWMI and FAO WaPOR). It's a serious tool, and it uses the same method as Sakia (FAO-56), plus satellite data. But it's made for people who are at ease with a smartphone app and can fill in a dozen technical fields. It's closer to a tool for agronomists and researchers than to something a farmer who can't read will use. On Google Play it shows 100–499 installs (3 October 2026).
+
+There is also **Mabia-Mobile** (INAT/GIZ, 2023), another Android water-balance app, and the weekly SMS pilot above, which sent the same generic message to everyone.
+
+I didn't find any tool that gives a farmer who can't read a personal, daily irrigation decision, by voice, on a basic phone. That's the gap. Sakia isn't against Irey: it could be its last mile, the voice that brings the same science to the farmers an app will never reach.
+
+## Where the AI is, and where it isn't
+
+The numbers come from an **FAO-56 water balance** on real weather (Open-Meteo). That part is deterministic on purpose: anyone can check it, and it can't hallucinate. A spreadsheet could do this maths.
+
+What a spreadsheet can't do is talk to someone who doesn't read. That's where I use AI (ElevenLabs, in the cloud):
+
+- **a Tunisian-accented voice** that reads the advice;
+- **speech recognition**, so a farmer can speak instead of typing;
+- **a voice agent** you can simply talk to: say your crop and your region, it finds them and reads the answer my server computed.
+
+The advice sentences are fixed templates with the engine's numbers filled in. The voice agent is instructed to read them as they are.
+
+**Small on purpose.** The daily plan weighs a couple of kilobytes and is computed in the browser. I measured the first page a farmer would open, on a slowed-down phone, against five weather sites (4 October 2026, one run each, from Tunis):
+
+| Site | Downloaded (3G) | Loaded on 2G | Second visit | Works with no connection |
+|---|---|---|---|---|
+| **Sakia** | **383 KB** | **12.9 s** | **0 KB** | **Yes** |
+| yr.no | 790 KB | 25.7 s | 1–31 KB | No |
+| timeanddate.com | 661 KB | 24.3 s | 11 KB | No |
+| FAO WaPOR portal | 770 KB | 24.7 s | 0–4 KB | No |
+| meteoblue | 1,307 KB | 45.9 s | 216 KB | No |
+| meteo.tn (national weather institute) | 7,948 KB | did not finish in 150 s | 3,140–4,766 KB | No |
+
+The other sites do more (maps, radar), so this compares first pages, not features. Script and raw results: [`scripts/perf-compare.mjs`](scripts/perf-compare.mjs), [`scripts/perf-results-2026-10-04.json`](scripts/perf-results-2026-10-04.json), and the /speed page.
+
+## Does it save water?
+
+I replayed Sakia's rule on 11–12 past seasons of **observed** weather in Kairouan (2015–2026), against a fixed weekly schedule I defined as a benchmark (it is not the State's calendar):
+
+- **3 to 27 % less water pumped**, depending on the crop (olive −25 %, wheat −27 %);
+- **far fewer thirsty days**: for pepper, 63 days of water stress per season with the weekly schedule, 3.7 with Sakia.
+
+This is a **simulation, not a field trial**: it assumes the weather was known in advance. I think that's reasonable, because each day's decision only needs that day's weather, the most reliable part of a forecast. You can replay it crop by crop on the /backtest page.
+
+## What's real and what's simulated
+
+| Part | Status |
 |---|---|
-| Irrigation engine (FAO-56 water balance on real weather), 18 crops, 24 governorates | **Real**; replayed on 11–12 seasons of observed weather. 14 of the 18 crops use coefficients that are adjusted, interpolated or taken by analogy (data card) |
-| Backtest over 2015–2026 weather (fixed weekly schedule vs advised) | Real computation on **observed** weather, not on past forecasts: it shows what the rule saves when the weather is known, not what a forecast-driven farmer gets. **A simulation, not a field result** |
-| "Not sure — ask a person" safeguard, built into the engine | **Real** |
-| Offline: the plan is recomputed in the browser from the last saved forecast | **Real**, checked in Chrome with the server stopped. Not yet checked in a phone's airplane mode |
-| Web app (installable) | **Real** |
-| Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot. Always on: it is a webhook of this site, not a program kept running; its state (token, webhook, backlog, subscriber base) is readable at `/api/telegram/health` |
-| Telegram bot in the browser (`/telegram`) | **Simulated Telegram, real bot code**: the page runs the same bot logic on our server with a fake Telegram, so the demo needs no Telegram account. Nothing is sent to Telegram and nothing is stored; the voice is off (the bot answers with the text of the bulletin) |
-| Spoken advice on the home page (ElevenLabs voice in Tunisian Arabic, subtitles in the screen's language) | **Real** audio; demo bulletins are recorded |
-| Voice line (keypad call) and SMS | **Simulated in the browser.** On the simulated keypad phone the morning SMS arrives by itself and the farmer answers with the keys; the call is a button on the same page. Real telephony is not possible in the time (see limits) |
-| Sakia-ML research model (CatBoost, 43 KB) | **Real**, tested in public, **shadow mode**: it changes no advice. Protocol, results and failures in `ml/`; live demo on `/lab` |
-| Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
+| Irrigation engine: FAO-56, 18 crops, 24 governorates, real weather | **Real.** 14 of the 18 crops use coefficients that are adjusted, interpolated or taken by analogy (see the data card) |
+| Spoken advice (ElevenLabs, Tunisian Arabic, subtitles) | **Real** |
+| Telegram bot | **Real**, always on (a webhook of the site): https://t.me/sakia_tn_bot |
+| Installable web app, offline | **Real.** Tested with the server stopped; not yet in a phone's airplane mode |
+| Voice agent | **Real** ElevenLabs agent (language model: claude-sonnet-4-5). It is *instructed* to read my server's answer word for word, it is not forced to: 15 of 15 in my tests |
+| "Not sure, ask a person" safeguard | **Real**, built into the engine |
+| Phone call (keypad) and SMS | **Simulated in the browser.** A real line needs a telephone operator |
+| Telegram demo on /telegram | Real bot code with a fake Telegram, so you can try it without an account |
+| Water savings | **Simulation** on observed weather (above) |
+| Sakia-ML research model | **Real**, in **shadow mode**: it changes no advice (below) |
 
-## What the AI does — and where it deliberately does not
+## Research: a small model, tested in public
 
-The irrigation numbers come from a **deterministic FAO-56 water balance, on purpose**: it can be checked and it cannot hallucinate. A spreadsheet could do that arithmetic. We use AI where a spreadsheet cannot help:
+I also wanted to know if a small learned model could add something to the physics. I trained a **43 KB CatBoost model** on free satellite data (NASA MODIS evapotranspiration) over Kairouan farmland. I wrote the protocol before the run and published the results as they came, failures included:
 
-| | |
-|---|---|
-| **AI (cloud, ElevenLabs)** | speech recognition (a farmer can speak instead of type), text-to-speech with a Tunisian-accented voice (27.9 % of people aged 10 and over in Kairouan cannot read, against 17.3 % nationally: INS 2024 census), and a voice agent that works out the crop and the region and reads our server's answer (its own wording is generated by a language model and held to our answer only by instruction) |
-| **Not AI, by design** | the irrigation calculation, the plan and safeguard sentences (**fixed templates** with the numbers filled in), and the parsing of SMS and Telegram messages (rules and fuzzy matching on a lexicon of crops and places, in French, Arabic and Arabizi) |
-| **Works offline** | the engine (the plan is recomputed in the browser), the cached plan, the recorded and the last-loaded audio |
-| **Needs the network** | live speech recognition, live speech synthesis, fresh weather |
+- **small gain:** on held-out years (2024–2025) it is closer to the satellite than a monthly calendar (about 9 % less error);
+- **it doesn't travel everywhere:** it carries over to Sidi Bouzid and to Morocco, but **fails in the Sahel** (Gezira, Sudan). A model has a climate: each region needs its own small one;
+- **it changes no advice.** It runs in shadow mode on the /lab page, and the rule I had set to use it as a "not sure" signal was not met.
 
-**The advice itself uses no trained model.** Separately, we trained and tested a small research model in public (next section), in shadow mode: it changes no advice. Our local-data contribution is checking the weather source against Tunisian stations (see the data card); calibrating it further is the roadmap.
+Everything is in [`ml/`](ml/README.md): protocol, change log, code, every number and the model itself.
 
-## Research: Sakia-ML, a satellite-trained second opinion (shadow mode)
+## Safety and privacy
 
-Can a small learned model add anything to the physics? We trained a **43 KB CatBoost model** (106 symmetric trees, 12 KB compressed, replayed in the browser with no server) on free satellite evapotranspiration (NASA MODIS MOD16A2GF) of Kairouan cropland, with the same weather source as the engine. **The protocol was written before the full run and every change is logged; results are published as they are.** Try it live on the **/lab** page.
+- A person always decides. The advice is labelled indicative.
+- When the weather is older than 12 hours, the last watering is unknown, or the crop coefficients are borrowed, Sakia says it isn't sure and points to a technician. With weather older than 48 hours it gives no advice at all.
+- Personal data is kept to a minimum: a Telegram chat ID, the governorate and a few settings. No name, no phone number, no location. Privacy, consent and bias are detailed in the data card, section D.
 
-- **Modest gain:** on held-out years 2024–2025 the model is closer to the satellite than a monthly calendar (error about 9 % lower, interval excludes zero over 14 weather cells) and than a crude FAO-56-style water balance (about 23 % lower). Nothing in spring, when cereals green up.
-- **Published failures:** month as a categorical feature adds nothing; a hybrid (physics + learned correction) is no better; **the pre-registered rule for using model disagreement as a "not sure" signal was not met**, so it is information only.
-- **Does it travel?** Applied unchanged to Sidi Bouzid (Tunisia) and the Haouz (Morocco) it beats each region's own calendar; **it fails in the Sahel (Gezira, Sudan)**. The pipeline is global (MODIS, Open-Meteo and ESA WorldCover cover Africa) and a new region needs about 90 minutes of free data, but **a model trained in one climate regime does not carry to another**: each regime needs its own small model.
-- **What it does not show:** that the model improves irrigation advice. The satellite label is itself a model product, the Kairouan sample contains no irrigated pixel, and we only claim "closer to the satellite", never "more accurate".
+## Limits
 
-Everything is in [`ml/`](ml/README.md): protocol, amendment log, code, every number (`ml/results/metrics.json`) and the model (`ml/results/m1_compact.json`).
+- No field trial yet. Crop coefficients are generic (FAO), not Tunisian.
+- I checked the weather model against Tunisian stations: evapotranspiration within about 5 %, temperature within 0.6 °C, but **it sees only about half of heavy rain**.
+- The Tunisian dialect hasn't been validated by a native speaker, and speech recognition hasn't been tested on real farmers.
+- Calls and SMS are simulated.
 
-**Guardrails.** When the data is not enough — weather older than 12 h, last irrigation unknown, coefficients estimated by analogy, forecast not covering the week — Sakia says **"I am not sure: ask an agricultural technician (CRDA)"**; with weather older than 48 h it gives **no advice**. The web and Telegram plan messages carry *"Indicative advice, calculated from the forecast weather (it can change). The decision is yours."* (the spoken forms carry a shorter caveat; the one-sentence SMS plan carries none, only the "not sure" flag when it applies). A person always decides. Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings (data card, section D).
+All the data, with sources, licences, sizes and what they don't cover: **[docs/DATA-CARD.md](docs/DATA-CARD.md)**.
 
-## What already exists (and how Sakia differs)
+## Cost, scale, next steps
 
-- **Irey Aqua** (INGC, with IWMI and FAO WaPOR): a capable app using the same FAO-56 method plus remote sensing, for farmers who can use a smartphone app and fill in a dozen or more details. Google Play shows between 100 and 499 installs (seen on 3 Oct 2026). Sakia does **not** claim a new calculation: it is designed for farmers that a smartphone app may not reach — two questions, no reading, no smartphone. That is a design intent: no farmer has used it yet.
-- **Mabia-Mobile** (INAT/GIZ, 2023) is an Android water-balance app. Separately, in the **weekly SMS pilot** of ICARDA/GIZ (ICT2Scale, ~1,000 farmers), generic SMS were judged too general in Kairouan, and about 15–16 % of the 421 respondents said they arrived at the right time (a survey perception, not a delivery measurement).
-
-The trade-off we accept: fewer questions means less precision. Sakia uses defaults (loamy soil, drip irrigation) and says its advice is **indicative**.
-
-## Localizing AI, in practice
-
-- **Language and voice:** English, French and Arabic, with a Tunisian-accented Arabic voice (the spoken advice is in Tunisian Arabic, subtitled in the screen's language; the voice line greets in English first); typed messages in Arabizi are understood too. **The Tunisian dialect is not validated by a native speaker** and speech-recognition accuracy on Tunisian speech is not guaranteed (see the data card).
-- **The device people own:** a basic phone through a call or an SMS, handled by the server; a smartphone through Telegram or the installable app.
-- **Local evidence:** the problem statement relies on Tunisian figures (literacy, aquifer, the SMS pilot) and the weather source was checked against Tunisian stations.
-- **Humans in the loop:** the advice is indicative, a person always decides, and a technician is the fallback whenever Sakia says it is not sure.
-- **Our method, and the test that shows why it matters:** use free global data, check it against local reality (Tunisian stations), write the test before running it, train a small model per climate, publish what fails, keep a person in the loop. We applied it to a small learned model: trained around Kairouan it carries over to the Tunisian steppe and to Morocco, and **fails in the Sahel** (see [`ml/`](ml/README.md) and the `/lab` page). An AI is not "global": it has a climate, a language, a phone and people. Each new regime needs its own small model, which this pipeline trains in about 90 minutes from free data.
-
-## Weak connection, measured (4 October 2026)
-
-First visit to the home page in a real browser (Microsoft Edge, headless), phone-sized screen, processor slowed 4× (entry-level phone), network throttled to the WebPageTest 3G and 2G profiles, cache cold. Same conditions for every site, from Tunis. **One run per site; the other sites do other things (maps, radar), so this compares *the first page a farmer would open for a forecast*, not features.** Script and raw results: [`scripts/perf-compare.mjs`](scripts/perf-compare.mjs), [`scripts/perf-results-2026-10-04.json`](scripts/perf-results-2026-10-04.json); the same comparison with charts is on the **/speed** page.
-
-| Site | 3G: downloaded | 3G: loaded after | 2G: loaded after | Second visit | Works with no connection |
-|---|---|---|---|---|---|
-| **Sakia** | **383 KB** | **3.7 s** | **12.9 s** | **0 KB** | **Yes** (the plan is recomputed on the phone) |
-| yr.no (a lean reference) | 790 KB | 6.0 s | 25.7 s | 1–31 KB | No |
-| timeanddate.com | 661 KB | 6.9 s | 24.3 s | 11 KB | No |
-| FAO WaPOR portal | 770 KB | 5.3 s | 24.7 s | 0–4 KB | No |
-| meteoblue | 1,307 KB | 9.3 s | 45.9 s | 216 KB | No |
-| meteo.tn (national weather institute) | 7,948 KB | 43 s | **did not finish in 150 s** | 3,140–4,766 KB | No |
-
-What this shows, and does not:
-- On a first visit Sakia downloads **about half** of what the leanest sites do and loads **about twice as fast on 2G**, is **3× lighter than meteoblue** and **20× lighter than the national weather site**. For reference, the median mobile page weighs about 2.56 MB (HTTP Archive Web Almanac 2025).
-- The real difference is the **second visit and the lack of a connection**: after the first load Sakia opens with 0 KB, and **it is the only one of these sites that still works with no connection at all**. A day's advice then costs about 1 KB of plan data, plus about 76 KB if the farmer plays the spoken advice.
-- It is **not** ten times lighter than every lean site, and the lean sites are also quick on a second visit. WaPOR painted no text content before the load event (it is a map application), so its time is not a time to useful content.
-
-## What it costs to run
-
-The spoken advice is made once per region, crop and day, then shared: a scheduled job prepares the common cases each morning (about 7,500–13,000 characters, roughly 900–1,600 voice credits a day for Kairouan and six other regions, whatever the number of farmers), and any other case is made on first request and then kept. Daily spending limits (per day and per visitor) cap what the public can trigger. The engine, the plan and the offline app cost nothing per user. Weather, hosting and database ran on entry-level plans during the hackathon.
-
-## Replicability and next steps
-
-- **Another country:** the engine and the weather source are global; to move to another country one replaces the list of regions and crops, the crop calendars, the language and the voice, and has local agronomists validate the coefficients.
-- **Next steps:** a pilot with a regional extension officer and about ten farmers; plugging Sakia into the national tools (Irey) rather than competing with them; a year of Tunisian station data to make a local weather correction defensible; a real telephone line with an operator.
-
-## How it works
-
-- **Weather:** Open-Meteo (forecast + ERA5 archive), reference evapotranspiration (FAO Penman–Monteith), at the governorate capital.
-- **Crop water use:** `ETc = Kc × ET0` with FAO-56 coefficients (and Pereira et al. 2024 for trees); root-zone depletion balance; irrigate the day the daily consumption would cross the stress threshold.
-- **Last irrigation:** when the farmer gives it, the simulation starts that day with a full root zone and applies **no irrigation until today** (the farmer has not watered since), so a crop left dry for a week is advised to be watered today, not tomorrow.
-- **Backtest:** replays each season of 2015–2026 with a fixed seasonal schedule (a benchmark hypothesis, not the State's actual calendar) versus the advised schedule. The relative-yield estimate (FAO-33) exists only for crops with a published Ky, **never for trees**.
-- Code: `src/lib/` (engine: `planCore.ts` is pure and runs in the browser), `src/app/api/` (plan, forecast, backtest, catalog, advice, voice, telegram, sms, ivr, agent).
-
-## Data and limits
-
-See **[docs/DATA-CARD.md](docs/DATA-CARD.md)**: every dataset with its source, licence, size, and **what it does not cover** — no Tunisian field trials, no local weather station in the calculation, generic crop coefficients, Tunisian-dialect speech recognition not evaluated on real farmers.
+- **Cost:** the spoken advice is made once per region, crop and day, then shared. Each morning a job prepares the common cases (about 900–1,600 voice credits a day for Kairouan and six other regions, however many farmers listen), with daily spending caps. The engine and the offline app cost nothing per user.
+- **Another country:** the engine and the weather source are global. You change the regions, crops, calendars, language and voice, and local agronomists check the coefficients.
+- **Next:** a pilot with a regional extension officer and about ten farmers; connecting Sakia to the national tools (Irey) instead of competing with them; a year of station data for a local weather correction; a real phone line with an operator.
 
 ## Run it
 
 ```
 npm install
-# create .env.local with: KEY_ELEVENLABS, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN, CRON_SECRET
+# .env.local: KEY_ELEVENLABS, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, TELEGRAM_BOT_TOKEN, CRON_SECRET
 npm run dev                      # http://localhost:3000
-npx tsx scripts/engine-check.ts  # backtest and replay on real weather
+npx tsx scripts/engine-check.ts  # replays the engine on real weather
 ```
 
-Database tables are described in `docs/supabase.sql`. Next.js 16, TypeScript, Tailwind v4, Supabase, ElevenLabs.
+Next.js 16, TypeScript, Tailwind v4, Supabase, ElevenLabs. The engine is `src/lib/planCore.ts` (pure, it runs in the browser); the API routes are in `src/app/api/`; the database tables in `docs/supabase.sql`.
 
 ## Built during the hackathon
 
-All code in this repository was written between Saturday 3 October 2026 (kick-off) and Sunday 4 October 2026 (deadline), with AI coding assistance (Claude Code) directed by the author. Pre-existing components: the Next.js starter scaffold and open-source libraries only. Weather data © Open-Meteo (CC BY 4.0); FAO publications cited in `src/lib/crops.ts`.
+All the code here was written between Saturday 3 and Sunday 4 October 2026, with an AI coding assistant (Claude Code) that I directed. Pre-existing: the Next.js starter and open-source libraries. Weather © Open-Meteo (CC BY 4.0); the FAO publications are cited in `src/lib/crops.ts`.
 
-**Licence:** [MIT](LICENSE). Third-party data and voices keep their own terms (Open-Meteo CC BY 4.0, FAO publications, ElevenLabs terms).
+**Licence:** [MIT](LICENSE). Third-party data and voices keep their own terms.
