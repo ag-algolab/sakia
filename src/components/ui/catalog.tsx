@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { CROPS } from "@/lib/crops";
+import { REGIONS } from "@/lib/regions";
 import { CROP_AEB } from "@/lib/voice/aeb";
 import { isArabic } from "./i18n";
 import type { Lang } from "./i18n";
@@ -17,21 +18,15 @@ export type CatalogCrop = {
 };
 export type Catalog = { regions: CatalogRegion[]; crops: CatalogCrop[] };
 
+// Le catalogue vient du code (src/lib/crops.ts et regions.ts, déjà embarqués pour le calcul hors connexion) : aucune
+// requête réseau, donc la liste est là instantanément et même sans internet.
+const STATIC_CATALOG: Catalog = {
+  regions: REGIONS.map(({ id, nameFr, nameAr }) => ({ id, nameFr, nameAr })),
+  crops: CROPS.map(({ id, nameFr, nameAr, nameEn, kind, status }) => ({ id, nameFr, nameAr, nameEn, kind, status })),
+};
+
 export function useCatalog(): Catalog | null {
-  const [catalog, setCatalog] = useState<Catalog | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/catalog")
-      .then((r) => r.json())
-      .then((c: Catalog) => {
-        if (!cancelled) setCatalog(c);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return catalog;
+  return STATIC_CATALOG;
 }
 
 export const selectClass =

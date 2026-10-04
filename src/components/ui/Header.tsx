@@ -17,6 +17,7 @@ const LINKS = [
 export default function Header() {
   const { lang, setLang, t } = useLang();
   const path = usePathname();
+  if (path.startsWith("/story")) return null; // le film est une page à part
   return (
     <header className="bg-[#0d2e22] text-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 pt-3">
@@ -33,7 +34,7 @@ export default function Header() {
               aria-pressed={lang === l.id}
               aria-label={l.name}
               title={l.name}
-              className={`min-h-11 min-w-12 px-3 text-sm font-semibold ${
+              className={`min-h-11 min-w-12 px-3 text-base font-semibold ${
                 lang === l.id ? "bg-white text-sakia-green" : "text-white hover:bg-white/15"
               }`}
             >

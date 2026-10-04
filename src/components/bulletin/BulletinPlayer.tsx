@@ -33,6 +33,7 @@ type Fallback = "offline" | "budget" | "error" | null;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const FORM_KEY = "sakia-form"; // rempli par l'accueil : { region, crop, soil, system, ago, planting }
+const MUSIC_KEY = "sakia-music"; // partagée avec l'accueil : "on" seulement si la personne a activé la musique
 const VOICE_KEY = "sakia-bulletin-voice"; // dernière langue de voix choisie dans « Options »
 const SOILS = ["sableux", "limoneux", "argileux"];
 const SYSTEMS = ["goutte", "aspersion", "gravitaire"];
@@ -61,12 +62,13 @@ function readForm(): { region?: string; crop?: string; soil?: string; system?: s
 export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt[]; crops: Opt[]; demos: DemoMeta[] }) {
   const { lang: siteLang } = useLang(); // boutons FR / EN / TN / AR de l'en-tête
   const ui: UiLang = siteLang;
-  const [region, setRegion] = useState("kairouan");
-  const [crop, setCrop] = useState("olivier");
+  const [region, setRegion] = useState(""); // jamais Kairouan « par défaut » : lu du profil de l'appareil, sinon demandé
+  const [crop, setCrop] = useState("");
+  const [needsPlace, setNeedsPlace] = useState(false); // vrai tant que la personne n'a pas dit où elle est et ce qu'elle cultive
   const [lang, setLang] = useState<VoiceLang>("aeb"); // voix en darija par défaut
   const [subMode, setSubMode] = useState<"en" | "spoken">("en");
   const [muted, setMuted] = useState(false);
-  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts) : COUPÉE par défaut, la personne l'active
+  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts) : COUPÉE par défaut ; elle ne joue que si la personne l'a activée (même choix que l'accueil, clé « sakia-music »)
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,15 +85,36 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   useEffect(() => {
     const id = window.setTimeout(() => {
       const f = readForm();
-      if (f.region && regions.some((r) => r.id === f.region)) setRegion(f.region);
-      if (f.crop && crops.some((c) => c.id === f.crop)) setCrop(f.crop);
+      const okRegion = !!f.region && regions.some((r) => r.id === f.region);
+      const okCrop = !!f.crop && crops.some((c) => c.id === f.crop);
+      if (okRegion) setRegion(f.region!);
+      if (okCrop) setCrop(f.crop!);
+      setNeedsPlace(!(okRegion && okCrop)); // profil absent ou incomplet : on pose la question avant le premier bulletin
       try {
+        if (localStorage.getItem(MUSIC_KEY) === "on") setMusic(true);
         const v = localStorage.getItem(VOICE_KEY);
         if (v && VOICE_LANGS.some((l) => l.code === v)) setLang(v as VoiceLang);
       } catch {}
     }, 0);
     return () => window.clearTimeout(id);
   }, [regions, crops]);
+
+  // Profil sur l'appareil (la clé que l'accueil lit aussi) : on ne change que la région et la culture, le reste est conservé.
+  const saveProfile = (r: string, c: string) => {
+    if (!r || !c) return;
+    try {
+      const old = JSON.parse(localStorage.getItem(FORM_KEY) ?? "null");
+      localStorage.setItem(FORM_KEY, JSON.stringify({ ...(old && typeof old === "object" ? old : {}), region: r, crop: c }));
+    } catch {}
+  };
+  const chooseRegion = (id: string) => {
+    setRegion(id);
+    if (!needsPlace) saveProfile(id, crop);
+  };
+  const chooseCrop = (id: string) => {
+    setCrop(id);
+    if (!needsPlace) saveProfile(region, id);
+  };
 
   const chooseVoice = (code: VoiceLang) => {
     setLang(code);
@@ -266,8 +289,13 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const start = useCallback(
     async (source: "auto" | string) => {
+      if (source === "auto" && (!region || !crop)) return; // on ne devine pas le lieu : il faut d'abord le choisir
       setError(null);
       setBusy(true);
+      if (source === "auto" && needsPlace) {
+        saveProfile(region, crop);
+        setNeedsPlace(false);
+      }
       const audio = audioRef.current!;
       audio.pause();
       // la musique démarre dans le geste de la personne (le navigateur l'exige) ; la voix la baisse dès qu'elle parle
@@ -322,7 +350,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         setBusy(false);
       }
     },
-    [crop, ensureGraph, fetchDemo, lang, music, pickDemo, region, stopMusic, toLoaded],
+    [crop, ensureGraph, fetchDemo, lang, music, needsPlace, pickDemo, region, stopMusic, toLoaded],
   );
 
   const stop = () => {
@@ -355,7 +383,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const reasons = band?.confidence?.reasons ?? [];
   const spokenLang: VoiceLang = loaded?.lang ?? lang;
   const subLang: VoiceLang = subMode === "en" ? "en" : spokenLang;
-  const unvalidated = VOICE_LANGS.find((l) => l.code === spokenLang && !l.validated);
   const showJust = lang === "ko" || spokenLang === "ko";
   const subText = (l: { text: string; en: string }) => (subMode === "en" ? l.en : l.text);
 
@@ -378,6 +405,35 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const tag = playing ? (isDemo ? t.rec : t.onAir) : t.idle;
   const toggleBtn = (on: boolean) =>
     `min-h-12 rounded-xl border-2 px-5 py-3 text-base font-bold ${on ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#4b7a62] bg-[#1b3b2b] text-[#ffffff]"}`;
+
+  const selectCls = "min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]";
+  const placeFields = (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <label className="block text-lg font-bold">
+        <span className="mb-2 block">{t.region}</span>
+        <select value={region} onChange={(e) => chooseRegion(e.target.value)} className={selectCls}>
+          {region === "" && <option value="">{t.choose}</option>}
+          {regions.map((r) => (
+            <option key={r.id} value={r.id}>
+              {nameOf(r)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block text-lg font-bold">
+        <span className="mb-2 block">{t.crop}</span>
+        <select value={crop} onChange={(e) => chooseCrop(e.target.value)} className={selectCls}>
+          {crop === "" && <option value="">{t.choose}</option>}
+          {crops.map((c) => (
+            <option key={c.id} value={c.id}>
+              {nameOf(c)}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+  const placeMissing = needsPlace && (!region || !crop);
 
   return (
     <div dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1]">
@@ -433,15 +489,25 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           )}
         </div>
 
+        {/* première visite : on demande où l'on est et ce que l'on cultive (jamais Kairouan / olivier par défaut) */}
+        {needsPlace && (
+          <section className="mt-4 rounded-2xl border-2 border-[#f0c75e] bg-[#12281d] p-4">
+            <p className="mb-3 text-lg font-bold">{t.placeTitle}</p>
+            {placeFields}
+          </section>
+        )}
+
         {/* UN gros bouton */}
         <button
           type="button"
-          disabled={busy}
+          disabled={busy || (placeMissing && !playing)}
           onClick={() => (playing ? stop() : start("auto"))}
           className="mt-5 min-h-14 w-full rounded-2xl bg-[#f0c75e] px-6 py-4 text-2xl font-bold text-[#0b1d15] shadow-lg disabled:opacity-60"
         >
           {busy ? t.loading : playing ? `■ ${t.stop}` : `▶ ${t.listen}`}
         </button>
+
+        {placeMissing && <p className="mt-3 text-center text-base font-semibold text-[#fff3c4]">{t.placeNeed}</p>}
 
         {error && <p role="alert" className="mt-4 rounded-xl border-2 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-base font-semibold text-[#ffe8dd]">{error}</p>}
 
@@ -512,11 +578,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                 {n.text}
               </p>
             ))}
-            {unvalidated && (
-              <p className="rounded-xl border-2 border-[#f0c75e] bg-[#4a3a08] px-4 py-3 text-base font-semibold text-[#fff3c4]">
-                {unvalidated.code === "aeb" ? t.darijaNote : unvalidated.code === "ar" ? t.arabicNote : t.koreanNote}
-              </p>
-            )}
           </div>
         )}
 
@@ -546,28 +607,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               </div>
             </fieldset>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-lg font-bold">
-                <span className="mb-2 block">{t.region}</span>
-                <select value={region} onChange={(e) => setRegion(e.target.value)} className="min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]">
-                  {regions.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {nameOf(r)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-lg font-bold">
-                <span className="mb-2 block">{t.crop}</span>
-                <select value={crop} onChange={(e) => setCrop(e.target.value)} className="min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]">
-                  {crops.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {nameOf(c)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            {placeFields}
 
             <div className="flex flex-wrap items-center gap-3">
               <button type="button" onClick={() => setMuted((m) => !m)} aria-pressed={muted} className={toggleBtn(false)}>
@@ -578,6 +618,9 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                 onClick={() => {
                   if (music) stopMusic(300);
                   setMusic(!music);
+                  try {
+                    localStorage.setItem(MUSIC_KEY, music ? "off" : "on");
+                  } catch {}
                 }}
                 aria-pressed={music}
                 className={toggleBtn(false)}
