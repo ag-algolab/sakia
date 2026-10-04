@@ -96,7 +96,7 @@ export default function RegionPicker({
             <span className="block text-lg font-extrabold uppercase leading-tight tracking-wide text-sakia-alert">{t("requiredBadge")}</span>
           )}
         </span>
-        <span className="shrink-0 rounded-full bg-sakia-green px-3 py-2 text-sm font-bold text-white sm:px-4">{current ? t("change") : t("choose")}</span>
+        <span className="shrink-0 rounded-full bg-sakia-green px-2.5 py-2 text-xs font-bold text-white min-[360px]:px-3 min-[360px]:text-sm sm:px-4">{current ? t("change") : t("choose")}</span>
       </button>
 
       <dialog
