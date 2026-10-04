@@ -1,0 +1,383 @@
+{
+ "measuredAt": "2026-10-04T01:10:29.231Z",
+ "conditions": {
+  "cpuThrottle": "4x",
+  "viewport": "412x915 mobile",
+  "browser": "Microsoft Edge headless",
+  "from": "Tunis (Tunisia), the author's connection, network bridled by the browser",
+  "profiles": {
+   "3G": {
+    "down": 209715.2,
+    "up": 98304,
+    "latency": 300
+   },
+   "2G": {
+    "down": 35840,
+    "up": 32768,
+    "latency": 800
+   }
+  }
+ },
+ "results": [
+  {
+   "site": "sakia",
+   "name": "Sakia (home page)",
+   "url": "https://sakia-opal.vercel.app/",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 383,
+    "requests": 18,
+    "loadSeconds": 3.7,
+    "fcpSeconds": 2.9,
+    "scriptSeconds": 0
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 0,
+    "requests": 18,
+    "loadSeconds": 0.3,
+    "fcpSeconds": null,
+    "scriptSeconds": 0
+   },
+   "offline": {
+    "works": true,
+    "textLength": 1947
+   }
+  },
+  {
+   "site": "meteotn",
+   "name": "meteo.tn (national weather institute)",
+   "url": "https://www.meteo.tn/",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 7948,
+    "requests": 101,
+    "loadSeconds": 43,
+    "fcpSeconds": 8.4,
+    "scriptSeconds": 0.8
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 3140,
+    "requests": 98,
+    "loadSeconds": 19.1,
+    "fcpSeconds": 2.8,
+    "scriptSeconds": 0.3
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "wapor",
+   "name": "FAO WaPOR portal (the data behind national irrigation tools)",
+   "url": "https://wapor.apps.fao.org/home/WAPOR_2/1",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 770,
+    "requests": 11,
+    "loadSeconds": 5.3,
+    "fcpSeconds": null,
+    "scriptSeconds": 0.8
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 0,
+    "requests": 11,
+    "loadSeconds": 0.8,
+    "fcpSeconds": null,
+    "scriptSeconds": 0.2
+   },
+   "offline": {
+    "works": false,
+    "textLength": 0
+   }
+  },
+  {
+   "site": "meteoblue",
+   "name": "meteoblue, Kairouan forecast",
+   "url": "https://www.meteoblue.com/en/weather/week/kairouan_tunisia_2473482",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 1307,
+    "requests": 82,
+    "loadSeconds": 9.3,
+    "fcpSeconds": 1.5,
+    "scriptSeconds": 1.2
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 216,
+    "requests": 78,
+    "loadSeconds": 3.1,
+    "fcpSeconds": 1.3,
+    "scriptSeconds": 0.4
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "timeanddate",
+   "name": "timeanddate.com, Kairouan weather",
+   "url": "https://www.timeanddate.com/weather/tunisia/kairouan",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 661,
+    "requests": 66,
+    "loadSeconds": 6.9,
+    "fcpSeconds": 1.7,
+    "scriptSeconds": 1
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 11,
+    "requests": 45,
+    "loadSeconds": 1.2,
+    "fcpSeconds": 0.5,
+    "scriptSeconds": 0.3
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "yrno",
+   "name": "yr.no, Kairouan forecast (a lean reference)",
+   "url": "https://www.yr.no/en/forecast/daily-table/2-2473482/Tunisia/Kairouan/Kairouan/Kairouan",
+   "profile": "3G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 790,
+    "requests": 43,
+    "loadSeconds": 6,
+    "fcpSeconds": 3.3,
+    "scriptSeconds": 0.8
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 1,
+    "requests": 48,
+    "loadSeconds": 0.9,
+    "fcpSeconds": 0.2,
+    "scriptSeconds": 0.4
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "sakia",
+   "name": "Sakia (home page)",
+   "url": "https://sakia-opal.vercel.app/",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 383,
+    "requests": 18,
+    "loadSeconds": 12.9,
+    "fcpSeconds": 7.3,
+    "scriptSeconds": 0
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 0,
+    "requests": 18,
+    "loadSeconds": 0.3,
+    "fcpSeconds": null,
+    "scriptSeconds": 0
+   },
+   "offline": {
+    "works": true,
+    "textLength": 1947
+   }
+  },
+  {
+   "site": "meteotn",
+   "name": "meteo.tn (national weather institute)",
+   "url": "https://www.meteo.tn/",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": false,
+    "note": "Navigation timeout of 150000 ms exceeded",
+    "kb": 2322,
+    "requests": 74,
+    "loadSeconds": 150,
+    "fcpSeconds": 33.9,
+    "scriptSeconds": 0.3
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 4766,
+    "requests": 100,
+    "loadSeconds": 142.7,
+    "fcpSeconds": 3.5,
+    "scriptSeconds": 0.8
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "wapor",
+   "name": "FAO WaPOR portal (the data behind national irrigation tools)",
+   "url": "https://wapor.apps.fao.org/home/WAPOR_2/1",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 770,
+    "requests": 11,
+    "loadSeconds": 24.7,
+    "fcpSeconds": null,
+    "scriptSeconds": 0.9
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 4,
+    "requests": 10,
+    "loadSeconds": 1.3,
+    "fcpSeconds": null,
+    "scriptSeconds": 0.2
+   },
+   "offline": {
+    "works": false,
+    "textLength": 0
+   }
+  },
+  {
+   "site": "meteoblue",
+   "name": "meteoblue, Kairouan forecast",
+   "url": "https://www.meteoblue.com/en/weather/week/kairouan_tunisia_2473482",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 1306,
+    "requests": 81,
+    "loadSeconds": 45.9,
+    "fcpSeconds": 7.1,
+    "scriptSeconds": 1.5
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 216,
+    "requests": 79,
+    "loadSeconds": 10,
+    "fcpSeconds": 3,
+    "scriptSeconds": 0.6
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "timeanddate",
+   "name": "timeanddate.com, Kairouan weather",
+   "url": "https://www.timeanddate.com/weather/tunisia/kairouan",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 664,
+    "requests": 72,
+    "loadSeconds": 24.3,
+    "fcpSeconds": 4.6,
+    "scriptSeconds": 1
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 11,
+    "requests": 50,
+    "loadSeconds": 2.3,
+    "fcpSeconds": 1,
+    "scriptSeconds": 0.3
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  },
+  {
+   "site": "yrno",
+   "name": "yr.no, Kairouan forecast (a lean reference)",
+   "url": "https://www.yr.no/en/forecast/daily-table/2-2473482/Tunisia/Kairouan/Kairouan/Kairouan",
+   "profile": "2G",
+   "cold": {
+    "label": "cold",
+    "loaded": true,
+    "note": "",
+    "kb": 776,
+    "requests": 39,
+    "loadSeconds": 25.7,
+    "fcpSeconds": 7.5,
+    "scriptSeconds": 0.6
+   },
+   "repeat": {
+    "label": "repeat",
+    "loaded": true,
+    "note": "",
+    "kb": 31,
+    "requests": 48,
+    "loadSeconds": 2.6,
+    "fcpSeconds": 0.2,
+    "scriptSeconds": 0.4
+   },
+   "offline": {
+    "works": false,
+    "textLength": 163
+   }
+  }
+ ]
+}
