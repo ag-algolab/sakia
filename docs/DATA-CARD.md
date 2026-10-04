@@ -36,7 +36,7 @@ Required and scored by the challenge (section 7.2 of the concept note): for ever
 | Satellite vegetation index (research model only) | NDVI feature (variants only) | NASA MODIS MOD13Q1, 250 m, 16-day, same service | NASA open data | same pixels | shares its sensor with the label's inputs: partly circular, not deployable |
 | Land cover (research model only) | Picks cropland pixels | ESA WorldCover 2021, class cropland | CC BY 4.0 | random 500 m cells with ≥ 70 % cropland | cropland is mostly rainfed; says nothing about irrigation |
 | Chat and settings | Telegram bot subscribers | Telegram chat identifier, language, region, crop, soil, system, last irrigation date | Our database (Supabase) | a few rows | Nothing else is stored; no name, no phone number, no location |
-| **Farmers' rain reports** | Correct the model's rain (3+ different people agree) | Collected by Sakia through the web app, Telegram, SMS and voice line | Anonymous, produced for this project | **demo reports only: fictitious and labelled so** | No real reports yet; a scale of five levels, not millimetres; at most 3 days back |
+| **Farmers' rain reports** | Correct the model's rain (3+ different people agree) | Collected by Sakia through the web app, Telegram, SMS and voice line | Pseudonymous (a salted hash of a device identifier, not a name), produced for this project | **demo reports only: fictitious and labelled so** | No real reports yet; a scale of five levels, not millimetres; at most 3 days back |
 
 **The irrigation advice uses no trained model.** One research model (Sakia-ML, CatBoost, 43 KB) is trained and evaluated in shadow mode on the data below; it changes no advice. Protocol, amendment log and all results: `ml/README.md`, `ml/results/metrics.json`.
 

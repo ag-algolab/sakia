@@ -9,7 +9,7 @@ import { agoKeyboard, cropKeyboard, langKeyboard, parseAction, planKeyboard, rai
 import type { Plan } from "../src/lib/plan";
 import { reporterHash } from "../src/lib/reports";
 import type { Subscriber } from "../src/lib/telegram/store";
-import type { InlineKeyboard, TgUpdate } from "../src/lib/telegram/types";
+import type { InlineKeyboard } from "../src/lib/telegram/types";
 
 type Sent = { kind: string; text: string; markup?: InlineKeyboard };
 let out: Sent[] = [];
@@ -194,8 +194,7 @@ async function main() {
   m = await speak(45);
   check(m.length === 1 && /30 secondes/.test(m[0].text), "message vocal de plus de 30 s refusé");
   deps.voiceLimiter = new RateLimiter(10, 3_600_000);
-  let spoken = 0;
-  for (let i = 0; i < 12; i++) spoken += (await speak()).length > 0 && true ? 1 : 0;
+  for (let i = 0; i < 12; i++) await speak();
   m = await speak();
   check(/Trop de messages vocaux/.test(m[0]?.text ?? ""), "plus de 10 messages vocaux par heure refusés");
   deps.voiceLimiter = new RateLimiter(10, 3_600_000);
