@@ -5,7 +5,7 @@ export default function RetryButton({ label }: { label: string }) {
     <button
       type="button"
       onClick={() => window.location.reload()}
-      className="rounded-md bg-[#2f6b3a] px-4 py-2 text-sm font-semibold text-white hover:bg-[#25562e]"
+      className="min-h-12 rounded-xl bg-sakia-green px-5 text-base font-bold text-white hover:bg-sakia-green-deep"
     >
       {label}
     </button>

@@ -65,6 +65,86 @@ export type Strings = {
   rainSent: (n: number) => string;
   rainRejected: string;
   rainQueueTitle: string;
+  // inscription : région et culture obligatoires, sans valeur par défaut
+  signupTitle: string;
+  signupIntro: string;
+  required: string;
+  regionPlaceholder: string;
+  cropPlaceholder: string;
+  regionError: string;
+  cropError: string;
+  signupMissing: string;
+  signupDone: (crop: string, region: string) => string;
+  prefilled: string;
+  annuals: string;
+  perennials: string;
+  changeChoice: string;
+  // le téléphone à touches
+  phoneLabel: string;
+  screenLabel: string;
+  keypadLabel: string;
+  keyLeft: string;
+  keyRight: string;
+  keyCall: string;
+  keyEnd: string;
+  simBadge: string;
+  seeSms: string;
+  seeSmsNote: string;
+  needChoiceHint: string;
+  simCall: string;
+  simCallNote: string;
+  simulatedDetail: string;
+  // écran du téléphone (LCD)
+  lcdPickChoice: string;
+  lcdNextSms: string;
+  lcdTomorrow: string;
+  lcdWaitingPlan: string;
+  lcdNewMsg: string;
+  lcdRainQ: string;
+  lcdLangTitle: string;
+  lcdStopQ: string;
+  lcdYes: string;
+  lcdNo: string;
+  lcdSending: string;
+  lcdSentText: string;
+  lcdFailed: string;
+  lcdFailedWhy: string;
+  lcdRinging: string;
+  lcdConnecting: string;
+  lcdStopped: string;
+  lcdUnavailable: string;
+  softRead: string;
+  softBack: string;
+  softMessages: string;
+  softAnswer: string;
+  softDecline: string;
+  softResume: string;
+  srNewMessage: string;
+  // touches : libellé court (écran) et ce qu'elles font
+  keysTitle: string;
+  keysIntro: string;
+  keysCaution: string;
+  kRain: string;
+  kHelp: string;
+  kLang: string;
+  kStop: string;
+  kRainDesc: string;
+  kHelpDesc: string;
+  kLangDesc: string;
+  kStopDesc: string;
+  kBackDesc: string;
+  // journal des échanges avec le serveur
+  logTitle: string;
+  logIntro: string;
+  logEmpty: string;
+  logOut: string;
+  logIn: string;
+  logAuto: string;
+  // saisie à la main (pour les curieux)
+  curiousSummary: string;
+  curiousIntro: string;
+  // « Mon plan » : choix repris de l'inscription
+  planNeedChoice: string;
 };
 
 export const STRINGS: Record<UiLang, Strings> = {
@@ -73,9 +153,9 @@ export const STRINGS: Record<UiLang, Strings> = {
     offline: "Hors connexion",
     lastPlan: "dernier plan mis à jour",
     noPlan: "aucun plan enregistré sur cet appareil",
-    phoneTitle: "Téléphone à touches (SMS simulé)",
-    phoneIntro: "Un téléphone basique suffit : on écrit « olivier kairouan » (ou « zitoun kairouan », ou en arabe) et le plan des 7 jours revient en un SMS.",
-    simulated: "Simulation : aucun vrai SMS n'est envoyé, aucun vrai numéro n'est utilisé. Le texte passe par la même porte qu'un fournisseur de SMS réel.",
+    phoneTitle: "Téléphone à touches : le SMS du matin (simulation)",
+    phoneIntro: "Voici comment le plan des 7 jours arriverait chaque matin, en un SMS, sur un téléphone à touches. Rien à écrire : on répond avec les touches.",
+    simulated: "SIMULATION : aucun vrai SMS n'est envoyé ni reçu, aucun vrai appel n'est passé, aucun vrai numéro n'est utilisé.",
     placeholder: "Écrire un message…",
     send: "Envoyer",
     erase: "Effacer",
@@ -98,9 +178,9 @@ export const STRINGS: Record<UiLang, Strings> = {
     offlineBody: "Cette page n'est pas encore gardée sur cet appareil. Ouvrez Sakia une fois avec internet : ensuite l'application et le dernier plan s'ouvrent sans internet.",
     retry: "Réessayer",
     home: "Accueil",
-    openPhone: "Téléphone SMS",
+    openPhone: "Téléphone à touches (simulé)",
     planTitle: "Mon plan, calculé sur cet appareil",
-    planIntro: "Le calcul se fait dans votre téléphone avec la dernière météo gardée : changez la culture ou le dernier arrosage, même sans réseau.",
+    planIntro: "Le calcul se fait dans votre téléphone avec la dernière météo gardée : changez le dernier arrosage (ou la culture, dans l'inscription ci-dessus), même sans réseau.",
     regionLabel: "Région",
     cropLabel: "Culture",
     lastIrrigLabel: "Dernier arrosage",
@@ -126,15 +206,90 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainSent: (n) => `envoyé · ${n} personne${n > 1 ? "s ont" : " a"} signalé ce jour`,
     rainRejected: "refusé",
     rainQueueTitle: "Vos signalements",
+    signupTitle: "Inscription au SMS du matin",
+    signupIntro: "Deux choix obligatoires, rien d'autre : la région et la culture.",
+    required: "obligatoire",
+    regionPlaceholder: "Choisir une région…",
+    cropPlaceholder: "Choisir une culture…",
+    regionError: "Choisissez une région.",
+    cropError: "Choisissez une culture.",
+    signupMissing: "Choisissez une région et une culture pour recevoir le SMS.",
+    signupDone: (crop, region) => `Inscription faite : ${crop} · ${region}.`,
+    prefilled: "Choix repris du profil enregistré sur cet appareil : vous pouvez les changer.",
+    annuals: "Cultures annuelles",
+    perennials: "Cultures pérennes",
+    changeChoice: "Modifier",
+    phoneLabel: "Téléphone à touches simulé",
+    screenLabel: "Écran du téléphone",
+    keypadLabel: "Touches du téléphone",
+    keyLeft: "Touche gauche sous l'écran",
+    keyRight: "Touche droite sous l'écran",
+    keyCall: "Touche verte : appeler ou décrocher",
+    keyEnd: "Touche rouge : raccrocher ou revenir à l'accueil",
+    simBadge: "Téléphone simulé",
+    seeSms: "Voir le SMS de 6 h du matin",
+    seeSmsNote: "Calculé maintenant, avec la météo du jour.",
+    needChoiceHint: "Choisissez d'abord une région et une culture.",
+    simCall: "Simuler un appel",
+    simCallNote: "La ligne vocale simulée : on écoute le conseil et on choisit avec les touches.",
+    simulatedDetail:
+      "Le SMS du matin est calculé maintenant, avec la météo du jour, par le même moteur que le service SMS ; aucun opérateur n'est branché. Les réponses passent par la porte d'entrée SMS du serveur, comme celles d'un vrai fournisseur, et c'est le serveur qui répond.",
+    lcdPickChoice: "Choisissez région et culture au-dessus",
+    lcdNextSms: "Prochain SMS à 06:00",
+    lcdTomorrow: "demain",
+    lcdWaitingPlan: "Calcul du SMS…",
+    lcdNewMsg: "1 nouveau message",
+    lcdRainQ: "Pluie tombée chez vous aujourd'hui ?",
+    lcdLangTitle: "Langue des SMS",
+    lcdStopQ: "Arrêter les SMS et effacer vos réglages ?",
+    lcdYes: "Oui",
+    lcdNo: "Non",
+    lcdSending: "Envoi…",
+    lcdSentText: "SMS envoyé :",
+    lcdFailed: "Message non envoyé",
+    lcdFailedWhy: "Pas de réseau, ou service indisponible.",
+    lcdRinging: "Appel entrant",
+    lcdConnecting: "Connexion à la ligne vocale…",
+    lcdStopped: "SMS arrêtés",
+    lcdUnavailable: "Impossible de calculer le SMS pour l'instant.",
+    softRead: "Lire",
+    softBack: "Retour",
+    softMessages: "Messages",
+    softAnswer: "Décrocher",
+    softDecline: "Refuser",
+    softResume: "Reprendre",
+    srNewMessage: "Nouveau message de Sakia.",
+    keysTitle: "Répondre avec les touches",
+    keysIntro: "Ici, on répond sans écrire : chaque touche envoie un court message, identique à un SMS écrit à la main. C'est le serveur de Sakia qui répond.",
+    keysCaution: "Le serveur traite un signalement de pluie comme un vrai signalement : n'envoyez que la pluie réellement tombée chez vous.",
+    kRain: "Pluie",
+    kHelp: "Aide",
+    kLang: "Langue",
+    kStop: "Stop",
+    kRainDesc: "Dire s'il a plu chez vous aujourd'hui : rien, peu, beaucoup ou énormément.",
+    kHelpDesc: "Recevoir le message d'aide du service.",
+    kLangDesc: "Choisir la langue des SMS : français, arabe ou anglais.",
+    kStopDesc: "Effacer vos réglages et arrêter les SMS.",
+    kBackDesc: "Revenir en arrière.",
+    logTitle: "Messages échangés avec le serveur",
+    logIntro: "Ce que le téléphone a vraiment envoyé à POST /api/sms/incoming, et ce que le serveur a répondu.",
+    logEmpty: "Rien pour l'instant : le serveur n'est appelé que lorsque vous appuyez sur une touche de réponse.",
+    logOut: "Envoyé",
+    logIn: "Reçu",
+    logAuto: "automatique : règle la langue des réponses",
+    curiousSummary: "Pour les curieux : écrire un SMS en arabizi",
+    curiousIntro:
+      "Réservé aux curieux et aux techniciens. Un agriculteur peut aussi écrire lui-même « zitoun kairouan » : le serveur comprend les noms de cultures et de régions écrits à la main (arabe, français, arabizi), avec des fautes de frappe tolérées. Ce n'est pas le parcours principal.",
+    planNeedChoice: "Choisissez d'abord une région et une culture dans l'inscription, plus haut.",
   },
   ar: {
     truth: "تعمل بدون إنترنت بعد التحميل الأول، ولا تعوّض شبكة الهاتف.",
     offline: "بدون اتصال",
     lastPlan: "آخر تحديث للخطة",
     noPlan: "لا توجد خطة محفوظة على هذا الجهاز",
-    phoneTitle: "هاتف بأزرار (رسائل نصية تجريبية)",
-    phoneIntro: "يكفي هاتف بسيط: اكتب «زيتون القيروان» (أو «zitoun kairouan») فتصلك خطة 7 أيام في رسالة واحدة.",
-    simulated: "تجربة فقط: لا تُرسل أي رسالة حقيقية ولا يُستعمل أي رقم حقيقي. النص يمر بنفس البوابة التي يستعملها مزوّد رسائل حقيقي.",
+    phoneTitle: "هاتف بأزرار: رسالة الصباح (محاكاة)",
+    phoneIntro: "هكذا تصل خطة 7 أيام كل صباح في رسالة SMS واحدة على هاتف بأزرار. لا شيء للكتابة: الرد يكون بالأزرار.",
+    simulated: "محاكاة: لا تُرسل ولا تُستقبل أي رسالة حقيقية، ولا تُجرى أي مكالمة حقيقية، ولا يُستعمل أي رقم حقيقي.",
     placeholder: "اكتب رسالة…",
     send: "إرسال",
     erase: "مسح",
@@ -157,9 +312,9 @@ export const STRINGS: Record<UiLang, Strings> = {
     offlineBody: "هذه الصفحة غير محفوظة بعد على هذا الجهاز. افتح ساقية مرة واحدة مع الإنترنت، وبعدها يعمل التطبيق وآخر خطة بدون إنترنت.",
     retry: "إعادة المحاولة",
     home: "الرئيسية",
-    openPhone: "الهاتف التجريبي",
+    openPhone: "الهاتف بأزرار (محاكاة)",
     planTitle: "خطتي، محسوبة على هذا الجهاز",
-    planIntro: "يتم الحساب داخل هاتفك بآخر طقس محفوظ: غيّر المحصول أو آخر سقية، حتى بدون شبكة.",
+    planIntro: "يتم الحساب داخل هاتفك بآخر طقس محفوظ: غيّر آخر سقية (أو المحصول في الاشتراك أعلاه)، حتى بدون شبكة.",
     regionLabel: "الولاية",
     cropLabel: "المحصول",
     lastIrrigLabel: "آخر سقية",
@@ -185,15 +340,90 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainSent: (n) => `أُرسل · ${n} أشخاص أبلغوا عن هذا اليوم`,
     rainRejected: "مرفوض",
     rainQueueTitle: "تقاريرك",
+    signupTitle: "الاشتراك في رسالة الصباح",
+    signupIntro: "اختياران إلزاميان فقط: الولاية والمحصول.",
+    required: "إلزامي",
+    regionPlaceholder: "اختر الولاية…",
+    cropPlaceholder: "اختر المحصول…",
+    regionError: "اختر الولاية.",
+    cropError: "اختر المحصول.",
+    signupMissing: "اختر الولاية والمحصول لتصلك الرسالة.",
+    signupDone: (crop, region) => `تم الاشتراك: ${crop} · ${region}.`,
+    prefilled: "اختيارات مأخوذة من الملف المحفوظ على هذا الجهاز: يمكنك تغييرها.",
+    annuals: "محاصيل سنوية",
+    perennials: "محاصيل دائمة",
+    changeChoice: "تعديل",
+    phoneLabel: "هاتف بأزرار (محاكاة)",
+    screenLabel: "شاشة الهاتف",
+    keypadLabel: "أزرار الهاتف",
+    keyLeft: "الزر الأيسر تحت الشاشة",
+    keyRight: "الزر الأيمن تحت الشاشة",
+    keyCall: "الزر الأخضر: اتصال أو رد",
+    keyEnd: "الزر الأحمر: إنهاء أو العودة إلى الرئيسية",
+    simBadge: "هاتف محاكى",
+    seeSms: "شاهد رسالة السادسة صباحا",
+    seeSmsNote: "محسوبة الآن بطقس اليوم.",
+    needChoiceHint: "اختر أولا الولاية والمحصول.",
+    simCall: "محاكاة مكالمة",
+    simCallNote: "الخط الصوتي التجريبي: تستمع إلى النصيحة وتختار بالأزرار.",
+    simulatedDetail:
+      "تُحسب رسالة الصباح الآن بطقس اليوم، بنفس المحرك الذي تستعمله خدمة الرسائل؛ ولا يوجد أي مشغّل متصل. تمر الردود عبر بوابة الرسائل في الخادم كما يفعل مزوّد حقيقي، والخادم هو الذي يجيب.",
+    lcdPickChoice: "اختر الولاية والمحصول فوق",
+    lcdNextSms: "الرسالة القادمة 06:00",
+    lcdTomorrow: "غدا",
+    lcdWaitingPlan: "جار تحضير الرسالة…",
+    lcdNewMsg: "رسالة جديدة واحدة",
+    lcdRainQ: "هل نزل المطر عندك اليوم؟",
+    lcdLangTitle: "لغة الرسائل",
+    lcdStopQ: "إيقاف الرسائل ومسح إعداداتك؟",
+    lcdYes: "نعم",
+    lcdNo: "لا",
+    lcdSending: "جار الإرسال…",
+    lcdSentText: "الرسالة المرسلة:",
+    lcdFailed: "لم تُرسل الرسالة",
+    lcdFailedWhy: "لا توجد شبكة أو الخدمة غير متوفرة.",
+    lcdRinging: "مكالمة واردة",
+    lcdConnecting: "جار الاتصال بالخط الصوتي…",
+    lcdStopped: "توقفت الرسائل",
+    lcdUnavailable: "تعذر حساب الرسالة الآن.",
+    softRead: "اقرأ",
+    softBack: "رجوع",
+    softMessages: "الرسائل",
+    softAnswer: "رد",
+    softDecline: "رفض",
+    softResume: "استئناف",
+    srNewMessage: "رسالة جديدة من ساقية.",
+    keysTitle: "الرد بالأزرار",
+    keysIntro: "هنا نجيب دون كتابة: كل زر يرسل رسالة قصيرة مطابقة لرسالة نصية مكتوبة باليد. وخادم ساقية هو الذي يرد.",
+    keysCaution: "يعامل الخادم تبليغ المطر كتبليغ حقيقي: أرسل فقط المطر الذي نزل فعلا عندك.",
+    kRain: "مطر",
+    kHelp: "مساعدة",
+    kLang: "اللغة",
+    kStop: "إيقاف",
+    kRainDesc: "قل هل نزل المطر عندك اليوم: لا مطر، قليل، غزير أو غزير جدا.",
+    kHelpDesc: "استقبال رسالة المساعدة من الخدمة.",
+    kLangDesc: "اختيار لغة الرسائل: الفرنسية أو العربية أو الإنجليزية.",
+    kStopDesc: "مسح إعداداتك وإيقاف الرسائل.",
+    kBackDesc: "الرجوع إلى الخلف.",
+    logTitle: "الرسائل المتبادلة مع الخادم",
+    logIntro: "ما أرسله الهاتف فعلا إلى POST /api/sms/incoming وما ردّ به الخادم.",
+    logEmpty: "لا شيء بعد: لا يُستدعى الخادم إلا عند الضغط على زر رد.",
+    logOut: "أُرسل",
+    logIn: "وصل",
+    logAuto: "تلقائي: يضبط لغة الردود",
+    curiousSummary: "للفضوليين: كتابة رسالة بالعربيزي",
+    curiousIntro:
+      "للفضوليين والتقنيين فقط. يمكن للفلاح أيضا أن يكتب بنفسه «زيتون القيروان»: يفهم الخادم أسماء المحاصيل والولايات المكتوبة باليد (بالعربية أو الفرنسية أو العربيزي)، مع التسامح مع أخطاء الكتابة. هذا ليس المسار الرئيسي.",
+    planNeedChoice: "اختر أولا الولاية والمحصول في الاشتراك أعلاه.",
   },
   en: {
     truth: "Works without internet after a first load; it does not replace the mobile network.",
     offline: "Offline",
     lastPlan: "last plan updated",
     noPlan: "no plan saved on this device",
-    phoneTitle: "Keypad phone (simulated SMS)",
-    phoneIntro: "A basic phone is enough: type “olivier kairouan” (or “zitoun kairouan”, or in Arabic) and the 7-day plan comes back as one SMS.",
-    simulated: "Simulation: no real SMS is sent and no real phone number is used. The text goes through the same door a real SMS provider would use.",
+    phoneTitle: "Keypad phone: the morning SMS (simulation)",
+    phoneIntro: "This is how the 7-day plan would arrive each morning, as one SMS, on a keypad phone. Nothing to write: you reply with the keys.",
+    simulated: "SIMULATION: no real SMS is sent or received, no real call is made, no real phone number is used.",
     placeholder: "Write a message…",
     send: "Send",
     erase: "Delete",
@@ -216,9 +446,9 @@ export const STRINGS: Record<UiLang, Strings> = {
     offlineBody: "This page is not saved on this device yet. Open Sakia once with internet: after that the app and the last plan open without internet.",
     retry: "Try again",
     home: "Home",
-    openPhone: "SMS phone",
+    openPhone: "Keypad phone (simulated)",
     planTitle: "My plan, computed on this device",
-    planIntro: "The calculation runs inside your phone using the last weather it kept: change the crop or the last irrigation, even without a network.",
+    planIntro: "The calculation runs inside your phone using the last weather it kept: change the last irrigation (or the crop, in the sign-up above), even without a network.",
     regionLabel: "Region",
     cropLabel: "Crop",
     lastIrrigLabel: "Last irrigation",
@@ -244,6 +474,81 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainSent: (n) => `sent · ${n} ${n > 1 ? "people have" : "person has"} reported that day`,
     rainRejected: "rejected",
     rainQueueTitle: "Your reports",
+    signupTitle: "Sign up for the morning SMS",
+    signupIntro: "Two required choices, nothing else: region and crop.",
+    required: "required",
+    regionPlaceholder: "Choose a region…",
+    cropPlaceholder: "Choose a crop…",
+    regionError: "Choose a region.",
+    cropError: "Choose a crop.",
+    signupMissing: "Choose a region and a crop to receive the SMS.",
+    signupDone: (crop, region) => `Signed up: ${crop} · ${region}.`,
+    prefilled: "Choices taken from the profile saved on this device: you can change them.",
+    annuals: "Annual crops",
+    perennials: "Perennial crops",
+    changeChoice: "Change",
+    phoneLabel: "Simulated keypad phone",
+    screenLabel: "Phone screen",
+    keypadLabel: "Phone keys",
+    keyLeft: "Left key under the screen",
+    keyRight: "Right key under the screen",
+    keyCall: "Green key: call or answer",
+    keyEnd: "Red key: hang up or go back to the home screen",
+    simBadge: "Simulated phone",
+    seeSms: "See the 6 a.m. SMS",
+    seeSmsNote: "Worked out now, with today's weather.",
+    needChoiceHint: "First choose a region and a crop.",
+    simCall: "Simulate a call",
+    simCallNote: "The simulated voice line: you listen to the advice and choose with the keys.",
+    simulatedDetail:
+      "The morning SMS is worked out now, with today's weather, by the same engine as the SMS service; no operator is connected. Replies go through the server's SMS entry point, like those of a real provider, and the server does the answering.",
+    lcdPickChoice: "Choose region and crop above",
+    lcdNextSms: "Next SMS at 06:00",
+    lcdTomorrow: "tomorrow",
+    lcdWaitingPlan: "Preparing the SMS…",
+    lcdNewMsg: "1 new message",
+    lcdRainQ: "Did it rain at your place today?",
+    lcdLangTitle: "SMS language",
+    lcdStopQ: "Stop the SMS and erase your settings?",
+    lcdYes: "Yes",
+    lcdNo: "No",
+    lcdSending: "Sending…",
+    lcdSentText: "SMS sent:",
+    lcdFailed: "Message not sent",
+    lcdFailedWhy: "No network, or service unavailable.",
+    lcdRinging: "Incoming call",
+    lcdConnecting: "Connecting to the voice line…",
+    lcdStopped: "SMS stopped",
+    lcdUnavailable: "Cannot work out the SMS right now.",
+    softRead: "Read",
+    softBack: "Back",
+    softMessages: "Messages",
+    softAnswer: "Answer",
+    softDecline: "Decline",
+    softResume: "Resume",
+    srNewMessage: "New message from Sakia.",
+    keysTitle: "Reply with the keys",
+    keysIntro: "Here you reply without writing: each key sends a short message, identical to an SMS written by hand. Sakia's server does the answering.",
+    keysCaution: "The server treats a rain report as a real report: only send rain that really fell at your place.",
+    kRain: "Rain",
+    kHelp: "Help",
+    kLang: "Language",
+    kStop: "Stop",
+    kRainDesc: "Say whether it rained at your place today: none, a little, a lot or a huge amount.",
+    kHelpDesc: "Receive the service's help message.",
+    kLangDesc: "Choose the SMS language: French, Arabic or English.",
+    kStopDesc: "Erase your settings and stop the SMS.",
+    kBackDesc: "Go back.",
+    logTitle: "Messages exchanged with the server",
+    logIntro: "What the phone really sent to POST /api/sms/incoming, and what the server answered.",
+    logEmpty: "Nothing yet: the server is only called when you press a reply key.",
+    logOut: "Sent",
+    logIn: "Received",
+    logAuto: "automatic: sets the language of the replies",
+    curiousSummary: "For the curious: typing an SMS in Arabizi",
+    curiousIntro:
+      "For the curious and for technicians. A farmer can also write “zitoun kairouan” by hand: the server understands crop and region names written by hand (Arabic, French, Arabizi), with typing mistakes tolerated. This is not the main path.",
+    planNeedChoice: "First choose a region and a crop in the sign-up above.",
   },
 };
 

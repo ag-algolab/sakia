@@ -29,22 +29,22 @@ export default function RainReport({ regionId }: { regionId: string }) {
   const dayName = (i: number) => (i === 0 ? t.todayOpt : t.daysAgoOpt(i));
 
   return (
-    <section dir={lang === "ar" ? "rtl" : "ltr"} aria-labelledby="rain-title" className="mt-8 border-t border-neutral-300 pt-6 dark:border-neutral-700">
-      <h3 id="rain-title" className="text-lg font-semibold">
+    <section dir={lang === "ar" ? "rtl" : "ltr"} aria-labelledby="rain-title" className="mt-8 border-t border-sakia-sand-dark pt-6">
+      <h3 id="rain-title" className="text-lg font-bold text-sakia-green">
         {t.rainTitle} · {regionName}
       </h3>
-      <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{t.rainIntro}</p>
-      <p className="mt-1 text-xs font-medium text-[#8a5a2b] dark:text-[#e0b98a]">{t.rainDemo}</p>
+      <p className="mt-1 text-base text-sakia-ink">{t.rainIntro}</p>
+      <p className="mt-1 text-sm font-semibold text-sakia-brown">{t.rainDemo}</p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label={t.rainDayLabel}>
-        <span className="text-sm font-medium">{t.rainDayLabel}</span>
+        <span className="text-base font-bold">{t.rainDayLabel}</span>
         {days.map((_, i) => (
           <button
             key={i}
             type="button"
             aria-pressed={offset === i}
             onClick={() => setOffset(i)}
-            className={`rounded-md border px-3 py-1 text-sm ${offset === i ? "border-[#2f6b3a] bg-[#2f6b3a] text-white" : "border-neutral-400"}`}
+            className={`min-h-11 rounded-lg border-2 px-4 text-base font-semibold ${offset === i ? "border-sakia-green bg-sakia-green text-white" : "border-sakia-sand-dark bg-white text-sakia-ink"}`}
           >
             {dayName(i)}
           </button>
@@ -57,19 +57,19 @@ export default function RainReport({ regionId }: { regionId: string }) {
             key={level}
             type="button"
             onClick={() => days[offset] && submit(regionId, days[offset], level)}
-            className="rounded-lg border-2 border-[#2f6b3a] px-2 py-3 text-sm font-semibold text-[#2f6b3a] hover:bg-[#2f6b3a] hover:text-white dark:border-[#7bb286] dark:text-[#9ccfa6]"
+            className="min-h-14 rounded-xl border-2 border-sakia-green bg-white px-2 py-3 text-base font-bold text-sakia-green hover:bg-sakia-green hover:text-white"
           >
-            <span aria-hidden>{["☀️", "🌦️", "🌧️", "🌧️🌧️", "⛈️"][RAIN_LEVELS.indexOf(level)]}</span>
-            <span className="block">{label[level]}</span>
-            <span className="block text-[11px] font-normal opacity-80">≈ {LEVEL_MM[level]} mm</span>
+            <span aria-hidden="true">{["☀️", "🌦️", "🌧️", "🌧️🌧️", "⛈️"][RAIN_LEVELS.indexOf(level)]}</span>
+            <span className="block leading-tight">{label[level]}</span>
+            <span className="block text-sm font-semibold">≈ {LEVEL_MM[level]} mm</span>
           </button>
         ))}
       </div>
 
       {entries.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm font-semibold">{t.rainQueueTitle}</h4>
-          <ul className="mt-1 space-y-1 text-sm" aria-live="polite">
+          <h4 className="text-base font-bold">{t.rainQueueTitle}</h4>
+          <ul className="mt-1 space-y-1 text-base" aria-live="polite">
             {[...entries].reverse().map((e) => {
               const r = REGIONS.find((x) => x.id === e.regionId);
               return (
@@ -78,7 +78,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
                   <span>
                     {lang === "ar" ? r?.nameAr : r?.nameFr} · {e.day} · {label[e.level]}
                   </span>
-                  <span className={e.status === "rejected" ? "text-red-700 dark:text-red-400" : "text-neutral-600 dark:text-neutral-400"}>
+                  <span className={e.status === "rejected" ? "font-semibold text-sakia-alert" : "text-sakia-brown"}>
                     {e.status === "pending" && `${t.rainPending}${e.note ? ` (${e.note})` : ""}`}
                     {e.status === "sent" && (e.n ? t.rainSent(e.n) : t.sentTo)}
                     {e.status === "rejected" && `${t.rainRejected}${e.note ? ` : ${e.note}` : ""}`}
