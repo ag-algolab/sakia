@@ -401,11 +401,22 @@ function Subtitles({ subs, idx, lang }: { subs: Sub[]; idx: number; lang: Lang }
 // Réponse en images : lisible sans savoir lire. Un grand pictogramme, puis une ligne de 7 jours avec une goutte
 // les jours où il faut arroser (goutte = arroser, main = attendre, triangle = demander à une personne).
 function Verdict({ plan }: { plan: Plan }) {
-  const { t, fmtDate } = useLang();
+  const { t, fmtDate, fmtNum, colon } = useLang();
   const none = plan.confidence.level === "none";
   // Le titre répond à « et aujourd'hui ? » : arroser aujourd'hui, ou attendre jusqu'à tel jour, ou rien cette semaine.
   const today = plan.days[0]?.action === "irriguer";
   const next = plan.days.find((d) => d.action === "irriguer");
+  const offSeason = !next && outOfIrrigationSeason(plan.cropId, plan.today);
+  // Une ligne de plus sous le titre (demande d'Anthony : « dire un peu plus que « pas besoin d'arroser » ») : la dose du prochain
+  // arrosage, ou, s'il n'y en a pas cette semaine, ce que le sol garde encore à la fin de la semaine (mêmes chiffres que les tubes).
+  const last = plan.days[plan.days.length - 1];
+  const detail = none
+    ? null
+    : next
+      ? `${t("dose")}${colon} ${next.litersPerTree != null ? t("perTree", { n: fmtNum(next.litersPerTree) }) : t("perHa", { n: fmtNum(next.m3PerHa) })}`
+      : !offSeason && last && last.raw > 0
+        ? t("noWateringBody", { day: fmtDate(last.date, { weekday: "long" }), pct: fmtNum(Math.round(Math.max(0, Math.min(1, 1 - last.dr / last.raw)) * 100)) })
+        : null;
   const tone = none
     ? "bg-sakia-alert-light text-sakia-alert"
     : today
@@ -417,7 +428,7 @@ function Verdict({ plan }: { plan: Plan }) {
       ? t("verdictToday")
       : next
         ? t("verdictLater", { day: fmtDate(next.date) })
-        : outOfIrrigationSeason(plan.cropId, plan.today)
+        : offSeason
           ? t("verdictOffSeason") // la vigne en octobre : pas d'arrosage parce que la saison est finie, pas parce que le sol suffit
           : t("noWateringTitle");
   return (
@@ -432,7 +443,10 @@ function Verdict({ plan }: { plan: Plan }) {
             <HandIcon className="h-9 w-9" />
           )}
         </span>
-        <p className="font-display text-xl font-extrabold leading-tight sm:text-2xl">{text}</p>
+        <div className="min-w-0">
+          <p className="font-display text-xl font-extrabold leading-tight sm:text-2xl">{text}</p>
+          {detail && <p className="mt-1 text-base font-semibold leading-snug opacity-90">{detail}</p>}
+        </div>
         {plan.confidence.askAPerson && !none && (
           <span title={t("askPersonShort")} className="ms-auto grid h-12 w-12 place-items-center rounded-full bg-sakia-alert-light text-sakia-alert">
             <AlertIcon className="h-7 w-7" title={t("askPersonShort")} />
