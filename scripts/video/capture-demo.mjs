@@ -31,6 +31,8 @@ async function clip(name, opts, body) {
   try {
     await cdp.send("Page.addScriptToEvaluateOnNewDocument", { source: AUDIO_HOOK });
     await cdp.send("Network.enable");
+    // le robot ne doit pas compter comme un visiteur : mesure d'audience Vercel (chemin propre au projet, et chemin standard)
+    await cdp.send("Network.setBlockedURLs", { urls: ["*/a9a63dfb9d0e3041/*", "*/_vercel/insights/*"] });
     const ctx = { cdp, log, mark, rec, dir };
     await body(ctx);
     const plays = (await cdp.eval(`window.__plays || []`)) ?? [];
