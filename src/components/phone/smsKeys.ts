@@ -7,7 +7,7 @@ import { getRegion } from "@/lib/regions";
 import { fitGsm } from "@/lib/sms/encoding";
 
 export type SmsLang = "fr" | "ar" | "en";
-export const SMS_LANGS: SmsLang[] = ["fr", "ar", "en"];
+export const SMS_LANGS: SmsLang[] = ["en", "ar", "fr"]; // ordre du menu des langues : anglais d'abord (le jury), puis l'arabe, puis le français
 
 // Les quatre degrés que l'analyseur sait lire en MOTS (src/lib/sms/lexicon.ts, RAIN_LEVEL_WORDS) ; « très légère » n'existe pas en SMS.
 export type SmsRain = "none" | "light" | "heavy" | "very_heavy";

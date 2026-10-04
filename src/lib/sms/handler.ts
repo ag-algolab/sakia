@@ -19,7 +19,7 @@ import type { Plan } from "@/lib/plan";
 import { planSms } from "@/lib/messages";
 import type { Lang } from "@/lib/messages";
 import { fitGsm } from "./encoding";
-import { parseSms, scriptOf, MAX_INPUT } from "./parse";
+import { latinLangOf, parseSms, scriptOf, MAX_INPUT } from "./parse";
 import type { Parsed } from "./parse";
 import { R, askCrop, askRegion, askWhichCrop, rainThanks } from "./replies";
 import { addDays } from "@/lib/planCore";
@@ -56,12 +56,12 @@ function cleanFrom(from: unknown): string {
 }
 
 // La session n'est gardée que si elle contient quelque chose à retenir : un message sans suite (aide, inconnu) ne remplit pas la mémoire.
-const hasState = (s: Session) => s.langExplicit || s.lang !== "fr" || !!s.cropId || !!s.regionId || !!s.irrigatedOn || !!s.menu;
+const hasState = (s: Session) => s.langExplicit || s.lang !== "en" || !!s.cropId || !!s.regionId || !!s.irrigatedOn || !!s.menu;
 
 function loadSession(from: string, now: number): Session {
   for (const [k, s] of sessions) if (now - s.lastSeen > SESSION_TTL_MS) sessions.delete(k);
   const kept = sessions.get(from);
-  return kept ? { ...kept, lastSeen: now } : { lang: "fr", langExplicit: false, lastSeen: now };
+  return kept ? { ...kept, lastSeen: now } : { lang: "en", langExplicit: false, lastSeen: now }; // anglais d'abord : le jury lit l'anglais
 }
 
 function saveSession(from: string, s: Session) {
@@ -219,8 +219,12 @@ export async function handleIncoming(
   const menu = s.menu;
   s.menu = undefined;
 
-  // Quelqu'un qui écrit seulement en arabe et n'a pas choisi de langue reçoit la réponse en arabe.
-  if (!s.langExplicit && scriptOf(text) === "arabic") s.lang = "ar";
+  // Tant que la personne n'a pas choisi de langue, on répond dans celle de son message : arabe s'il est écrit en arabe, français ou
+  // anglais d'après ses mots ; sinon (arabizi, chiffre, nom de région) la conversation garde sa langue, l'anglais au départ.
+  if (!s.langExplicit) {
+    const guess = scriptOf(text) === "arabic" ? "ar" : latinLangOf(text);
+    if (guess) s.lang = guess;
+  }
 
   let reply: string;
   switch (parsed.kind) {
@@ -255,7 +259,7 @@ export async function handleIncoming(
         s.menu = "lang";
         reply = R.langMenu[s.lang];
       } else if (menu === "lang" && parsed.n >= 1 && parsed.n <= 3) {
-        s.lang = (["fr", "ar", "en"] as const)[parsed.n - 1];
+        s.lang = (["en", "ar", "fr"] as const)[parsed.n - 1]; // même ordre que R.langMenu : anglais, arabe, français
         s.langExplicit = true;
         reply = R.langSet[s.lang];
       } else reply = R.unknown[s.lang];

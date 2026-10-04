@@ -155,8 +155,9 @@ async function editOrSend(deps: Deps, chatId: number, messageId: number | undefi
   await deps.api.sendMessage(chatId, text, markup);
 }
 
+// Langue de Telegram de la personne tant qu'elle n'en a pas choisi : arabe ou français si c'est la sienne, sinon l'anglais (le jury).
 function guessLang(code: string | undefined): Lang {
-  return code?.startsWith("ar") ? "ar" : code?.startsWith("en") ? "en" : "fr";
+  return code?.startsWith("ar") ? "ar" : code?.startsWith("fr") ? "fr" : "en";
 }
 
 async function promptLanguage(deps: Deps, chatId: number): Promise<void> {

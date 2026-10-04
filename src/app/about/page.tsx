@@ -94,12 +94,12 @@ const DATASETS = [
     "ElevenLabs (Scribe, and a conversational agent running a language model, claude-sonnet-4-5)",
     "ElevenLabs terms",
     "—",
-    "Published accuracy: French excellent, Arabic average, Tunisian dialect not evaluated by the provider; our own measurement on real recordings is not done yet",
+    "Published accuracy: Arabic average, Tunisian dialect not evaluated by the provider, French excellent; our own measurement on real recordings is not done yet",
   ],
   [
     "Test phrases for typed messages",
     "Checking that “zitoun kairouan” is understood",
-    "Written by hand by us (French, Arabic, Arabizi), not by farmers",
+    "Written by hand by us (Arabic, Arabizi, French), not by farmers",
     "Produced for this project",
     "n/a",
     "Not an accuracy claim. We do not train any model of our own: typed messages are parsed by rules and fuzzy matching on a lexicon",
@@ -146,7 +146,7 @@ const EVALUATIONS = [
   ["Backtest: 11–12 seasons, 18 crops, advised vs fixed weekly schedule", "Done: water pumped 3 to 27 % lower depending on the crop, almost no stress days. Run on observed weather, not on past forecasts (forecast errors are not simulated, so stress days are near zero by construction): a simulation, not a field result. Kairouan only, drip irrigation, loam"],
   ["Weather source against Tunisian stations", "Done (table above)"],
   ["Offline recomputation", "Done in Chrome with the server stopped; phone airplane mode not yet"],
-  ["Understanding of typed phrases (French, Arabic, Arabizi)", "Done on phrases written by us, not by farmers: not an accuracy claim"],
+  ["Understanding of typed phrases (Arabic, Arabizi, French)", "Done on phrases written by us, not by farmers: not an accuracy claim"],
   ["Speech recognition on real recordings (Tunisian dialect, French)", "Not done yet: to be measured and published as it is"],
   ["Voice agent against adversarial requests", "Not done yet"],
 ];
@@ -255,7 +255,7 @@ export default function AboutPage() {
           server&apos;s answer, and a voice that answers aloud in Tunisian-accented Arabic.
         </p>
         <p className="leading-relaxed text-sakia-ink">
-          Understanding a <em>typed</em> message in French, Arabic or Latin-script Tunisian (“Arabizi”) is not AI: it is
+          Understanding a <em>typed</em> message in English, Arabic, Latin-script Tunisian (“Arabizi”) or French is not AI: it is
           rules and fuzzy matching on a lexicon of crops and places.
         </p>
         <p className="rounded-xl border border-sakia-sand-dark bg-sakia-sand p-3 text-sm text-sakia-brown">
@@ -273,8 +273,8 @@ export default function AboutPage() {
             comfortably. The Darija text is not yet validated by a native speaker. Everywhere else the voice answers in
             Tunisian-accented Arabic.
           </li>
-          <li>Standard Arabic and French are available on every channel; English in the web app, the Telegram bot and the SMS simulator (the voice line speaks French and Arabic).</li>
-          <li>A message typed in French, Arabic or Latin-script Tunisian (“zitoun kairouan”) is understood in the SMS simulator and the Telegram bot.</li>
+          <li>English is available in the web app, the Telegram bot and the SMS simulator; standard Arabic and French on every channel (the voice line speaks Arabic and French).</li>
+          <li>A message typed in English, Arabic, Latin-script Tunisian (“zitoun kairouan”) or French is understood in the SMS simulator and the Telegram bot.</li>
           <li>
             <strong>Our answer to “what about a less-supported language?”</strong> Darija is exactly that case. It has no
             standard spelling, and the speech-recognition provider has not evaluated it. Our Darija text is built from

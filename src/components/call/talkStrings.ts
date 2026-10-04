@@ -43,7 +43,7 @@ const en: Dict = {
   errorTitle: "The voice agent is not available",
   measuredTitle: "How well does it understand? (measured, not promised)",
   measured:
-    "{passed} of {n} written test phrases handled correctly (French, Arabic, Darija, mixes, off-topic questions). Crop and region found: {both}. Answer read word for word: {verbatim}. Median time to call the engine: {ms} ms. These phrases were written by us and typed, not spoken: real farmers' speech will be harder.",
+    "{passed} of {n} written test phrases handled correctly (Arabic, Darija, French, mixes, off-topic questions). Crop and region found: {both}. Answer read word for word: {verbatim}. Median time to call the engine: {ms} ms. These phrases were written by us and typed, not spoken: real farmers' speech will be harder.",
   limits:
     "Limits: speech recognition of Tunisian Darija is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. Whether Darija is understood has not been evaluated; the answer is read in simple standard Arabic or in French.",
   backToKeypad: "Back to the keypad phone",
@@ -88,7 +88,7 @@ const fr: Dict = {
   errorTitle: "L'agent vocal n'est pas disponible",
   measuredTitle: "Comprend-il bien ? (mesuré, pas promis)",
   measured:
-    "{passed} phrases de test sur {n} traitées correctement (français, arabe, darija, mélanges, questions hors sujet). Culture et région trouvées : {both}. Réponse lue mot pour mot : {verbatim}. Délai médian avant l'appel du moteur : {ms} ms. Ces phrases ont été écrites par nous et tapées, pas dites : la parole de vrais agriculteurs sera plus difficile.",
+    "{passed} phrases de test sur {n} traitées correctement (arabe, darija, français, mélanges, questions hors sujet). Culture et région trouvées : {both}. Réponse lue mot pour mot : {verbatim}. Délai médian avant l'appel du moteur : {ms} ms. Ces phrases ont été écrites par nous et tapées, pas dites : la parole de vrais agriculteurs sera plus difficile.",
   limits:
     "Limites : la reconnaissance vocale de la darija tunisienne n'est pas garantie ; l'agent peut mal comprendre, puis il redemande ou il refuse ; le conseil est indicatif et une personne décide. La compréhension de la darija n'a pas été évaluée ; la réponse est lue en arabe standard simple ou en français.",
   backToKeypad: "Retour au téléphone à touches",
@@ -132,7 +132,7 @@ const ar: Dict = {
   errorTitle: "الوكيل الصوتي غير متوفر",
   measuredTitle: "هل يفهم جيدا؟ (قياس وليس وعدا)",
   measured:
-    "{passed} من {n} جملة اختبار عولجت بشكل صحيح (فرنسية، عربية، دارجة، خليط، أسئلة خارج الموضوع). المحصول والولاية: {both}. الجواب مقروء كلمة بكلمة: {verbatim}. المدة الوسطى قبل استدعاء المحرك: {ms} مللي ثانية. كتبنا هذه الجمل بأنفسنا وطبعناها، ولم تُنطق: كلام الفلاحين الحقيقيين أصعب.",
+    "{passed} من {n} جملة اختبار عولجت بشكل صحيح (عربية، دارجة، فرنسية، خليط، أسئلة خارج الموضوع). المحصول والولاية: {both}. الجواب مقروء كلمة بكلمة: {verbatim}. المدة الوسطى قبل استدعاء المحرك: {ms} مللي ثانية. كتبنا هذه الجمل بأنفسنا وطبعناها، ولم تُنطق: كلام الفلاحين الحقيقيين أصعب.",
   limits:
     "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. فهم الدارجة لم يُقيَّم بعد؛ والجواب يُقرأ بعربية فصحى بسيطة أو بالفرنسية.",
   backToKeypad: "العودة إلى الهاتف بالأزرار",

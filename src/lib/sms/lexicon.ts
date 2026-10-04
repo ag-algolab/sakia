@@ -104,3 +104,24 @@ export const DAY_WORDS = ["j", "jr", "jrs", "jour", "jours", "d", "day", "days",
 
 // Mot qui, devant « hier », en fait « avant-hier » : « avant hier », « day before yesterday », « قبل البارح », « اول امس ».
 export const BEFORE_WORDS = ["avant", "before", "9bal", "qbal", "kbal", "قبل", "اول"];
+
+// ---------- langue de la réponse quand la personne n'en a pas choisi ----------
+// Le jury lit l'anglais : un message sans indice reçoit une réponse en anglais. Un message écrit en arabe reçoit l'arabe
+// (voir scriptOf), un message dont les mots sont français reçoit le français, anglais l'anglais. L'arabizi (« zitoun kairouan »)
+// ne dit rien de la langue de lecture : la conversation garde sa langue. Mots comparés après nettoyage (minuscules, sans accents).
+// Les mots qui existent dans les deux langues (melon, orange, olive, irrigation, plan, stop) ne sont dans aucune liste.
+export const FRENCH_HINTS = new Set([
+  "ble", "orge", "tomate", "tomates", "piment", "piments", "poivron", "poivrons", "pomme", "pommes", "terre", "pasteque", "pasteques",
+  "oignon", "oignons", "sorgho", "olivier", "oliviers", "amandier", "amandiers", "pistachier", "pistachiers", "vigne", "vignes",
+  "oranger", "orangers", "agrume", "agrumes", "palmier", "palmiers", "dattier", "dattiers", "datte", "dattes", "grenadier", "grenadiers",
+  "figuier", "figuiers", "luzerne",
+  "aide", "langue", "pluie", "plu", "hier", "aujourdhui", "jour", "jours", "avant", "quand", "arroser", "irriguer", "arrose",
+  "beaucoup", "peu", "rien", "enormement", "bonjour", "merci", "francais", "arret", "arreter", "je", "mes", "mon", "dois",
+]);
+export const ENGLISH_HINTS = new Set([
+  "wheat", "barley", "tomato", "tomatoes", "pepper", "peppers", "potato", "potatoes", "watermelon", "watermelons", "onion", "onions",
+  "sorghum", "almond", "almonds", "pistachio", "pistachios", "grape", "grapes", "citrus", "palm", "pomegranate",
+  "pomegranates", "fig", "figs", "alfalfa",
+  "help", "language", "rain", "yesterday", "today", "day", "days", "ago", "when", "water", "irrigate", "english",
+  "heavy", "little", "nothing", "huge", "hello", "please", "thanks", "my", "should",
+]);

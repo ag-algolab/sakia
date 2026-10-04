@@ -35,7 +35,7 @@ function hintsFor(state: CallState | null, ui: UiLang): { key: string; label: st
   if (!state || state.node === "ended") return [];
   switch (state.node) {
     case "lang":
-      return [{ key: "1", label: t("hint_lang_fr") }, { key: "2", label: t("hint_lang_ar") }];
+      return [{ key: "2", label: t("hint_lang_ar") }, { key: "1", label: t("hint_lang_fr") }]; // même ordre que l'accueil parlé : l'arabe d'abord
     case "region":
       return [
         { key: "1", label: regionLabel("kairouan", ui) },

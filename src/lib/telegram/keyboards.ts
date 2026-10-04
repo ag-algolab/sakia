@@ -13,10 +13,11 @@ import type { Lang } from "../messages";
 import { sortLocale, t } from "./i18n";
 import type { InlineButton, InlineKeyboard } from "./types";
 
+// Anglais d'abord (le jury lit l'anglais), puis l'arabe, puis le français.
 export const LANGS: { id: Lang; label: string }[] = [
-  { id: "fr", label: "🇫🇷 Français" },
-  { id: "ar", label: "🇹🇳 العربية" },
   { id: "en", label: "🇬🇧 English" },
+  { id: "ar", label: "🇹🇳 العربية" },
+  { id: "fr", label: "🇫🇷 Français" },
 ];
 
 export const AGO_CODES = ["0", "2", "4", "7", "u"] as const;

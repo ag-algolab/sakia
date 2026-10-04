@@ -126,7 +126,7 @@ export type Score = { total: number; ok: number; byGroup: Record<Group, { total:
 
 // Part des phrases comprises exactement comme prévu (culture ET région, ou mot-clé attendu).
 export function scoreTestset(cases: Case[] = TESTSET): Score {
-  const byGroup: Score["byGroup"] = { français: { total: 0, ok: 0 }, arabe: { total: 0, ok: 0 }, arabizi: { total: 0, ok: 0 } };
+  const byGroup: Score["byGroup"] = { arabe: { total: 0, ok: 0 }, arabizi: { total: 0, ok: 0 }, français: { total: 0, ok: 0 } }; // ordre affiché : tunisien avant français
   const results = cases.map((c) => {
     const ok = matches(c.text, c.expect);
     byGroup[c.group].total++;

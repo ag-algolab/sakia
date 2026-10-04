@@ -47,7 +47,7 @@ const fr: TgStrings = {
   demoLead: "Sans compte Telegram : touchez les boutons ou écrivez, comme dans le vrai bot.",
   howTitle: "Comment ça marche",
   steps: [
-    { title: "Ouvrez le bot", body: "Sur Telegram, appuyez sur « Démarrer » et choisissez le français, l'arabe ou l'anglais." },
+    { title: "Ouvrez le bot", body: "Sur Telegram, appuyez sur « Démarrer » et choisissez l'anglais, l'arabe ou le français." },
     { title: "Touchez vos choix", body: "Votre région, votre culture, le dernier arrosage : tout se fait avec des boutons. Vous pouvez aussi écrire « zitoun kairouan »." },
     { title: "Recevez le plan", body: "Le plan des 7 jours arrive chaque matin, avec un bouton pour le bulletin vocal. Il rappelle que le conseil est indicatif : la décision vous appartient." },
   ],
@@ -87,7 +87,7 @@ const en: TgStrings = {
   demoLead: "No Telegram account needed: tap the buttons or type, as in the real bot.",
   howTitle: "How it works",
   steps: [
-    { title: "Open the bot", body: "On Telegram, tap “Start” and choose French, Arabic or English." },
+    { title: "Open the bot", body: "On Telegram, tap “Start” and choose English, Arabic or French." },
     { title: "Tap your choices", body: "Your region, your crop, your last irrigation: all with buttons. You can also type “zitoun kairouan”." },
     { title: "Get the plan", body: "The 7-day plan arrives every morning, with a button for the voice bulletin. It reminds you that the advice is indicative: the decision is yours." },
   ],
@@ -127,7 +127,7 @@ const ar: TgStrings = {
   demoLead: "دون حساب على تيليغرام: اضغطوا على الأزرار أو اكتبوا، كما في البوت الحقيقي.",
   howTitle: "كيف يعمل",
   steps: [
-    { title: "افتحوا البوت", body: "على تيليغرام، اضغطوا على «ابدأ» واختاروا الفرنسية أو العربية أو الإنجليزية." },
+    { title: "افتحوا البوت", body: "على تيليغرام، اضغطوا على «ابدأ» واختاروا الإنجليزية أو العربية أو الفرنسية." },
     { title: "اختاروا بالأزرار", body: "الولاية والمحصول وآخر سقية: كل ذلك بالأزرار. ويمكنكم أيضا الكتابة، مثلا «زيتون القيروان»." },
     { title: "استلموا الخطة", body: "تصلكم خطة الأيام السبعة كل صباح، مع زر للنشرة الصوتية. وتذكّركم بأن النصيحة إرشادية وأن القرار لكم." },
   ],
@@ -167,7 +167,7 @@ const aeb: TgStrings = {
   demoLead: "من غير حساب تيليغرام: اضغط على الأزرار ولا اكتب، كيما في البوت الحقيقي.",
   howTitle: "كيفاش تخدم",
   steps: [
-    { title: "افتح البوت", body: "في تيليغرام اضغط على «ابدأ» واختار الفرنسية ولا العربية ولا الإنجليزية." },
+    { title: "افتح البوت", body: "في تيليغرام اضغط على «ابدأ» واختار الإنجليزية ولا العربية ولا الفرنسية." },
     { title: "اختار بالأزرار", body: "الولاية والزرعة وآخر سقية: كل شي بالأزرار. وتنجم تكتب زادة، مثلا «زيتون القيروان»." },
     { title: "تجيك الخطة", body: "خطة 7 أيام تجيك كل صباح، وفيها زر للنشرة الصوتية. وتذكّرك إنو النصيحة للاسترشاد برك وإنو القرار متاعك." },
   ],

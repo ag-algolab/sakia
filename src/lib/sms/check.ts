@@ -166,7 +166,7 @@ async function say(from: string, text: string, src: PlanSource = stub) {
 
 async function conversations() {
   resetSmsSessions();
-  const a = await say("t1", "zitoun kairouan");
+  const a = await say("t1", "olivier kairouan");
   const b = await say("t2", "olivier القيروان");
   check("même réponse pour les deux écritures", a === b && a.startsWith("Sakia"), `${a} | ${b}`);
   check("réponse ≤ 160 et GSM", (gsmLength(a) ?? 999) <= 160, a);
@@ -180,10 +180,10 @@ async function conversations() {
   check("puis la région suffit", (await say("t3", "kairouan")) === a);
 
   const m = await say("t4", "*123#");
-  check("menu USSD", m.includes("1. Plan 7 jours") && m.includes("2. Changer culture") && m.includes("3. Langue"), m);
-  check("menu 1 sans état -> demande", (await say("t4", "1")).includes("culture"));
+  check("menu USSD (en anglais : rien ne dit la langue)", m.includes("1. 7-day plan") && m.includes("2. Change crop") && m.includes("3. Language"), m);
+  check("menu 1 sans état -> demande", (await say("t4", "1")).includes("crop"));
   await say("t4", "*123#");
-  check("menu 3 -> langues", (await say("t4", "3")).includes("English"));
+  check("menu 3 -> langues, anglais d'abord, puis arabe, puis français", (await say("t4", "3")).startsWith("1. English\n2. العربية\n3. Français"));
   const ar = await say("t4", "2");
   check("choix 2 = arabe", ar.startsWith("اللغة"), ar);
   const arPlan = await say("t4", "olivier kairouan");
@@ -194,14 +194,29 @@ async function conversations() {
   check("pas d'arabe automatique si mélangé", !/[؀-ۿ]/.test(await say("t6", "olivier القيروان")));
   check("LANGUE EN", (await say("t7", "langue en")) === "Language: English.");
   check("STOP efface", (await say("t7", "stop")).includes("erased"));
-  check("après STOP, plus de mémoire", (await say("t7", "plan")).includes("Quelle culture"));
+  check("après STOP, plus de mémoire (langue comprise : anglais)", (await say("t7", "plan")).includes("Which crop"));
   check("AIDE ≤ 160", (gsmLength(await say("t8", "aide")) ?? 999) <= 160);
-  check("inconnu", (await say("t9", "blabla")).includes("pas compris"));
+  check("inconnu (en anglais : rien ne dit la langue)", (await say("t9", "blabla")).includes("not understood"));
+  check("inconnu en français : réponse en français", (await say("t9f", "bonjour")).includes("pas compris"));
   const down = await say("t10", "olivier kairouan", async () => { throw new Error("réseau coupé"); });
   check("météo en panne -> message poli, sans détail technique", down.includes("indisponible") && !down.includes("réseau"), down);
   check("from absent accepté", (await handleIncoming({ text: "aide" })).reply.length > 0);
   check("texte absent accepté", (await handleIncoming({ from: "x" })).reply.length > 0);
-  check("texte trop long refusé", (await say("t11", "a".repeat(400))).includes("trop long"));
+  check("texte trop long refusé", (await say("t11", "a".repeat(400))).includes("too long"));
+
+  // Langue de la réponse quand la personne n'en a pas choisi : anglais d'abord (le jury), sauf si le message dit la sienne.
+  check("message en anglais : réponse en anglais", (await say("t12", "pepper kairouan")).startsWith("Sakia Kairouan: Pepper"));
+  check("message en français : réponse en français", (await say("t13", "piment kairouan")).startsWith("Sakia Kairouan : Piment"));
+  check("arabizi seul (rien ne dit la langue) : anglais", (await say("t14", "zitoun kairouan")).startsWith("Sakia Kairouan: Olive"));
+  await say("t15", "olivier kairouan");
+  check("arabizi après un message en français : la conversation reste en français", (await say("t15", "zitoun kairouan")).startsWith("Sakia Kairouan : Olivier"));
+  await say("t16", "*123#");
+  await say("t16", "3");
+  check("menu des langues : 1 = anglais", (await say("t16", "1")) === "Language: English.");
+  await say("t16", "*123#");
+  await say("t16", "3");
+  check("menu des langues : 3 = français", (await say("t16", "3")).startsWith("Langue : fran")); // « ç » ramené à « c » (alphabet GSM)
+  check("aide en anglais : mots-clés anglais (RAIN, LANGUAGE), ≤ 160", ((h) => h.includes("RAIN 10") && h.includes("LANGUAGE") && !h.includes("PLUIE") && (gsmLength(h) ?? 999) <= 160)(await say("t17", "help")));
 
   resetSmsSessions();
   let last = "";
@@ -238,7 +253,7 @@ async function lastIrrigation() {
   check("dans le message : « piment kairouan hier » -> plan sûr, sans question", (await say("g5", "piment kairouan hier")) === planWith("piment", 1));
   check("dans le message : « piment kairouan 3j »", (await say("g6", "piment kairouan 3j")) === planWith("piment", 3));
   check("dans le message : « piment kairouan aujourd'hui »", (await say("g7", "piment kairouan aujourd'hui")) === planWith("piment", 0));
-  check("dans le message, en arabizi : « felfel kairouan lbare7 »", (await say("g8", "felfel kairouan lbare7")) === planWith("piment", 1));
+  check("dans le message, en arabizi : « felfel kairouan lbare7 » (anglais : rien ne dit la langue)", (await say("g8", "felfel kairouan lbare7")) === planWith("piment", 1, "en"));
 
   await say("g9", "piment kairouan");
   check("« hier » seul, après un plan : le plan devient sûr", (await say("g9", "hier")) === planWith("piment", 1));

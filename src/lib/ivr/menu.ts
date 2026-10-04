@@ -3,7 +3,7 @@
 // Pur (sans réseau, sans fichier) : utilisable dans le navigateur, sur le serveur et dans les scripts.
 
 export type IvrLang = "fr" | "ar";
-export const IVR_LANGS: IvrLang[] = ["fr", "ar"];
+export const IVR_LANGS: IvrLang[] = ["ar", "fr"]; // ordre d'écoute : l'arabe d'abord ; les touches restent 1 = français, 2 = arabe
 
 export const DEFAULT_REGION = "kairouan";
 // Gouvernorats agricoles proposés après « une autre région » (touches 1 à 7).
