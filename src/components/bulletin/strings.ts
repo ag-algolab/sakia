@@ -12,9 +12,14 @@ export const LOCALES: Record<UiLang, string> = { en: "en-GB", fr: "fr-FR", ar: "
 
 export type Strings = {
   title: string;
-  tagline: string;
   region: string;
   crop: string;
+  // région et culture OBLIGATOIRES : aucune valeur par défaut, la personne choisit
+  regionPlaceholder: string;
+  cropPlaceholder: string;
+  needBoth: string; // ce qui manque pour pouvoir écouter
+  needRegion: string;
+  needCrop: string;
   voice: string;
   voiceOf: string;
   listen: string;
@@ -22,8 +27,6 @@ export type Strings = {
   stop: string;
   soundOn: string;
   soundOff: string;
-  musicOn: string;
-  musicOff: string;
   subtitles: string;
   subEn: string;
   subSpoken: string;
@@ -42,9 +45,11 @@ export type Strings = {
   noteCache: string; // {date}
   noteDemo: string; // {date}
   noteReplay: string; // {date}
+  noteMismatch: string; // {region} {crop} : le bulletin entendu n'est pas celui du choix actuel
   fallbackOffline: string;
   fallbackBudget: string;
   fallbackError: string;
+  errPlay: string;
   demosTitle: string;
   demosHint: string;
   whyTitle: string;
@@ -60,17 +65,10 @@ export type Strings = {
   justGloss: string; // traduction dans la langue de l'interface (vide en coréen)
   voiceNote: string; // {name}
   indicative: string;
-  back: string;
-  uiLang: string;
   // garde-fou « pas sûr : demandez à une personne »
   unsureTitle: string;
   askCell: string;
   reasons: Record<ConfidenceReason, string>;
-  agoLabel: string;
-  agoUnknown: string;
-  agoToday: string;
-  agoOne: string;
-  agoDays: string; // {n}
   // pluie signalée par des agriculteurs (corrige le modèle météo ; « signalé », jamais « mesuré »)
   reportsTitle: string;
   reportsRow: string; // {rel} {n} {level} {model}
@@ -106,9 +104,13 @@ export type Strings = {
 const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
   en: {
     title: "Sakia bulletin",
-    tagline: "Today's irrigation bulletin, read aloud, with subtitles",
     region: "Region",
     crop: "Crop",
+    regionPlaceholder: "Choose your region",
+    cropPlaceholder: "Choose your crop",
+    needBoth: "Choose your region and your crop to listen.",
+    needRegion: "Choose your region to listen.",
+    needCrop: "Choose your crop to listen.",
     voice: "Voice language",
     voiceOf: "Voice",
     listen: "Listen",
@@ -116,8 +118,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     stop: "Stop",
     soundOn: "Sound on",
     soundOff: "Sound off",
-    musicOn: "Music on",
-    musicOff: "Music off",
     subtitles: "Subtitles",
     subEn: "English",
     subSpoken: "Spoken language",
@@ -136,9 +136,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     noteCache: "Saved bulletin, generated on {date}. Same text, so the voice was not synthesised again.",
     noteDemo: "You are hearing a RECORDED bulletin from {date}. It is not generated now.",
     noteReplay: "Replay of {date}: observed weather, not a forecast.",
+    noteMismatch: "This bulletin is for {region} · {crop}, not for your current choice.",
     fallbackOffline: "No network: playing a recorded bulletin instead.",
     fallbackBudget: "Voice credits are used up: playing a recorded bulletin instead.",
     fallbackError: "The voice service did not answer: playing a recorded bulletin instead.",
+    errPlay: "Could not play a bulletin: no network and no recorded bulletin.",
     demosTitle: "Recorded bulletins",
     demosHint: "These work with no network and no credits.",
     whyTitle: "Why a drawn presenter, not a video?",
@@ -154,8 +156,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justGloss: "For whoever evaluates this from Seoul: the Sakia bulletin also speaks Korean. A very small AI for Tunisian farmers says hello in your language.",
     voiceNote: "Voice: {name} (provisional, not yet validated by ear).",
     indicative: "Indicative advice, to be checked with the regional agriculture office.",
-    back: "Home",
-    uiLang: "Interface",
     unsureTitle: "Not sure: ask a person",
     askCell: "Ask a person",
     reasons: {
@@ -166,11 +166,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "Rain is possible in the next 3 days (30 to 70 % chance).",
       short_horizon: "The forecast does not cover the whole week.",
     },
-    agoLabel: "Last irrigation",
-    agoUnknown: "Unknown",
-    agoToday: "Today",
-    agoOne: "1 day ago",
-    agoDays: "{n} days ago",
     reportsTitle: "Rain corrected by farmers' reports",
     reportsRow: "{rel}: {n} farmers reported “{level}” (the forecast said {model} mm).",
     reportsNote: "This is a report by farmers. It replaces the forecast for that day.",
@@ -200,9 +195,13 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
   },
   fr: {
     title: "Bulletin Sakia",
-    tagline: "Le bulletin d'irrigation du jour, lu à voix haute, avec sous-titres",
     region: "Région",
     crop: "Culture",
+    regionPlaceholder: "Choisir votre région",
+    cropPlaceholder: "Choisir votre culture",
+    needBoth: "Choisissez votre région et votre culture pour écouter.",
+    needRegion: "Choisissez votre région pour écouter.",
+    needCrop: "Choisissez votre culture pour écouter.",
     voice: "Langue de la voix",
     voiceOf: "Voix",
     listen: "Écouter",
@@ -210,8 +209,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     stop: "Arrêter",
     soundOn: "Son activé",
     soundOff: "Son coupé",
-    musicOn: "Musique activée",
-    musicOff: "Musique coupée",
     subtitles: "Sous-titres",
     subEn: "Anglais",
     subSpoken: "Langue parlée",
@@ -230,9 +227,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     noteCache: "Bulletin gardé en mémoire, généré le {date}. Même texte : la voix n'a pas été refaite.",
     noteDemo: "Vous écoutez un bulletin ENREGISTRÉ le {date}. Il n'est pas généré maintenant.",
     noteReplay: "Rejeu du {date} : météo observée, pas une prévision.",
+    noteMismatch: "Ce bulletin concerne {region} · {crop}, pas votre choix actuel.",
     fallbackOffline: "Pas de réseau : lecture d'un bulletin enregistré.",
     fallbackBudget: "Les crédits de voix sont épuisés : lecture d'un bulletin enregistré.",
     fallbackError: "Le service de voix n'a pas répondu : lecture d'un bulletin enregistré.",
+    errPlay: "Impossible de lire un bulletin : ni réseau, ni bulletin enregistré.",
     demosTitle: "Bulletins enregistrés",
     demosHint: "Ils fonctionnent sans réseau et sans crédits.",
     whyTitle: "Pourquoi un présentateur dessiné, pas une vidéo ?",
@@ -248,8 +247,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justGloss: "Pour celles et ceux qui évaluent depuis Séoul : le bulletin Sakia parle aussi coréen. Une toute petite IA pour les agriculteurs tunisiens vous salue dans votre langue.",
     voiceNote: "Voix : {name} (provisoire, pas encore validée à l'oreille).",
     indicative: "Conseil indicatif, à valider auprès de l'administration agricole régionale.",
-    back: "Accueil",
-    uiLang: "Interface",
     unsureTitle: "Pas sûr : demandez à une personne",
     askCell: "Demandez à une personne",
     reasons: {
@@ -260,11 +257,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "De la pluie est possible dans les 3 jours (probabilité de 30 à 70 %).",
       short_horizon: "La prévision ne couvre pas toute la semaine.",
     },
-    agoLabel: "Dernier arrosage",
-    agoUnknown: "Inconnu",
-    agoToday: "Aujourd'hui",
-    agoOne: "il y a 1 jour",
-    agoDays: "il y a {n} jours",
     reportsTitle: "Pluie corrigée par des signalements d'agriculteurs",
     reportsRow: "{rel} : {n} agriculteurs ont signalé « {level} » (la prévision disait {model} mm).",
     reportsNote: "Ceci est un signalement d'agriculteurs. Il remplace la prévision pour ce jour.",
@@ -294,9 +286,13 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
   },
   ar: {
     title: "نشرة ساقية",
-    tagline: "نشرة الري لهذا اليوم، مقروءة بصوت عال مع نص مكتوب",
     region: "الولاية",
     crop: "المحصول",
+    regionPlaceholder: "اختر ولايتك",
+    cropPlaceholder: "اختر محصولك",
+    needBoth: "اختر ولايتك ومحصولك للاستماع.",
+    needRegion: "اختر ولايتك للاستماع.",
+    needCrop: "اختر محصولك للاستماع.",
     voice: "لغة الصوت",
     voiceOf: "الصوت",
     listen: "استمع",
@@ -304,8 +300,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     stop: "إيقاف",
     soundOn: "الصوت مفعّل",
     soundOff: "الصوت مكتوم",
-    musicOn: "الموسيقى مفعّلة",
-    musicOff: "الموسيقى مكتومة",
     subtitles: "النص المكتوب",
     subEn: "الإنجليزية",
     subSpoken: "اللغة المنطوقة",
@@ -324,9 +318,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     noteCache: "نشرة محفوظة أُنتجت بتاريخ {date}. النص نفسه، لذلك لم يُولَّد الصوت من جديد.",
     noteDemo: "تستمعون إلى نشرة مسجّلة بتاريخ {date}. لم تُنتج الآن.",
     noteReplay: "إعادة تشغيل ليوم {date}: طقس مرصود فعلا، وليس توقعات.",
+    noteMismatch: "هذه النشرة خاصة بـ {region} · {crop}، وليست لاختياركم الحالي.",
     fallbackOffline: "لا يوجد اتصال بالشبكة: تُشغَّل نشرة مسجّلة بدلا من ذلك.",
     fallbackBudget: "نفد رصيد خدمة الصوت: تُشغَّل نشرة مسجّلة بدلا من ذلك.",
     fallbackError: "خدمة الصوت لم تستجب: تُشغَّل نشرة مسجّلة بدلا من ذلك.",
+    errPlay: "تعذّر تشغيل النشرة: لا شبكة ولا نشرة مسجّلة.",
     demosTitle: "نشرات مسجّلة",
     demosHint: "تعمل دون شبكة ودون رصيد.",
     whyTitle: "لماذا مقدّم مرسوم وليس فيديو؟",
@@ -342,8 +338,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justGloss: "إلى من يقيّم هذا المشروع من سيول: نشرة ساقية تتكلم الكورية أيضا. ذكاء اصطناعي صغير جدا لفائدة الفلاحين التونسيين يحيّيكم بلغتكم.",
     voiceNote: "الصوت: {name} (مؤقت، لم نتحقق منه بعد بالاستماع).",
     indicative: "نصيحة إرشادية، يجب التحقق منها لدى المندوبية الجهوية للتنمية الفلاحية.",
-    back: "الرئيسية",
-    uiLang: "لغة الواجهة",
     unsureTitle: "غير متأكد: اسألوا شخصا مختصا",
     askCell: "اسألوا شخصا مختصا",
     reasons: {
@@ -354,11 +348,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "قد تهطل أمطار خلال 3 أيام (احتمال بين 30 و70 %).",
       short_horizon: "التوقعات المتوفرة لا تغطي الأسبوع كاملا.",
     },
-    agoLabel: "آخر سقية",
-    agoUnknown: "غير معروف",
-    agoToday: "اليوم",
-    agoOne: "قبل يوم",
-    agoDays: "قبل {n} أيام",
     reportsTitle: "مطر مصحَّح ببلاغات الفلاحين",
     reportsRow: "{rel}: أبلغ {n} من الفلاحين عن «{level}» (التوقعات: {model} مم).",
     reportsNote: "هذا بلاغ من الفلاحين، وقد أخذنا به بدل التوقعات لذلك اليوم.",
@@ -388,9 +377,13 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
   },
   ko: {
     title: "사키아 방송",
-    tagline: "오늘의 관개 안내를 자막과 함께 음성으로 들려드립니다",
     region: "지역",
     crop: "작물",
+    regionPlaceholder: "지역을 선택하세요",
+    cropPlaceholder: "작물을 선택하세요",
+    needBoth: "지역과 작물을 선택하면 들을 수 있어요.",
+    needRegion: "지역을 선택하면 들을 수 있어요.",
+    needCrop: "작물을 선택하면 들을 수 있어요.",
     voice: "음성 언어",
     voiceOf: "음성",
     listen: "듣기",
@@ -398,8 +391,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     stop: "정지",
     soundOn: "소리 켜짐",
     soundOff: "소리 꺼짐",
-    musicOn: "음악 켜짐",
-    musicOff: "음악 꺼짐",
     subtitles: "자막",
     subEn: "영어",
     subSpoken: "음성 언어",
@@ -418,9 +409,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     noteCache: "저장된 방송입니다. {date}에 생성되었습니다. 같은 문장이라 음성을 다시 만들지 않았습니다.",
     noteDemo: "{date}에 녹음된 방송을 듣고 계십니다. 지금 생성된 것이 아닙니다.",
     noteReplay: "{date} 재현: 관측된 날씨이며 예보가 아닙니다.",
+    noteMismatch: "이 방송은 {region} · {crop} 기준이며, 현재 선택하신 항목과 다릅니다.",
     fallbackOffline: "네트워크 없음: 녹음된 방송을 재생합니다.",
     fallbackBudget: "음성 크레딧이 소진되어 녹음된 방송을 재생합니다.",
     fallbackError: "음성 서비스가 응답하지 않아 녹음된 방송을 재생합니다.",
+    errPlay: "방송을 재생할 수 없습니다. 네트워크도 녹음된 방송도 없습니다.",
     demosTitle: "녹음된 방송",
     demosHint: "네트워크와 크레딧 없이도 작동합니다.",
     whyTitle: "왜 영상이 아니라 그려진 진행자일까요?",
@@ -436,8 +429,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justGloss: "",
     voiceNote: "음성: {name} (임시, 청취 검증 전).",
     indicative: "참고용 조언이며 지역 농업 당국의 확인이 필요합니다.",
-    back: "홈",
-    uiLang: "인터페이스",
     unsureTitle: "확실하지 않음: 담당자에게 문의하세요",
     askCell: "담당자에게 문의",
     reasons: {
@@ -448,11 +439,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "앞으로 3일 안에 비가 올 수 있습니다(가능성 30~70%).",
       short_horizon: "예보가 일주일 전체를 다루지 않습니다.",
     },
-    agoLabel: "마지막 관개",
-    agoUnknown: "모름",
-    agoToday: "오늘",
-    agoOne: "1일 전",
-    agoDays: "{n}일 전",
     reportsTitle: "농민 신고로 보정된 비",
     reportsRow: "{rel}: 농민 {n}명이 “{level}”라고 신고했습니다 (예보는 {model}mm).",
     reportsNote: "이것은 농민들의 신고입니다. 그날은 예보 대신 반영했습니다.",
@@ -488,12 +474,20 @@ export const STRINGS: Record<UiLang, Strings> = {
   ...BASE,
   aeb: {
     ...BASE.ar,
+    crop: "الزرعة", // le mot de la darija de l'en-tête et de l'accueil du site (components/ui/i18n.ts)
+    regionPlaceholder: "اختار ولايتك",
+    cropPlaceholder: "اختار زرعتك",
+    needBoth: "اختار ولايتك وزرعتك باش تسمع.",
+    needRegion: "اختار ولايتك باش تسمع.",
+    needCrop: "اختار زرعتك باش تسمع.",
     listen: "اسمع",
     stop: "وقّف",
     loading: "نحضّرو في النشرة…",
     pressListen: "اضغط على «اسمع» باش تبدا النشرة.",
     soundOn: "الصوت خدّام",
     soundOff: "الصوت مقطوع",
+    noteMismatch: "النشرة هاذي متاع {region} · {crop}، موش على اختيارك توا.",
+    errPlay: "ما نجمناش نشغّلو النشرة: ما فمّاش انترنت وما فمّاش نشرة مسجّلة.",
     rainBtn: "نزلت الشتا",
     rainAsk: "قدّاش نزلت الشتا عندكم؟",
     rewardThanks: "يعيشك يا جار!",
