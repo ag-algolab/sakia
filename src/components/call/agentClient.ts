@@ -11,7 +11,7 @@ export type AgentToolResult = {
   region_id: string;
   crop_id: string;
   last_irrigation_days_ago: number | null;
-  language: "fr" | "ar";
+  language: "en" | "fr" | "ar";
   plan_date?: string;
   error?: string;
 };

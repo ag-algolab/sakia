@@ -18,7 +18,7 @@ export type AgentPlanResult = {
   region_id: string;
   crop_id: string;
   last_irrigation_days_ago: number | null;
-  language: "fr" | "ar";
+  language: "en" | "fr" | "ar";
   plan_date?: string;
   error?: "unknown_crop" | "unknown_region" | "plan_unavailable";
 };
@@ -34,7 +34,8 @@ export function parseAgo(x: unknown): number | null {
 }
 
 export async function agentPlan(input: AgentPlanInput): Promise<AgentPlanResult> {
-  const language: "fr" | "ar" = input.lang === "ar" ? "ar" : "fr";
+  // anglais par défaut (décision d'Anthony, 4 oct. : le jury est anglophone) ; l'arabe et le français quand la personne les parle
+  const language: "en" | "fr" | "ar" = input.lang === "ar" ? "ar" : input.lang === "fr" ? "fr" : "en";
   const regionId = typeof input.region === "string" ? input.region : "kairouan";
   const cropId = typeof input.crop === "string" ? input.crop : "";
   const ago = parseAgo(input.ago);
@@ -63,7 +64,7 @@ export async function agentPlan(input: AgentPlanInput): Promise<AgentPlanResult>
       ...base,
       ok: false,
       spoken_text: promptText("unsure", language),
-      english_text: promptEn("unsure", "fr"),
+      english_text: promptEn("unsure", language),
       ask_a_person: true,
       confidence: "none",
       error: "plan_unavailable",

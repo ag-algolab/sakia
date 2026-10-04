@@ -1,11 +1,13 @@
 "use client";
 
 // Page /call/talk : conversation vocale avec l'agent ElevenLabs. L'agent comprend ; le moteur calcule ; l'agent lit le résultat.
-// Le panneau « ce que l'agent a compris » montre ce qui a été passé au moteur (culture, région, dernier arrosage) et la réponse
-// du moteur avec son sous-titre anglais, ainsi que le garde-fou « pas sûr ».
+// Simple d'abord (demande d'Anthony, 4 oct. : « trop de texte, trop confus ») : un titre, une ligne, UN gros bouton rond. La conversation
+// et la réponse n'apparaissent que lorsqu'elles existent ; « pourquoi l'IA », la mesure et les limites sont repliés en bas.
+// Ce que l'agent a compris (culture, région, dernier arrosage) devient le champ de la personne sur tout le site.
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MicIcon } from "@/components/ui/icons";
 import { useLang } from "@/components/ui/LangProvider";
 import { dateFromAgo, loadProfile, saveProfile, tunisToday } from "@/components/ui/profile";
 import { getCrop } from "@/lib/crops";
@@ -107,45 +109,58 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
   };
   const active = status === "connecting" || status === "live";
   const ago = tool?.result.last_irrigation_days_ago;
+  const agoText = ago == null ? t("unknownIrrigation") : ago === 0 ? t("today") : ago === 1 ? t("dayAgo") : t("daysAgo", { n: ago });
+  const answerLang = tool?.result.language ?? "en";
 
   return (
-    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-4xl px-4 py-6">
-      <h1 className="text-2xl font-bold text-sakia-green">{t("title")}</h1>
-      <p className="mt-2 max-w-3xl text-lg">{t("intro")}</p>
-      <p className="mt-2 max-w-3xl text-base text-sakia-brown">{t("whyAi")}</p>
+    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-3xl px-4 py-8">
+      {/* ---------- un titre, une ligne, un gros bouton ---------- */}
+      <div className="flex flex-col items-center text-center">
+        <h1 className="font-display text-3xl font-bold text-sakia-green-deep sm:text-4xl">{t("title")}</h1>
+        <p className="mt-2 max-w-xl text-lg text-sakia-ink">{t("intro")}</p>
 
-      {!agentReady && <p className="mt-4 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 font-semibold text-sakia-alert">{t("noAgent")}</p>}
+        {!agentReady && <p className="mt-4 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 font-semibold text-sakia-alert">{t("noAgent")}</p>}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
         {!active ? (
-          <button type="button" onClick={start} disabled={!agentReady} className="min-h-12 rounded-xl bg-[#1d7a3b] px-6 text-lg font-bold text-white hover:bg-[#17652f] disabled:opacity-50">
-            🎙 {status === "ended" || status === "error" ? t("again") : t("start")}
+          <button
+            type="button"
+            onClick={start}
+            disabled={!agentReady}
+            className="sk-press mt-6 flex h-36 w-36 flex-col items-center justify-center gap-1 rounded-full bg-gradient-to-br from-[#4aa263] via-sakia-green to-sakia-green-deep text-white shadow-[0_12px_28px_-8px_rgba(18,53,36,0.7)] ring-4 ring-white disabled:opacity-50"
+          >
+            <MicIcon className="h-14 w-14" />
+            <span className="text-base font-bold">{status === "ended" || status === "error" ? t("again") : t("start")}</span>
           </button>
         ) : (
-          <button type="button" onClick={stop} className="min-h-12 rounded-xl bg-[#c43b2b] px-6 text-lg font-bold text-white hover:bg-[#a83123]">
-            📵 {t("stop")}
+          <button
+            type="button"
+            onClick={stop}
+            className="sk-press mt-6 flex h-36 w-36 flex-col items-center justify-center gap-1 rounded-full bg-[#c43b2b] text-white shadow-[0_12px_28px_-8px_rgba(120,30,20,0.7)] ring-4 ring-white"
+          >
+            <span aria-hidden className="text-4xl leading-none">■</span>
+            <span className="text-base font-bold">{t("stop")}</span>
           </button>
         )}
-        <p role="status" className="text-base font-semibold" aria-live="polite">
+
+        <p role="status" aria-live="polite" className="mt-3 min-h-7 text-lg font-semibold text-sakia-green-deep">
           {status === "connecting" && t("connecting")}
           {status === "live" && (speaking ? `🔊 ${t("speaking")}` : mic ? `🎙 ${t("live")}` : t("liveNoMic"))}
-          {status === "live" && <span className="ms-3 font-mono text-sakia-brown">{String(Math.floor(left / 60)).padStart(2, "0")}:{String(left % 60).padStart(2, "0")}</span>}
+          {status === "live" && <span className="ms-3 font-mono text-base text-sakia-brown">{String(Math.floor(left / 60)).padStart(2, "0")}:{String(left % 60).padStart(2, "0")}</span>}
           {status === "ended" && t("ended")}
         </p>
+        {status === "error" && (
+          <p className="mt-2 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base text-sakia-alert">
+            <strong>{t("errorTitle")}</strong> {detail}
+          </p>
+        )}
       </div>
-      <p className="mt-1 text-sm text-sakia-brown">{t("maxCall")}</p>
-      {status === "error" && (
-        <p className="mt-3 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base text-sakia-alert">
-          <strong>{t("errorTitle")}</strong> {detail}
-        </p>
-      )}
 
-      <div className="mt-5 grid items-start gap-4 md:grid-cols-2">
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-          <ol tabIndex={0} aria-label={t("title")} className="max-h-80 space-y-2 overflow-y-auto">
-            {lines.length === 0 && <li className="text-base text-sakia-brown">{t("waiting")}</li>}
+      {/* ---------- la conversation, quand elle existe ---------- */}
+      {(lines.length > 0 || status === "live") && (
+        <section className="mt-6 rounded-2xl border border-sakia-sand-dark bg-white p-3">
+          <ol tabIndex={0} aria-label={t("title")} className="max-h-72 space-y-2 overflow-y-auto">
             {lines.map((l) => (
-              <li key={l.id} className={`rounded-lg px-3 py-2 text-lg ${l.who === "you" ? "bg-sakia-sand" : "bg-sakia-green-light"}`}>
+              <li key={l.id} className={`rounded-lg px-3 py-2 text-lg ${l.who === "you" ? "ms-8 bg-sakia-sand" : "me-8 bg-sakia-green-light"}`}>
                 <span className="block text-xs font-bold uppercase tracking-wide text-sakia-brown">{l.who === "you" ? t("you") : t("agent")}</span>
                 <span dir="auto">{l.text}</span>
               </li>
@@ -167,38 +182,27 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
             </form>
           )}
         </section>
+      )}
 
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-          <h2 className="text-base font-bold text-sakia-green">{t("understoodTitle")}</h2>
-          {!tool ? (
-            <p className="mt-2 text-base text-sakia-brown">{t("waiting")}</p>
-          ) : (
-            <div className="mt-2 space-y-2 text-base">
-              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-                <dt className="font-semibold">{t("crop")}</dt>
-                <dd>{cropName(tool.result.crop_id)}</dd>
-                <dt className="font-semibold">{t("region")}</dt>
-                <dd>{regionName(tool.result.region_id)}</dd>
-                <dt className="font-semibold">{t("lastIrrigation")}</dt>
-                <dd>{ago == null ? t("unknownIrrigation") : ago === 0 ? t("today") : ago === 1 ? t("dayAgo") : t("daysAgo", { n: ago })}</dd>
-                <dt className="font-semibold">{t("spokenLanguage")}</dt>
-                <dd>{tool.result.language === "ar" ? "العربية" : "Français"}</dd>
-              </dl>
-              <div>
-                <h3 className="text-sm font-bold text-sakia-brown">{t("engineAnswer")}</h3>
-                <p className="mt-1 text-lg" lang="en" dir="ltr">{tool.result.english_text}</p>
-                <p className="mt-1 text-base text-sakia-brown" lang={tool.result.language} dir={tool.result.language === "ar" ? "rtl" : "ltr"}>{tool.result.spoken_text}</p>
-              </div>
-              {tool.result.ask_a_person ? (
-                <p className="rounded-lg border-2 border-sakia-alert bg-sakia-alert-light p-2 font-bold text-sakia-alert">⚠ {t("guardAsk")}</p>
-              ) : (
-                <p className="rounded-lg border border-sakia-green bg-sakia-green-light p-2">{t("guardOk")}</p>
-              )}
-            </div>
+      {/* ---------- la réponse : ce qui a été compris, la réponse du moteur, le champ enregistré ---------- */}
+      {tool && (
+        <section className="mt-4 space-y-3 rounded-2xl border border-sakia-sand-dark bg-white p-4">
+          <p className="flex flex-wrap gap-2 text-base font-bold">
+            <span className="rounded-full bg-sakia-sand px-3 py-1">{cropName(tool.result.crop_id)}</span>
+            <span className="rounded-full bg-sakia-sand px-3 py-1">{regionName(tool.result.region_id)}</span>
+            <span className="rounded-full bg-sakia-water-light px-3 py-1 text-sakia-water-deep">{agoText}</span>
+          </p>
+          <p className="text-lg" lang="en" dir="ltr">
+            {tool.result.english_text}
+          </p>
+          {tool.result.spoken_text !== tool.result.english_text && (
+            <p className="text-base text-sakia-brown" lang={answerLang} dir={answerLang === "ar" ? "rtl" : "ltr"}>
+              {tool.result.spoken_text}
+            </p>
           )}
-          {/* le champ dit à voix haute est enregistré sur l'appareil : l'accueil, la preuve et le téléphone l'utilisent */}
+          {tool.result.ask_a_person && <p className="rounded-lg border-2 border-sakia-alert bg-sakia-alert-light p-2 font-bold text-sakia-alert">⚠ {t("guardAsk")}</p>}
           {saved && (
-            <p role="status" className="mt-3 rounded-lg bg-sakia-green p-3 text-base font-bold text-white">
+            <p role="status" className="rounded-lg bg-sakia-green p-3 text-base font-bold text-white">
               ✓ {t("fieldSaved", { crop: cropName(saved.crop), region: regionName(saved.region) })}{" "}
               <Link href="/" className="underline underline-offset-2">
                 {t("seePlan")}
@@ -206,26 +210,31 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
             </p>
           )}
         </section>
-      </div>
-
-      {evalSummary && (
-        <section className="mt-5 rounded-xl border border-sakia-sand-dark bg-white p-4">
-          <h2 className="text-lg font-bold text-sakia-green">{t("measuredTitle")}</h2>
-          <p className="mt-1 text-base">
-            {t("measured", {
-              passed: evalSummary.passed,
-              n: evalSummary.phrases,
-              both: evalSummary.plan_both_ok,
-              verbatim: evalSummary.plan_read_verbatim,
-              ms: evalSummary.median_ms_to_tool_call ?? "?",
-            })}
-          </p>
-        </section>
       )}
-      <p className="mt-4 text-sm text-sakia-brown">{t("limits")}</p>
-      <p className="mt-3">
-        <Link href="/call" className="inline-flex min-h-11 items-center font-semibold text-sakia-water-deep underline">← {t("backToKeypad")}</Link>
-      </p>
+
+      {/* ---------- le reste, replié ---------- */}
+      <details className="mt-8 rounded-2xl border border-sakia-sand-dark bg-white p-4">
+        <summary className="flex min-h-11 cursor-pointer items-center text-base font-bold text-sakia-green">{t("moreTitle")}</summary>
+        <div className="mt-2 space-y-3 text-base text-sakia-ink">
+          <p>{t("whyAi")}</p>
+          {evalSummary && (
+            <p>
+              {t("measured", {
+                passed: evalSummary.passed,
+                n: evalSummary.phrases,
+                both: evalSummary.plan_both_ok,
+                verbatim: evalSummary.plan_read_verbatim,
+                ms: evalSummary.median_ms_to_tool_call ?? "?",
+              })}
+            </p>
+          )}
+          <p className="text-sm text-sakia-brown">{t("limits")}</p>
+          <p className="text-sm text-sakia-brown">{t("maxCall")}</p>
+          <Link href="/call" className="inline-flex min-h-11 items-center font-semibold text-sakia-water-deep underline">
+            ← {t("backToKeypad")}
+          </Link>
+        </div>
+      </details>
     </main>
   );
 }
