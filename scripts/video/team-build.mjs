@@ -34,15 +34,19 @@ const ok = takes.takes.filter((tk) => tk.start != null);
 for (const tk of takes.takes) if (tk.start == null) console.log(`phrase ${tk.line + 1} introuvable dans la vidéo : « ${tk.text.slice(0, 50)} » (elle sera absente)`);
 const GAP = 0.1;
 const END_CARD = LOCAL ? 0 : 3.0;
-const speech = ok.reduce((s, tk) => s + (tk.end - tk.start) + GAP, 0.3);
+// deux prises qui se suivent dans l'enregistrement (même passage, coupé en phrases) : collées sans trou ni fondu ;
+// deux prises éloignées : un fondu enchaîné court sur l'image (pas de saute sèche)
+const contiguous = (i) => i > 0 && ok[i].start - ok[i - 1].end < 0.05;
+const speech = ok.reduce((s, tk, i) => s + (tk.end - tk.start) + (i > 0 && !contiguous(i) ? GAP : 0), 0.3);
 const rate = Math.min(1.08, Math.max(1, speech / (MAX - END_CARD - 0.2)));
 if (rate > 1) console.log(`un peu long : prises accélérées de ${Math.round((rate - 1) * 100)} %`);
 if (speech / rate > MAX - END_CARD - 0.2) console.log(`ATTENTION : même accélérée, la vidéo dépasse ${MAX} s : refaire une phrase plus courte`);
 let t = 0.3;
-const segs = ok.map((tk) => {
+const segs = ok.map((tk, i) => {
+  if (i > 0 && !contiguous(i)) t += GAP;
   const len = (tk.end - tk.start) / rate;
-  const s = { line: tk.line, at: t, from: tk.start, to: tk.end, len, text: tk.text };
-  t += len + GAP;
+  const s = { line: tk.line, at: t, from: tk.start, to: tk.end, len, text: tk.text, xfade: i > 0 && !contiguous(i) ? 0.18 : undefined };
+  t += len;
   return s;
 });
 const END_AT = t + 0.1;
@@ -60,6 +64,8 @@ const at = (line, re, frac = 0.5) => {
 // ---------------------------------------------------------------- sous-titres (texte écrit, rythme entendu)
 const GLOSSARY = [
   [/\bgo(?:c|ck|ch|k|kh)m(?:a|e)n\b/gi, "Gocmen"],
+  [/\bgu(?:c|ck|ch|k)k?man+\b/gi, "Gocmen"],
+  [/\bsakya\b/gi, "Sakia"],
   [/\b(?:A\.?\s?G\.?\s?)?Algo\s?Lab\b/gi, "AG Algo Lab"],
   [/\bdolphin(?:e)?\b|\bdauphin\b/gi, "Dauphine"],
   [/\bsak(?:k)?ia\b|\bsaqia\b|\bsakiya\b/gi, "Sakia"],
@@ -87,20 +93,28 @@ const subLayers = segs.map((s) => {
 const pops = [];
 const html = (start, end, body, extra = {}) => pops.push({ type: "html", start, end, fx: "none", fadeIn: 0.15, fadeOut: 0.25, html: body, ...extra });
 if (!LOCAL) {
-  // phrases (team-lines.json) : 0 nom, 1 entrepreneur, 2 Dauphine, 3 échecs, 4 la ferme de l'amie, 5 l'eau inégale, 6 l'appel,
-  // 7 l'équipe, 8 le grand-père
-  const s0 = seg(0), s1 = seg(1), s2 = seg(2), sChess = seg(3), s3 = seg(4), s4 = seg(5), s5 = seg(6), s6 = seg(7);
-  const L_FARM = 4, L_WATER = 5, L_CALL = 6;
+  // prises gardées (scripts/video/specs/team-recorded.mjs) : 0 nom, 1 entrepreneur et ses projets (« I build this, this, this,
+  // this, and also this » : un projet surgit à chaque « this »), 2 étudiant à Dauphine, ambassadeur, 3 joueur d'échecs → l'eau →
+  // Sakia, 4 la ferme de l'amie, 5 l'appel puis « the water is very unfair », 6 le grand-père (sa phrase reste sur son visage).
+  // Pas de mention de l'outil de code (décision d'Anthony).
+  const s0 = seg(0), s1 = seg(1), s2 = seg(2), sChess = seg(3), s3 = seg(4), s5 = seg(5);
+  const L_FARM = 4, L_CALL = 5;
+  // tous les instants (dans le montage) où un mot est prononcé dans une phrase
+  const atAll = (line, re) => {
+    const s = seg(line);
+    if (!s) return [];
+    return words.filter((x) => x.start >= s.from - 0.05 && x.end <= s.to + 0.05 && re.test(x.text.toLowerCase().replace(/[^a-z']/g, ""))).map((w) => s.at + (w.start - s.from) / rate);
+  };
   // 1. nom et titres
-  if (s0) html(s0.at + 0.2, s1 ? Math.max(s1.at + 0.6, at(1, /algo|company/, 0.35) + 0.15) : s0.at + s0.len + 1.2, `<div class="lower" data-at="0" data-fx="slide"><b>Anthony Gocmen</b><span>Founder, AG Algo Lab · Ambassador, Université Paris Dauphine – PSL</span></div>`);
-  // 2. AG Algo Lab, puis ses projets qui surgissent un par un
+  if (s0) html(s0.at + 0.2, s1 ? at(1, /algo|company/, 0.35) + 0.9 : s0.at + s0.len + 1.2, `<div class="lower" data-at="0" data-fx="slide"><b>Anthony Gocmen</b><span>Founder, AG Algo Lab · Ambassador, Université Paris Dauphine – PSL</span></div>`);
+  // 2. AG Algo Lab, puis ses projets, un par « this »
   if (s1) {
     const tAg = at(1, /algo|company/, 0.35);
-    const tSaas = at(1, /saas|products/, 0.75);
+    const thisAt = atAll(1, /^this$/);
+    const tSaas = thisAt[0] ?? at(1, /saas|products/, 0.75);
     const start = tAg - 0.15;
-    // fin : juste avant que le post de Dauphine arrive (même côté de l'écran)
-    const postAt = s2 ? Math.max(at(2, /ambassador/, 0.2) - 0.2, s2.at + 0.6) : Infinity;
-    const end = Math.min((s2 ? s2.at : s1.at + s1.len) + Math.min(1.4, (s2?.len ?? 2) * 0.35), postAt - 0.05);
+    // fin : peu après « student » (le post de Dauphine arrive ensuite du même côté de l'écran)
+    const end = s2 ? Math.min(at(2, /student/, 0.15) + 0.9, at(2, /ambassador/, 0.6) - 0.3) : s1.at + s1.len + 1.0;
     const items = [
       ["logo-moliere.png", "Institut Molière", "Communication school, French & English", "wide"],
       ["logo-kurdi.png", "Kurdi School", "Learn Kurmanji, the family language"],
@@ -109,21 +123,22 @@ if (!LOCAL) {
       ["logo-jawekbehi.png", "Jawek Behi", "Outings around Greater Tunis"],
     ];
     const step = Math.min(0.42, Math.max(0.24, (end - tSaas - 1.2) / items.length));
+    const popAt = (i) => (thisAt.length >= items.length ? thisAt[i] : tSaas + i * step) - start;
     const cards = items
-      .map(([f, name, tag, wide], i) => `<div class="saas" data-at="${(tSaas - start + i * step).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 9 : -9}"><span class="ico${wide ? " wide" : ""}"><img src="${A(f)}"></span><span class="txt"><b>${name}</b><i>${tag}</i></span></div>`)
+      .map(([f, name, tag, wide], i) => `<div class="saas" data-at="${popAt(i).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 9 : -9}"><span class="ico${wide ? " wide" : ""}"><img src="${A(f)}"></span><span class="txt"><b>${name}</b><i>${tag}</i></span></div>`)
       .join("");
     html(start, end, `<div class="agbadge" data-at="0" data-fx="pop"><img src="${A("logo-agalgolab-icon.png")}"><b>AG Algo Lab</b></div><div class="saascol">${cards}</div>`);
   }
-  // 3. ambassadeur de Dauphine (le vrai post LinkedIn), puis la Tunisie
+  // 3. étudiant à Dauphine (la Tunisie, en haut à gauche), puis ambassadeur (le vrai post LinkedIn, à droite)
   if (s2) {
-    const tAmb = at(2, /ambassador/, 0.2);
-    const tTun = at(2, /tunisia/, 0.7);
-    html(Math.max(tAmb - 0.2, s2.at + 0.6), s2.at + s2.len + 0.15, `<div class="post" data-at="0" data-fx="slide" data-rot="-2"><img src="${A("linkedin-dauphine.jpg")}"><em>Université Dauphine Tunis, on LinkedIn</em></div><div class="pin" data-at="${Math.max(0.6, tTun - Math.max(tAmb - 0.2, s2.at + 0.6)).toFixed(2)}" data-fx="pop">📍 Tunis, Tunisia · master's at the Dauphine campus</div>`);
+    const tMaster = at(2, /master/, 0.45), tAmb = at(2, /ambassador/, 0.6);
+    html(tMaster - 0.1, s2.at + s2.len + 0.2, `<div class="pin" data-at="0" data-fx="pop">📍 Tunis, Tunisia · master's at the Dauphine campus</div>`);
+    html(tAmb - 0.15, s2.at + s2.len + 0.2, `<div class="post" data-at="0" data-fx="slide" data-rot="-2"><img src="${A("linkedin-dauphine.jpg")}"><em>Université Dauphine Tunis, on LinkedIn</em></div>`);
   }
-  // 3 bis. joueur d'échecs : des ressources limitées, chaque coup compte ; ici, chaque goutte
+  // 3 bis. joueur d'échecs : des ressources limitées ; ici, la ressource limitée, c'est l'eau ; d'où Sakia
   if (sChess) {
-    const tChess = at(3, /chess/, 0.25), tDrop = at(3, /drop/, 0.8);
-    html(tChess - 0.15, sChess.at + sChess.len + 0.3, `<div class="chess" data-at="0" data-fx="pop" data-rot="-6"><span class="pc">♞</span><span><b>Chess player</b><i>limited resources: every move counts</i></span></div><div class="drop" data-at="${(tDrop - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="5">💧 Here, every drop counts</div>`);
+    const tChess = at(3, /chess/, 0.1), tWater = at(3, /water/, 0.7), tSakia = at(3, /sakia|sakya|sakiya|saqia/, 0.95);
+    html(tChess - 0.15, sChess.at + sChess.len + 0.7, `<div class="chess" data-at="0" data-fx="pop" data-rot="-6"><span class="pc">♞</span><span><b>Chess player</b><i>limited resources: every move counts</i></span></div><div class="drop" data-at="${(tWater - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="5">💧 Here, the limited resource is water</div><div class="sakiabadge" data-at="${(tSakia - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
   }
   // 4. la ferme de l'amie : illustration générée si elle existe (sans zoom), sinon des mots qui surgissent
   if (s3) {
@@ -132,26 +147,19 @@ if (!LOCAL) {
       pops.push({ type: "image", start: s3.at + 0.3, end: s3.at + s3.len + 0.1, fadeIn: 0.25, fadeOut: 0.25, src: img, kenburns: { from: [1, 0.5, 0.5], to: [1, 0.5, 0.5] } });
       pops.push({ type: "note", start: s3.at + 0.4, end: s3.at + s3.len, x: 1620, y: 40, cls: "ai-tag", text: "AI illustration" });
     } else {
-      const tW = at(L_FARM, /water/, 0.6);
-      html(s3.at + 0.4, s3.at + s3.len + 0.1, `<div class="words"><span data-at="0" data-fx="pop" data-rot="-6">A family farm,</span><span data-at="0.35" data-fx="pop" data-rot="5">stopped.</span><span class="hot" data-at="${(tW - s3.at - 0.4).toFixed(2)}" data-fx="pop" data-rot="-4">💧 Too expensive</span></div>`);
+      const tW = at(L_FARM, /expensive/, 0.8);
+      html(s3.at + 0.5, s3.at + s3.len + 0.2, `<div class="words"><span data-at="0" data-fx="pop" data-rot="-6">A family farm,</span><span data-at="0.35" data-fx="pop" data-rot="5">stopped.</span><span class="hot" data-at="${Math.max(0.8, tW - s3.at - 0.5).toFixed(2)}" data-fx="pop" data-rot="-4">💧 Too expensive</span></div>`);
     }
   }
-  // 5. l'eau inégale : l'État, le puits, la citerne, au mot prononcé
-  if (s4) {
-    const t1 = at(L_WATER, /state/, 0.35), t2 = at(L_WATER, /well/, 0.6), t3 = at(L_WATER, /tank/, 0.85);
-    const start = Math.min(t1, s4.at + 0.6) - 0.1;
-    const card = (t0, emoji, title, sub, img) =>
-      `<div class="water" data-at="${(t0 - start).toFixed(2)}" data-fx="pop" data-rot="${title.length % 2 ? 7 : -7}">${img ? `<span class="ph" style="background-image:url('${img}')"></span>` : `<span class="em">${emoji}</span>`}<span><b>${title}</b><i>${sub}</i></span></div>`;
-    html(start, s4.at + s4.len + 0.5, `<div class="waterrow">${card(t1, "🏛️", "The state", "public schemes", AI("12", "canal"))}${card(t2, "🪣", "Their own well", "pumped, paid in fuel", AI("06", "puits", "well"))}${card(t3, "🚚", "Tank by tank", "bought water", AI("11", "citerne", "tanker"))}</div>`);
-  }
-  // 6. l'appel du premier jour, puis Sakia
+  // 5. l'appel du premier jour, puis « the water is very unfair » : l'État, le puits, la citerne
   if (s5) {
-    const tCall = at(L_CALL, /called/, 0.3), tSakia = at(L_CALL, /sakia|sakiya|saqia/, 0.65);
-    html(tCall - 0.1, s5.at + s5.len + 0.3, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="sakiabadge" data-at="${(tSakia - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
+    const tCall = at(L_CALL, /^call$/, 0.25), tUnfair = at(L_CALL, /^water$/, 0.85);
+    html(tCall - 0.1, tUnfair - 0.15, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div>`);
+    const card = (k, emoji, title, sub, img) =>
+      `<div class="water" data-at="${(k * 0.4).toFixed(2)}" data-fx="pop" data-rot="${title.length % 2 ? 7 : -7}">${img ? `<span class="ph" style="background-image:url('${img}')"></span>` : `<span class="em">${emoji}</span>`}<span><b>${title}</b><i>${sub}</i></span></div>`;
+    html(tUnfair - 0.05, s5.at + s5.len + 0.9, `<div class="waterrow">${card(0, "🏛️", "The state", "public schemes", AI("12", "canal"))}${card(1, "🪣", "Their own well", "pumped, paid in fuel", AI("06", "puits", "well"))}${card(2, "🚚", "Tank by tank", "bought water", AI("11", "citerne", "tanker"))}</div>`);
   }
-  // 7. l'équipe
-  if (s6) html(s6.at + 0.2, s6.at + s6.len + 0.6, `<div class="teamchip" data-at="0" data-fx="pop" data-rot="4">TEAM: 1 HUMAN + CLAUDE CODE (AI)</div>`);
-  // 8. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
+  // 6. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
 }
 
 // « localiser l'IA » : le résultat qui fonde la position (phrase 3), puis la méthode en six temps (phrases 6 à 8)
@@ -179,7 +187,7 @@ const spec = {
   fps: 30,
   duration: Math.round((LOCAL ? END_AT + 0.3 : DURATION) * 100) / 100,
   css: `
-    .subtitle{font:700 44px/1.25 Geist,sans-serif!important;color:#fff!important;text-shadow:0 2px 12px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);letter-spacing:0!important}
+    .subtitle{font:700 42px/1.25 Geist,sans-serif!important;color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.7);letter-spacing:0!important;background:rgba(8,14,10,.5);padding:10px 22px;border-radius:16px;box-sizing:border-box}
     .lower{position:absolute;left:80px;bottom:190px;padding:22px 30px;border-radius:22px;background:rgba(11,27,20,.84);border-left:8px solid #f2b33d}
     .lower b{display:block;font:900 54px/1.05 Fraunces,serif;color:#fff}
     .lower span{display:block;font:600 27px/1.35 Geist,sans-serif;color:#d6e6d2;margin-top:8px}
@@ -221,7 +229,7 @@ const spec = {
     .teamchip{position:absolute;right:80px;top:90px;padding:18px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 30px Geist,sans-serif;letter-spacing:.06em;box-shadow:0 12px 30px rgba(0,0,0,.35)}
     .gp img:not(.vid-back){filter:sepia(.25) saturate(.9) contrast(1.05)}
     .gplabel{position:absolute;left:80px;bottom:200px;padding:14px 24px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font:600 28px Geist,sans-serif}
-    .endcard{position:absolute;inset:0;background:radial-gradient(1300px 900px at 50% 45%,#1f4a33 0%,#12301f 50%,#0b1b14 100%);display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .endcard{position:absolute;inset:0;background:radial-gradient(1300px 900px at 50% 45%,rgba(31,74,51,.55) 0%,rgba(18,48,31,.35) 55%,rgba(11,27,20,0) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center}
     .endcard .logo{width:130px;height:130px;color:#f4efe6}.endcard .logo svg{width:100%;height:100%}
     .endcard b{font:900 110px/1 Fraunces,serif;color:#fff;margin-top:20px}
     .endcard i{font:800 54px Fraunces,serif;font-style:normal;color:#f2b33d;margin-top:14px}
@@ -242,13 +250,16 @@ const spec = {
   media: { face: { file: path.resolve(video).replace(/\\/g, "/") } },
   layers: [
     { type: "bg", style: "night" },
-    { type: "video", start: 0, end: END_AT, fadeIn: 0.3, fadeOut: 0.3, x: 0, y: 0, w: 1920, h: 1080, ...(portrait ? { fit: "contain" } : {}), segments: segs.map((s) => ({ at: s.at, media: "face", from: s.from, to: s.to, rate })) },
+    { type: "video", start: 0, end: END_AT, fadeIn: 0.3, fadeOut: 0.3, x: 0, y: 0, w: 1920, h: 1080, ...(portrait ? { fit: "contain" } : {}), segments: segs.map((s) => ({ at: s.at, media: "face", from: s.from, to: s.to, rate, xfade: s.xfade })) },
     ...pops,
     ...localLayers,
     ...subLayers,
+    // la carte de fin laisse voir le fond animé (roue, vagues) et une lumière qui dérive : rien de figé jusqu'à la dernière image
+    ...(LOCAL ? [] : [{ type: "glow", start: END_AT - 0.1, end: DURATION, fadeIn: 0.4, fadeOut: 0.01, opacity: 0.12 }]),
     ...(LOCAL ? [] : [{ type: "html", start: END_AT - 0.1, end: DURATION, fadeIn: 0.4, fadeOut: 0.01, fx: "none", html: `<div class="endcard"><div class="logo" data-at="0">{{WHEEL}}</div><b data-at="0.15">Sakia</b><i data-at="0.35">One decision a day.</i><div class="chips" data-at="0.7"><span class="r">● REAL: web, app, Telegram</span><span class="s">● SIMULATED: call, SMS</span></div><small data-at="1.1">sakia-opal.vercel.app · github.com/ag-algolab/sakia</small></div>` }]),
   ],
-  music: { file: "videos/build/music-23.wav", gain: -26, duckGain: -8, fadeIn: 1.0, fadeOut: 2.0, duck: segs.map((s) => ({ from: s.at - 0.1, to: s.at + s.len + 0.1 })) },
+  // musique composée par ElevenLabs pour cette vidéo (guitare, piano, oud, montée finale), à −12 LUFS : bien sous la voix
+  music: { file: ["videos/build/music-team.mp3", "videos/build/music-emotion.mp3", "videos/build/music-23.wav"].find((f) => existsSync(f)), gain: -16, duckGain: -8, fadeIn: 1.0, fadeOut: 2.0, duck: segs.map((s) => ({ from: s.at - 0.1, to: s.at + s.len + 0.1 })) },
   audio: segs.map((s) => ({ file: "media:face", at: s.at, from: s.from, to: s.to, gain: 0, fadeIn: 0.03, fadeOut: 0.06, rate: rate !== 1 ? rate : undefined, filter: "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" })),
 };
 mkdirSync("videos/build/specs", { recursive: true });
