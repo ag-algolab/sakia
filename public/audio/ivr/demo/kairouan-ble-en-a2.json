@@ -23,10 +23,10 @@
   },
   {
    "id": "advice",
-   "text": "Our advice: no irrigation is needed in the next seven days.",
+   "text": "Our advice: no irrigation is needed in the next 7 days.",
    "startMs": 9280,
    "endMs": 13440,
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",
@@ -54,8 +54,8 @@
   },
   {
    "id": "advice",
-   "text": "Our advice: no irrigation is needed in the next seven days.",
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "text": "Our advice: no irrigation is needed in the next 7 days.",
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",

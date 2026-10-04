@@ -48,6 +48,7 @@ const en: Dict = {
     "{passed} of {n} written test phrases handled correctly (Arabic, Tunisian Arabic, French, mixes, off-topic questions). Crop and region found: {both}. Answer read word for word: {verbatim}. Median time to call the engine: {ms} ms. These phrases were written by us and typed, not spoken: real farmers' speech will be harder.",
   limits: "Limits: speech recognition of the Tunisian dialect is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. The answer is read in English, simple standard Arabic or French.",
   backToKeypad: "Back to the keypad phone",
+  backHome: "Back to home",
   noAgent: "The voice agent has not been created.",
 };
 
@@ -94,6 +95,7 @@ const fr: Dict = {
     "{passed} phrases de test sur {n} traitées correctement (arabe, arabe tunisien, français, mélanges, questions hors sujet). Culture et région trouvées : {both}. Réponse lue mot pour mot : {verbatim}. Délai médian avant l'appel du moteur : {ms} ms. Ces phrases ont été écrites par nous et tapées, pas dites : la parole de vrais agriculteurs sera plus difficile.",
   limits: "Limites : la reconnaissance du dialecte tunisien n'est pas garantie ; l'agent peut mal comprendre, il redemande alors ou refuse ; le conseil est indicatif et une personne décide. La réponse est lue en anglais, en arabe standard simple ou en français.",
   backToKeypad: "Retour au téléphone à touches",
+  backHome: "Retour à l'accueil",
   noAgent: "L'agent vocal n'a pas été créé.",
 };
 
@@ -140,6 +142,7 @@ const ar: Dict = {
     "{passed} من {n} جملة اختبار عولجت بشكل صحيح (عربية، دارجة، فرنسية، خليط، أسئلة خارج الموضوع). المحصول والولاية: {both}. الجواب مقروء كلمة بكلمة: {verbatim}. المدة الوسطى قبل استدعاء المحرك: {ms} مللي ثانية. كتبنا هذه الجمل بأنفسنا وطبعناها، ولم تُنطق: كلام الفلاحين الحقيقيين أصعب.",
   limits: "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. ويُقرأ الجواب بالإنجليزية أو بعربية فصحى بسيطة أو بالفرنسية.",
   backToKeypad: "العودة إلى الهاتف بالأزرار",
+  backHome: "العودة إلى الصفحة الرئيسية",
   noAgent: "لم يُنشأ الوكيل الصوتي.",
 };
 

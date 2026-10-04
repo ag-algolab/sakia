@@ -246,7 +246,8 @@ export function bulletinScript(plan: Plan, lang: Lang = "fr"): BulletinLine[] {
         ),
       );
     } else {
-      lines.push(L("advice", "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.", "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.", "Our advice: no irrigation is needed in the next seven days."));
+      // en chiffres (Anthony, 4 oct. : « les nombres en lettres, c'est intenable » ; la voix française et anglaise lit « 7 » sans peine)
+      lines.push(L("advice", "Notre conseil : pas d'irrigation nécessaire dans les 7 prochains jours.", "نصيحتنا: لا حاجة للسقي خلال الأيام السبعة القادمة.", "Our advice: no irrigation is needed in the next 7 days."));
     }
     lines.push(L("stress", `Risque de stress hydrique : ${STRESS.fr[s.stressRisk]}.`, `خطر الإجهاد المائي: ${STRESS.ar[s.stressRisk]}.`, `Water-stress risk: ${STRESS.en[s.stressRisk]}.`));
   }

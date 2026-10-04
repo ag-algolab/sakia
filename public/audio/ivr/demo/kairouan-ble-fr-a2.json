@@ -23,10 +23,10 @@
   },
   {
    "id": "advice",
-   "text": "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.",
+   "text": "Notre conseil : pas d'irrigation nécessaire dans les 7 prochains jours.",
    "startMs": 9200,
    "endMs": 13280,
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",
@@ -54,8 +54,8 @@
   },
   {
    "id": "advice",
-   "text": "Notre conseil : pas d'irrigation nécessaire dans les sept prochains jours.",
-   "en": "Our advice: no irrigation is needed in the next seven days."
+   "text": "Notre conseil : pas d'irrigation nécessaire dans les 7 prochains jours.",
+   "en": "Our advice: no irrigation is needed in the next 7 days."
   },
   {
    "id": "stress",

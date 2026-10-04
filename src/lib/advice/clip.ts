@@ -13,6 +13,7 @@ import { getCrop, CROPS, defaultCropForMonth } from "../crops";
 import { chargeUsage, LIMITS } from "../usage";
 import type { IrrigationSystem, SoilName } from "../waterBalance";
 import type { VoiceLang } from "../voice/langs";
+import { digitsForDisplay } from "../voice/numberDisplay";
 import { bulletinScriptFor } from "../voice/script";
 import { DEFAULT_CHOICE } from "../voice/soil";
 import type { SoilChoice } from "../voice/soil";
@@ -65,7 +66,8 @@ export type ClipSub = { id: string; text: string; w: number };
 
 export function clipSubtitles(plan: Plan, spoken: VoiceLang, shown: VoiceLang, choice?: Partial<SoilChoice>): ClipSub[] {
   const said = clipLines(plan, spoken, choice);
-  const text = new Map(clipLines(plan, shown, choice).map((l) => [l.id, l.text]));
+  // à l'écran, les nombres en CHIFFRES : l'arabe dit « مائتين وأربعة عشر » pour la voix, le sous-titre affiche « 214 »
+  const text = new Map(clipLines(plan, shown, choice).map((l) => [l.id, digitsForDisplay(l.text)]));
   return said
     .map((l) => ({ id: l.id, text: text.get(l.id) ?? "", w: Math.max(1, l.text.replace(/[^\p{L}\p{N}]/gu, "").length) }))
     .filter((s) => s.text !== "");

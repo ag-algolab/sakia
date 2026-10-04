@@ -233,3 +233,13 @@ Coupes de phrases existantes (rien d'inventé, sauf la ligne « محاكاة » 
 - `src/lib/sms/replies.ts` help (ar) : ساقية: لتغيير المحصول أو الولاية، اتصل بساقية وقلها. خطة، لغة، ايقاف = مسح. *123# قائمة
 
 - `src/lib/ivr/prompts.ts` welcome (ar), ligne vocale en anglais d'abord : للعربية، اضغط ثلاثة.
+
+
+## Nombres en chiffres à l'écran, et page Preuve en m³/ha (4 oct., 09 h)
+
+Règle d'affichage (`src/lib/voice/numberDisplay.ts`) : la voix arabe garde les nombres en lettres ; à l'écran (sous-titres de l'accueil, ligne vocale, agent vocal), ils redeviennent des chiffres. « مائتين وأربعة عشر متر مكعب » s'affiche « 214 متر مكعب » ; « الأيام السبعة القادمة » s'affiche « الأيام الـ7 القادمة » ; « في السبعة أيام الجاية » s'affiche « في الـ7 أيام الجاية ». Les jours (الاثنين، الأحد) restent des mots. À vérifier : l'écriture « الـ7 » convient-elle à un lecteur tunisien ?
+
+- `planTitle` (ar) : الأيام الـ7 القادمة
+- `chartTitle` (ar) : الماء المضخّ في كل موسم (م³/هك)
+- `chartTitle` (aeb) : الماء اللي تضخّ في كل موسم (م³ في الهكتار)
+- `src/components/telegram/strings.ts` étape 3 (ar) : تصلكم خطة الأيام الـ7 كل صباح، مع زر للنشرة الصوتية. وتذكّركم بأن النصيحة إرشادية وأن القرار لكم.

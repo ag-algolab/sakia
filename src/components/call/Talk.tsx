@@ -11,6 +11,7 @@ import { MicIcon } from "@/components/ui/icons";
 import { useLang } from "@/components/ui/LangProvider";
 import { dateFromAgo, loadProfile, saveProfile, tunisToday } from "@/components/ui/profile";
 import { getCrop } from "@/lib/crops";
+import { digitsForDisplay } from "@/lib/voice/numberDisplay";
 import { getRegion } from "@/lib/regions";
 import { AgentCall } from "./agentClient";
 import type { AgentEvent, AgentToolResult } from "./agentClient";
@@ -113,7 +114,11 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
   const answerLang = tool?.result.language ?? "en";
 
   return (
-    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-3xl px-4 py-8">
+    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-3xl px-4 py-6">
+      {/* d'où l'on vient et comment repartir : cette page n'est pas dans le menu (Anthony, 4 oct. : « on ne sait pas où on est arrivé ») */}
+      <Link href="/" className="inline-flex min-h-11 items-center gap-1.5 text-base font-bold text-sakia-water-deep underline-offset-2 hover:underline">
+        <span aria-hidden className="inline-block rtl:-scale-x-100">←</span> {t("backHome")}
+      </Link>
       {/* ---------- un titre, une ligne, un gros bouton ---------- */}
       <div className="flex flex-col items-center text-center">
         <h1 className="font-display text-3xl font-bold text-sakia-green-deep sm:text-4xl">{t("title")}</h1>
@@ -162,7 +167,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
             {lines.map((l) => (
               <li key={l.id} className={`rounded-lg px-3 py-2 text-lg ${l.who === "you" ? "ms-8 bg-sakia-sand" : "me-8 bg-sakia-green-light"}`}>
                 <span className="block text-xs font-bold uppercase tracking-wide text-sakia-brown">{l.who === "you" ? t("you") : t("agent")}</span>
-                <span dir="auto">{l.text}</span>
+                <span dir="auto">{digitsForDisplay(l.text)}</span>
               </li>
             ))}
             <li ref={logEnd} aria-hidden />
@@ -197,7 +202,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
           </p>
           {tool.result.spoken_text !== tool.result.english_text && (
             <p className="text-base text-sakia-brown" lang={answerLang} dir={answerLang === "ar" ? "rtl" : "ltr"}>
-              {tool.result.spoken_text}
+              {digitsForDisplay(tool.result.spoken_text)}
             </p>
           )}
           {tool.result.ask_a_person && <p className="rounded-lg border-2 border-sakia-alert bg-sakia-alert-light p-2 font-bold text-sakia-alert">⚠ {t("guardAsk")}</p>}
