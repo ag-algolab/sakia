@@ -5,6 +5,8 @@
 // (voir SceneKit.tsx). Les collines dépassent du cadre : sur grand écran le paysage se prolonge jusqu'aux bords.
 // Les morceaux de dessin (arbre, roue, mosquée…) sont exportés pour la version panoramique (HeroPanorama.tsx).
 
+import { CALM, FarmerLayers, RainClouds, RainLayer } from "./Farmer";
+import type { DayMood } from "./Farmer";
 import { Layer, Scene, StaticLayer } from "./SceneKit";
 import type { Box } from "./SceneKit";
 
@@ -126,11 +128,12 @@ export const WATER_STOPS = (
 const SCENE: Box = { x: 0, y: 58, w: 400, h: 202 };
 const b = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export default function HeroScene({ className, hot = false }: { className?: string; hot?: boolean }) {
+export default function HeroScene({ className, mood = CALM }: { className?: string; mood?: DayMood }) {
+  const rain = mood.sky === "rain";
   return (
     <Scene box={SCENE} className={className}>
-      {/* `hot` : le ciel chauffe (rejeu de la canicule) : toute la scène ondule légèrement, en une seule couche */}
-      <div className={`absolute inset-0 ${hot ? "sk-l sk-l-haze" : ""}`}>
+      {/* chaleur (jour chaud, rejeu de la canicule) : toute la scène ondule légèrement, en une seule couche */}
+      <div className={`absolute inset-0 ${mood.sky === "heat" ? "sk-l sk-l-haze" : ""}`}>
         {/* nuages et oiseaux : glissent lentement */}
         <Layer scene={SCENE} box={b(50, 40, 100, 30)} className="sk-l-drift">
           <g opacity=".16" fill="#fff">
@@ -151,24 +154,30 @@ export default function HeroScene({ className, hot = false }: { className?: stri
           </g>
         </Layer>
 
-        {/* soleil : halo qui respire, rayons qui tournent, disque */}
-        <Layer scene={SCENE} box={b(222, 72, 156, 156)} className="sk-l-pulse">
-          <defs>
-            <radialGradient id="cs-glow" cx="50%" cy="50%" r="50%">
-              {GLOW_STOPS}
-            </radialGradient>
-          </defs>
-          <circle cx="300" cy="150" r="78" fill="url(#cs-glow)" />
-        </Layer>
-        <Layer scene={SCENE} box={b(236, 86, 128, 128)} className="sk-l-spin-rev">
-          <g transform="translate(300 150)">
-            <Rays n={18} r1={36} rLong={56} rShort={48} width={2} />
-          </g>
-        </Layer>
-        <StaticLayer box={SCENE}>
-          <circle cx="300" cy="150" r="26" fill="#ffd770" />
-          <circle cx="300" cy="150" r="18" fill="#fff0b3" opacity=".8" />
-        </StaticLayer>
+        {/* soleil : halo qui respire, rayons qui tournent, disque ; un jour de pluie, des nuages gris à la place */}
+        {rain ? (
+          <RainClouds scene={SCENE} box={b(20, 60, 360, 70)} clouds={[[90, 92, 22], [222, 80, 26], [322, 98, 24]]} />
+        ) : (
+          <>
+            <Layer scene={SCENE} box={b(222, 72, 156, 156)} className="sk-l-pulse">
+              <defs>
+                <radialGradient id="cs-glow" cx="50%" cy="50%" r="50%">
+                  {GLOW_STOPS}
+                </radialGradient>
+              </defs>
+              <circle cx="300" cy="150" r="78" fill="url(#cs-glow)" />
+            </Layer>
+            <Layer scene={SCENE} box={b(236, 86, 128, 128)} className="sk-l-spin-rev">
+              <g transform="translate(300 150)">
+                <Rays n={18} r1={36} rLong={56} rShort={48} width={2} />
+              </g>
+            </Layer>
+            <StaticLayer box={SCENE}>
+              <circle cx="300" cy="150" r="26" fill="#ffd770" />
+              <circle cx="300" cy="150" r="18" fill="#fff0b3" opacity=".8" />
+            </StaticLayer>
+          </>
+        )}
 
         {/* décor immobile : collines, mosquée, champ, chevalet de la roue */}
         <StaticLayer box={SCENE}>
@@ -224,6 +233,10 @@ export default function HeroScene({ className, hot = false }: { className?: stri
           <Drop x={326} y={206} delay={1} />
           <Drop x={338} y={204} delay={1.5} />
         </Layer>
+
+        {/* l'agriculteur, à droite de la roue (au-dessus de la carte des questions, qui recouvre le bas de la scène) */}
+        <FarmerLayers scene={SCENE} x={373} y={203} s={0.8} pose={mood.pose} />
+        {rain && <RainLayer scene={SCENE} box={b(0, 58, 400, 160)} id="cs-rain" />}
       </div>
     </Scene>
   );
