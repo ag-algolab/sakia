@@ -16,14 +16,14 @@ export const TAKES = [
 ];
 
 // où Anthony pointe du doigt pendant « So I build this, this, this, this, and also this » (instants dans la vidéo source,
-// relevés image par image) : en haut à droite, en bas à droite, en bas à gauche, puis en haut à gauche et au milieu presque
-// ensemble. Un projet surgit à chaque endroit montré.
+// relevés image par image, ordre vérifié par Anthony) : en haut à gauche (le premier « this »), en haut à droite, en bas à
+// droite, en bas à gauche, puis au milieu. Les projets surgissent dans cet ordre, chacun là où il est montré.
 export const POINTS = [
-  { t: 11.3, pos: "tr" },
-  { t: 11.75, pos: "br" },
-  { t: 12.15, pos: "bl" },
-  { t: 12.45, pos: "tl" },
-  { t: 12.62, pos: "c" },
+  { t: 11.06, pos: "tl" },
+  { t: 11.4, pos: "tr" },
+  { t: 11.8, pos: "br" },
+  { t: 12.2, pos: "bl" },
+  { t: 12.7, pos: "c" },
 ];
 
 // le son nettoyé du vent par ElevenLabs (scripts/video/isolate-voice.mjs), même ligne de temps que la vidéo

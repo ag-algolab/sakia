@@ -164,10 +164,11 @@ if (!LOCAL) {
       html(s3.at + 0.5, s3.at + s3.len + 0.2, `<div class="words"><span data-at="0" data-fx="pop" data-rot="-6">A family farm,</span><span data-at="0.35" data-fx="pop" data-rot="5">stopped.</span><span class="hot" data-at="${Math.max(0.8, tW - s3.at - 0.5).toFixed(2)}" data-fx="pop" data-rot="-4">💧 Too expensive</span></div>`);
     }
   }
-  // 5. l'appel du premier jour
+  // 5. l'appel du premier jour, puis ce que fait Sakia contre « l'eau trop chère » (il ne le dit pas : l'écran le dit)
   if (s5) {
     const tCall = at(L_CALL, /^call$/, 0.25);
-    html(tCall - 0.1, s5.at + s5.len + 0.5, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div>`);
+    const tInfo = at(L_CALL, /information/, 0.55);
+    html(tCall - 0.1, s5.at + s5.len + 0.6, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="save" data-at="${Math.max(1.2, tInfo - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="-4"><b>💧 Sakia: water on the right day, in the right amount</b><i>3 to 27 % less water pumped, in simulation</i></div>`);
   }
   // 6. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
 }
@@ -234,6 +235,9 @@ const spec = {
     .water b{display:block;font:900 38px/1.1 Fraunces,serif;color:#14231a}
     .water i{display:block;font:600 22px Geist,sans-serif;font-style:normal;color:#4b5d50;margin-top:4px}
     .call{position:absolute;right:90px;top:110px;padding:22px 30px;border-radius:26px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.4);font-size:64px;transform-origin:right center}
+    .save{position:absolute;left:70px;top:300px;width:600px;padding:22px 28px;border-radius:24px;background:#f2b33d;box-shadow:0 18px 40px rgba(0,0,0,.4);transform-origin:left center;box-sizing:border-box}
+    .save b{display:block;font:900 36px/1.15 Fraunces,serif;color:#2a1d05}
+    .save i{display:block;margin-top:8px;font:700 24px Geist,sans-serif;font-style:normal;color:#3d2a06}
     .call b{display:block;font:900 40px/1.1 Fraunces,serif;color:#14231a}
     .call i{display:block;font:600 24px Geist,sans-serif;font-style:normal;color:#4b5d50;margin-top:4px}
     .sakiabadge{position:absolute;right:120px;top:380px;display:flex;align-items:center;gap:18px;padding:18px 34px 18px 18px;border-radius:999px;background:#12301f;border:3px solid #f2b33d;box-shadow:0 18px 40px rgba(0,0,0,.45)}
