@@ -184,7 +184,7 @@ export default function RainReportButton({
   const thanked = status === "sent" || status === "queued";
 
   return (
-    <section className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] p-4 text-base text-[#f2fcff] sm:p-5" aria-label={t.rainBtn}>
+    <div className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] p-4 text-base text-[#f2fcff] sm:p-5">
       <style>{`
         @keyframes bl-fall { 0% { transform: translateY(-30px); opacity: 0 } 15% { opacity: 1 } 100% { transform: translateY(220px); opacity: 0 } }
         @media (prefers-reduced-motion: reduce) { .bl-drop { animation: none !important; opacity: 0 !important } }
@@ -193,6 +193,7 @@ export default function RainReportButton({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
+        aria-controls="bl-rain-panel"
         className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#7fd0e0] px-4 py-3 text-xl font-bold text-[#04161a]"
       >
         <span aria-hidden>🌧️</span>
@@ -200,7 +201,7 @@ export default function RainReportButton({
       </button>
 
       {open && (
-        <div className="relative mt-5 space-y-5">
+        <div id="bl-rain-panel" className="relative mt-5 space-y-5">
           {/* pluie de félicitations : quelques gouttes qui tombent une fois, puis disparaissent */}
           {party > 0 && thanked && (
             <div key={party} className="pointer-events-none absolute inset-x-0 top-0 h-0 overflow-visible" aria-hidden>
@@ -223,22 +224,22 @@ export default function RainReportButton({
             {t.rainAsk} <span className="font-semibold text-[#cfeef5]">({regionName})</span>
           </p>
 
-          <div role="radiogroup" aria-label={t.rainAsk} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {RAIN_LEVELS.map((l) => {
+          {/* cinq degrés : des boutons à bascule (Tab, puis Espace ou Entrée), pas des « radios » sans flèches au clavier */}
+          <div role="group" aria-label={t.rainAsk} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {RAIN_LEVELS.map((l, i) => {
               const on = level === l;
               return (
                 <button
                   key={l}
                   type="button"
-                  role="radio"
-                  aria-checked={on}
+                  aria-pressed={on}
                   onClick={() => {
                     setLevel(l);
                     setStatus("idle");
                   }}
                   className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 text-center ${
-                    on ? "border-[#f0c75e] bg-[#7fd0e0] text-[#04161a]" : "border-[#3d7f8f] bg-[#0f4b57] text-[#ffffff] hover:border-[#7fd0e0]"
-                  }`}
+                    i === RAIN_LEVELS.length - 1 && RAIN_LEVELS.length % 2 === 1 ? "col-span-2 sm:col-span-1" : ""
+                  } ${on ? "border-[#f0c75e] bg-[#7fd0e0] text-[#04161a]" : "border-[#3d7f8f] bg-[#0f4b57] text-[#ffffff] hover:border-[#7fd0e0]"}`}
                 >
                   <span className="text-3xl leading-none" aria-hidden>
                     {ICON[l]}
@@ -321,6 +322,6 @@ export default function RainReportButton({
           <p className="text-base font-semibold text-[#ffffff]">{t.reportsNote}</p>
         </div>
       )}
-    </section>
+    </div>
   );
 }

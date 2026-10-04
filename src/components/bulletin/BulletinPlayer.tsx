@@ -1,19 +1,25 @@
 "use client";
 
-// Plateau de télé : présentateur dessiné, bouche pilotée par le volume réel du son (Web Audio),
+// Plateau de télé : présentatrice dessinée, bouche pilotée par le volume réel du son (Web Audio),
 // sous-titres calés sur l'alignement ElevenLabs. Fonctionne sans réseau avec les bulletins enregistrés
 // (public/audio/demo-*.json).
 //
-// ÉCRAN PAR DÉFAUT : le présentateur, les sous-titres et UN gros bouton « Écouter ». Rien d'autre à régler :
-//  - région, culture, sol, système, dernier arrosage et date de semis sont LUS dans le localStorage (clé « sakia-form »,
-//    que l'accueil remplit) ;
+// ÉCRAN PAR DÉFAUT : la présentatrice, les sous-titres et UN gros bouton « Écouter ».
+//  - région et culture n'ont AUCUNE valeur par défaut. Si le profil de l'appareil (localStorage, clé « sakia-form », écrite
+//    par l'accueil) les contient, on les reprend ; sinon la question « où êtes-vous, que cultivez-vous ? » s'affiche au-dessus
+//    du bouton, qui reste inactif (et dit pourquoi) tant que les deux ne sont pas choisis. Sol, système, dernier arrosage et
+//    date de semis sont LUS dans le même profil ;
 //  - la langue de l'interface est celle des boutons de l'en-tête du site (clé « sakia-lang », via useLang) ;
-//  - la voix est en darija par défaut ; le reste (langue de la voix, région, culture, son, musique, sous-titres,
-//    bulletins enregistrés) est dans le volet replié « Options ».
+//  - la musique de fond accompagne TOUJOURS le bulletin, comme à la télé (personne ne demande « avec ou sans musique ») et comme
+//    sur l'accueil : seule un instant, baissée sous la voix, puis elle remonte et s'éteint, avec un plafond de durée. Le
+//    bouton « son » coupe la voix ET la musique ;
+//  - la voix est en darija par défaut ; le reste (langue de la voix, région et culture, son, sous-titres, bulletins
+//    enregistrés) est dans le volet replié « Options ».
 // Une fois le bulletin lu, ce qu'il faut savoir apparaît (pas sûr, pluie signalée, provenance) : ce sont des résultats,
 // pas des réglages.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { startBedMusic } from "@/components/ui/bedMusic";
 import type { BedMusic } from "@/components/ui/bedMusic";
 import { useLang } from "@/components/ui/LangProvider";
@@ -21,7 +27,9 @@ import { isArabic } from "@/components/ui/i18n";
 import type { Band, BulletinPayload } from "@/lib/voice/band";
 import { VOICE_LANGS, htmlLangOf, rtlOf } from "@/lib/voice/langs";
 import type { VoiceLang } from "@/lib/voice/langs";
+import Backdrop from "./Backdrop";
 import Presenter from "./Presenter";
+import { createPose, findParts } from "./presenterPose";
 import RainReportButton from "./RainReportButton";
 import { LOCALES, STRINGS } from "./strings";
 import type { UiLang } from "./strings";
@@ -33,10 +41,18 @@ type Fallback = "offline" | "budget" | "error" | null;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const FORM_KEY = "sakia-form"; // rempli par l'accueil : { region, crop, soil, system, ago, planting }
-const MUSIC_KEY = "sakia-music"; // partagée avec l'accueil : "on" seulement si la personne a activé la musique
 const VOICE_KEY = "sakia-bulletin-voice"; // dernière langue de voix choisie dans « Options »
 const SOILS = ["sableux", "limoneux", "argileux"];
 const SYSTEMS = ["goutte", "aspersion", "gravitaire"];
+// La musique, mêmes valeurs que l'accueil (components/ui/ListenHero.tsx) : elle ne tourne jamais sans fin.
+const INTRO_MS = 1500; // la musique joue seule ce temps avant la voix, même si le bulletin est déjà prêt (bulletins enregistrés)
+const OUTRO_MS = 1500; // à la fin du bulletin, la musique remonte puis s'éteint
+const FETCH_TIMEOUT_MS = 25000; // la voix « en direct » ne répond pas : on renonce et on lit un bulletin enregistré
+const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
+const VOICE_SUFFIX = / · [^·]*\bvoice(?: \([^)]*\))?$/; // fin des titres de bulletins enregistrés : « · French voice », « · Korean voice (한국어) »
+// Une requête qui ne répond jamais (mauvais réseau) ne doit pas laisser l'écran sur « Préparation… » : au bout de FETCH_TIMEOUT_MS
+// on renonce (message d'erreur, bouton « Écouter » de nouveau actif). Navigateur trop ancien pour AbortSignal.timeout : pas de délai.
+const timeoutSignal = (): AbortSignal | undefined => (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal ? AbortSignal.timeout(FETCH_TIMEOUT_MS) : undefined);
 
 // Profil de l'agriculteur gardé sur l'appareil par l'accueil. Relu à chaque clic sur « Écouter » : toujours à jour.
 function readForm(): { region?: string; crop?: string; soil?: string; system?: string; ago?: string; planting?: string } {
@@ -59,6 +75,15 @@ function readForm(): { region?: string; crop?: string; soil?: string; system?: s
   }
 }
 
+// Profil sur l'appareil (la clé que l'accueil lit aussi) : on ne change que la région et la culture, le reste est conservé.
+function saveProfile(region: string, crop: string) {
+  if (!region || !crop) return;
+  try {
+    const old = JSON.parse(localStorage.getItem(FORM_KEY) ?? "null");
+    localStorage.setItem(FORM_KEY, JSON.stringify({ ...(old && typeof old === "object" ? old : {}), region, crop }));
+  } catch {}
+}
+
 export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt[]; crops: Opt[]; demos: DemoMeta[] }) {
   const { lang: siteLang } = useLang(); // boutons FR / EN / TN / AR de l'en-tête
   const ui: UiLang = siteLang;
@@ -68,14 +93,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const [lang, setLang] = useState<VoiceLang>("aeb"); // voix en darija par défaut
   const [subMode, setSubMode] = useState<"en" | "spoken">("en");
   const [muted, setMuted] = useState(false);
-  const [music, setMusic] = useState(false); // musique de fond (components/ui/bedMusic.ts) : COUPÉE par défaut ; elle ne joue que si la personne l'a activée (même choix que l'accueil, clé « sakia-music »)
   const [busy, setBusy] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [fallback, setFallback] = useState<Fallback>(null);
   const [idx, setIdx] = useState(-1);
-  const [progress, setProgress] = useState(0);
 
   const t = STRINGS[ui];
   const locale = LOCALES[ui];
@@ -91,7 +114,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       if (okCrop) setCrop(f.crop!);
       setNeedsPlace(!(okRegion && okCrop)); // profil absent ou incomplet : on pose la question avant le premier bulletin
       try {
-        if (localStorage.getItem(MUSIC_KEY) === "on") setMusic(true);
         const v = localStorage.getItem(VOICE_KEY);
         if (v && VOICE_LANGS.some((l) => l.code === v)) setLang(v as VoiceLang);
       } catch {}
@@ -99,14 +121,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     return () => window.clearTimeout(id);
   }, [regions, crops]);
 
-  // Profil sur l'appareil (la clé que l'accueil lit aussi) : on ne change que la région et la culture, le reste est conservé.
-  const saveProfile = (r: string, c: string) => {
-    if (!r || !c) return;
-    try {
-      const old = JSON.parse(localStorage.getItem(FORM_KEY) ?? "null");
-      localStorage.setItem(FORM_KEY, JSON.stringify({ ...(old && typeof old === "object" ? old : {}), region: r, crop: c }));
-    } catch {}
-  };
   const chooseRegion = (id: string) => {
     setRegion(id);
     if (!needsPlace) saveProfile(id, crop);
@@ -123,7 +137,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     } catch {}
   };
 
-  // --- refs : audio, graphe Web Audio, présentateur
+  // --- refs : audio, graphe Web Audio, présentatrice
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -133,11 +147,22 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const idxRef = useRef(-1);
   const listRef = useRef<HTMLOListElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const barRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const regionRef = useRef<HTMLSelectElement | null>(null);
+  const cropRef = useRef<HTMLSelectElement | null>(null);
   const loadedUrl = useRef<string | null>(null);
   const musicRef = useRef<BedMusic | null>(null);
+  const capRef = useRef<number | null>(null); // minuteur du plafond de durée de la musique
+  const runRef = useRef(0); // numéro de la lecture en cours : une préparation abandonnée (autre clic, page quittée) ne lance jamais la voix
+  const startingRef = useRef(false); // vrai pendant la préparation : la pause qu'on s'impose alors n'éteint pas la musique neuve
   const stopMusic = useCallback((fadeMs = 300) => {
     musicRef.current?.stop(fadeMs);
     musicRef.current = null;
+  }, []);
+  const clearCap = useCallback(() => {
+    if (capRef.current != null) window.clearTimeout(capRef.current);
+    capRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -146,20 +171,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     if (muted) stopMusic(300); // son coupé : la musique aussi
   }, [muted, stopMusic]);
 
-  // --- boucle d'animation : bouche, clignement, sous-titres, progression
+  // --- boucle d'animation : bouche, clignement, sous-titres, barre de progression
   useEffect(() => {
     let raf = 0;
     let open = 0;
-    const part = (n: string) => svgRef.current?.querySelector(`[data-part="${n}"]`) ?? null;
-    const p = {
-      head: part("head"),
-      mouth: part("mouth"),
-      tongue: part("tongue"),
-      eyeL: part("eyeL"),
-      eyeR: part("eyeR"),
-      browL: part("browL"),
-      browR: part("browR"),
-    };
+    const pose = createPose(findParts(svgRef.current));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let buf: Uint8Array<ArrayBuffer> | null = null;
     const loop = (now: number) => {
       const audio = audioRef.current;
@@ -182,17 +199,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         }
       }
       open += (target - open) * (target > open ? 0.55 : 0.25);
-
-      p.mouth?.setAttribute("ry", (1.3 + open * 13).toFixed(2));
-      p.mouth?.setAttribute("rx", (15 - open * 3).toFixed(2));
-      p.tongue?.setAttribute("opacity", open > 0.45 ? "0.9" : "0");
-      p.head?.setAttribute("transform", `translate(0 ${(-open * 1.2).toFixed(2)})`);
-      const lift = open * 2;
-      p.browL?.setAttribute("d", `M72 ${96 - lift} Q82 ${91 - lift} 92 ${96 - lift}`);
-      p.browR?.setAttribute("d", `M108 ${96 - lift} Q118 ${91 - lift} 128 ${96 - lift}`);
-      const blink = now % 4200 < 130 ? 0.6 : 5;
-      p.eyeL?.setAttribute("ry", String(blink));
-      p.eyeR?.setAttribute("ry", String(blink));
+      pose(open, now, reduce.matches);
 
       if (audio && linesRef.current.length) {
         const ms = audio.currentTime * 1000;
@@ -205,7 +212,8 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           idxRef.current = i;
           setIdx(i);
         }
-        setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
+        // la barre est posée directement (pas de rendu React 60 fois par seconde)
+        if (barRef.current) barRef.current.style.width = `${audio.duration ? (audio.currentTime / audio.duration) * 100 : 0}%`;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -217,11 +225,14 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   useEffect(() => {
     const ol = listRef.current;
     const li = ol?.children[idx] as HTMLElement | undefined;
-    if (ol && li) ol.scrollTo({ top: li.offsetTop - ol.clientHeight / 2 + li.clientHeight / 2, behavior: "smooth" });
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (ol && li) ol.scrollTo({ top: li.offsetTop - ol.clientHeight / 2 + li.clientHeight / 2, behavior: calm ? "auto" : "smooth" });
   }, [idx]);
 
   useEffect(() => {
     return () => {
+      runRef.current += 1; // page quittée : une préparation en cours ne lancera pas la voix ailleurs
+      if (capRef.current != null) window.clearTimeout(capRef.current);
       const url = loadedUrl.current;
       if (url) URL.revokeObjectURL(url);
       musicRef.current?.stop(100);
@@ -237,7 +248,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       const ctx = new AC();
       const src = ctx.createMediaElementSource(audio);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 512;
+      analyser.fftSize = 1024; // ~23 ms : une enveloppe plus stable, donc une bouche plus fluide
       const gain = ctx.createGain();
       gain.gain.value = mutedRef.current ? 0 : 1;
       src.connect(analyser);
@@ -258,7 +269,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       blob = new Blob([bytes], { type: p.mime });
     } else {
-      const r = await fetch(p.audioUrl!);
+      const r = await fetch(p.audioUrl!, { signal: timeoutSignal() });
       if (!r.ok) throw new Error("audio");
       blob = await r.blob();
     }
@@ -270,7 +281,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const fetchDemo = useCallback(
     async (id: string, reason: Fallback) => {
-      const r = await fetch(`/audio/demo-${id}.json`);
+      const r = await fetch(`/audio/demo-${id}.json`, { signal: timeoutSignal() });
       if (!r.ok) throw new Error("demo");
       const j = (await r.json()) as BulletinPayload & { title?: string };
       setFallback(reason);
@@ -290,7 +301,10 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const start = useCallback(
     async (source: "auto" | string) => {
       if (source === "auto" && (!region || !crop)) return; // on ne devine pas le lieu : il faut d'abord le choisir
-      setError(null);
+      const run = ++runRef.current;
+      const live = () => run === runRef.current;
+      startingRef.current = true;
+      setFailed(false);
       setBusy(true);
       if (source === "auto" && needsPlace) {
         saveProfile(region, crop);
@@ -298,9 +312,18 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       }
       const audio = audioRef.current!;
       audio.pause();
-      // la musique démarre dans le geste de la personne (le navigateur l'exige) ; la voix la baisse dès qu'elle parle
+      // la musique démarre dans le geste de la personne (le navigateur l'exige), TOUJOURS, sauf son coupé ;
+      // elle joue seule un instant, puis la voix la baisse dès qu'elle parle
       stopMusic(0);
-      if (music && !mutedRef.current) musicRef.current = startBedMusic();
+      clearCap();
+      const musicAt = performance.now();
+      if (!mutedRef.current) {
+        musicRef.current = startBedMusic();
+        // plafond de sécurité, quoi qu'il arrive
+        capRef.current = window.setTimeout(() => {
+          if (live()) stopMusic(800);
+        }, MUSIC_MAX_MS);
+      }
       try {
         // premier geste utilisateur : le contexte audio doit être créé ici
         await ensureGraph();
@@ -312,6 +335,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           if (!d) throw new Error("no-demo");
           item = await fetchDemo(d.id, "offline");
         } else {
+          let timedOut = false;
+          const ctrl = new AbortController();
+          const timer = window.setTimeout(() => {
+            timedOut = true;
+            ctrl.abort();
+          }, FETCH_TIMEOUT_MS);
           try {
             // le profil de l'agriculteur (sol, système, dernier arrosage, semis) vient de l'accueil : on ne le redemande pas
             const f = readForm();
@@ -320,7 +349,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             if (f.system) q.set("system", f.system);
             if (f.ago) q.set("ago", f.ago);
             if (f.planting) q.set("planting", f.planting);
-            const r = await fetch(`/api/voice/bulletin?${q.toString()}`);
+            const r = await fetch(`/api/voice/bulletin?${q.toString()}`, { signal: ctrl.signal });
             if (!r.ok) {
               const reason: Fallback = r.status === 503 ? "budget" : "error";
               const d = pickDemo();
@@ -334,9 +363,16 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             if ((e as Error).message === "no-demo") throw e;
             const d = pickDemo();
             if (!d) throw e;
-            item = await fetchDemo(d.id, "offline");
+            item = await fetchDemo(d.id, timedOut ? "error" : "offline"); // la voix n'a pas répondu à temps, ou pas de réseau
+          } finally {
+            window.clearTimeout(timer);
           }
         }
+        if (!live()) return;
+        // « la musique seule un instant » : si le bulletin était déjà prêt, on laisse l'intro se faire entendre
+        const wait = musicRef.current ? INTRO_MS - (performance.now() - musicAt) : 0;
+        if (wait > 0) await new Promise<void>((done) => window.setTimeout(done, wait));
+        if (!live()) return;
         linesRef.current = item.lines;
         idxRef.current = -1;
         setIdx(-1);
@@ -344,13 +380,19 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
         audio.src = item.blobUrl;
         await audio.play();
       } catch {
-        stopMusic(300);
-        setError("Impossible de lire un bulletin (ni réseau, ni bulletin enregistré). / Could not play a bulletin (no network and no recorded bulletin).");
+        if (live()) {
+          stopMusic(300);
+          clearCap();
+          setFailed(true);
+        }
       } finally {
-        setBusy(false);
+        if (live()) {
+          startingRef.current = false;
+          setBusy(false);
+        }
       }
     },
-    [crop, ensureGraph, fetchDemo, lang, music, needsPlace, pickDemo, region, stopMusic, toLoaded],
+    [clearCap, crop, ensureGraph, fetchDemo, lang, needsPlace, pickDemo, region, stopMusic, toLoaded],
   );
 
   const stop = () => {
@@ -359,17 +401,58 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     a.pause();
     a.currentTime = 0;
     stopMusic(300);
+    clearCap();
     idxRef.current = -1;
     setIdx(-1);
-    setProgress(0);
+  };
+
+  // --- ce qui manque pour écouter
+  const placeMissing = needsPlace && (!region || !crop);
+  const focusMissing = () => (region ? cropRef : regionRef).current?.focus();
+  // la présentatrice doit se voir quand elle parle : si le plateau est (en partie) hors écran, on y remonte.
+  // Différé d'un instant : lancé dans le tour même du clic, le défilement doux est annulé par le navigateur (constaté sous Chrome).
+  const revealStage = () => {
+    window.setTimeout(() => {
+      const el = stageRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < 0 || r.top + r.height * 0.6 > window.innerHeight) {
+        el.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+    }, 60);
+  };
+  const onListen = () => {
+    if (playing) stop();
+    else if (placeMissing) focusMissing();
+    else {
+      revealStage();
+      void start("auto");
+    }
+  };
+  const onDemo = (id: string) => {
+    revealStage();
+    void start(id);
   };
 
   // --- affichage
+  // les bulletins enregistrés, regroupés par scénario : on retire du titre la voix (« · French voice »), que le bouton dit lui-même
+  const scenarios = useMemo(() => {
+    const groups = new Map<string, DemoMeta[]>();
+    for (const d of demos) {
+      const key = d.title.replace(VOICE_SUFFIX, "");
+      groups.set(key, [...(groups.get(key) ?? []), d]);
+    }
+    return [...groups.entries()];
+  }, [demos]);
   const band: Band | null = loaded?.band ?? null;
   const fmtDay = (d: string) => new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
   const fmtFull = (d: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
   const fmtStamp = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", hourCycle: "h23" }).format(new Date(iso));
   const nameOf = (o: Opt) => (isArabic(ui) ? o.ar : ui === "en" ? (o.en ?? o.fr) : o.fr);
+  const nameById = (list: Opt[], id: string) => {
+    const o = list.find((x) => x.id === id);
+    return o ? nameOf(o) : id;
+  };
   const doseText = (n: NonNullable<Band["next"]>) =>
     n.litersPerTree != null
       ? `${Math.round(n.litersPerTree)} L / ${ui === "fr" ? "arbre" : isArabic(ui) ? "شجرة" : "tree"}`
@@ -386,32 +469,34 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   const showJust = lang === "ko" || spokenLang === "ko";
   const subText = (l: { text: string; en: string }) => (subMode === "en" ? l.en : l.text);
 
-  const notes = useMemo(() => {
-    if (!loaded) return [] as { kind: "demo" | "info" | "warn"; text: string }[];
-    const out: { kind: "demo" | "info" | "warn"; text: string }[] = [];
-    if (fallback === "offline") out.push({ kind: "warn", text: t.fallbackOffline });
-    if (fallback === "budget") out.push({ kind: "warn", text: t.fallbackBudget });
-    if (fallback === "error") out.push({ kind: "warn", text: t.fallbackError });
+  const notes: { kind: "demo" | "info" | "warn"; text: string }[] = [];
+  if (loaded && band) {
+    if (fallback === "offline") notes.push({ kind: "warn", text: t.fallbackOffline });
+    if (fallback === "budget") notes.push({ kind: "warn", text: t.fallbackBudget });
+    if (fallback === "error") notes.push({ kind: "warn", text: t.fallbackError });
     const date = fmtStamp(loaded.generatedAt);
-    if (loaded.source === "demo") out.push({ kind: "demo", text: t.noteDemo.replace("{date}", date) });
-    else if (loaded.source === "cache") out.push({ kind: "info", text: t.noteCache.replace("{date}", date) });
-    else out.push({ kind: "info", text: t.noteLive.replace("{date}", date) });
-    if (loaded.band.replay) out.push({ kind: "warn", text: t.noteReplay.replace("{date}", fmtFull(loaded.band.date)) });
-    return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, fallback, ui]);
+    if (loaded.source === "demo") notes.push({ kind: "demo", text: t.noteDemo.replace("{date}", date) });
+    else if (loaded.source === "cache") notes.push({ kind: "info", text: t.noteCache.replace("{date}", date) });
+    else notes.push({ kind: "info", text: t.noteLive.replace("{date}", date) });
+    if (band.replay) notes.push({ kind: "warn", text: t.noteReplay.replace("{date}", fmtFull(band.date)) });
+    // honnêteté : un bulletin enregistré (ou un ancien) peut concerner une autre région ou une autre culture que le choix actuel
+    if (region && crop && (band.regionId !== region || band.cropId !== crop)) {
+      notes.push({ kind: "warn", text: t.noteMismatch.replace("{region}", nameById(regions, band.regionId)).replace("{crop}", nameById(crops, band.cropId)) });
+    }
+  }
 
   const isDemo = loaded?.source === "demo";
   const tag = playing ? (isDemo ? t.rec : t.onAir) : t.idle;
   const toggleBtn = (on: boolean) =>
     `min-h-12 rounded-xl border-2 px-5 py-3 text-base font-bold ${on ? "border-[#f0c75e] bg-[#f0c75e] text-[#0b1d15]" : "border-[#4b7a62] bg-[#1b3b2b] text-[#ffffff]"}`;
 
-  const selectCls = "min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff]";
-  const placeFields = (
+  // région et culture : sur l'écran principal à la première visite, et toujours dans « Options » pour les changer
+  const selectCls = "min-h-12 w-full rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-3 text-base font-semibold text-[#ffffff] [color-scheme:dark]";
+  const renderPlaceFields = (withRefs: boolean) => (
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="block text-lg font-bold">
         <span className="mb-2 block">{t.region}</span>
-        <select value={region} onChange={(e) => chooseRegion(e.target.value)} className={selectCls}>
+        <select ref={withRefs ? regionRef : undefined} required value={region} onChange={(e) => chooseRegion(e.target.value)} className={selectCls}>
           {region === "" && <option value="">{t.choose}</option>}
           {regions.map((r) => (
             <option key={r.id} value={r.id}>
@@ -422,7 +507,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       </label>
       <label className="block text-lg font-bold">
         <span className="mb-2 block">{t.crop}</span>
-        <select value={crop} onChange={(e) => chooseCrop(e.target.value)} className={selectCls}>
+        <select ref={withRefs ? cropRef : undefined} required value={crop} onChange={(e) => chooseCrop(e.target.value)} className={selectCls}>
           {crop === "" && <option value="">{t.choose}</option>}
           {crops.map((c) => (
             <option key={c.id} value={c.id}>
@@ -433,87 +518,123 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       </label>
     </div>
   );
-  const placeMissing = needsPlace && (!region || !crop);
 
+  // <main> : anneau de focus doré sur ce thème sombre (le bleu global y est peu visible). Le « ! » final est nécessaire : la règle
+  // globale de globals.css est hors des couches de Tailwind, donc plus prioritaire qu'un simple utilitaire.
+  // L'ombre pleine du même vert prolonge le fond sombre sous la marge du pied de page (sinon une bande crème, couleur du corps de la
+  // page, sépare ce fond sombre du pied de page sombre) ; elle ne change rien à la mise en page et passe sous le pied de page.
   return (
-    <div dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1]">
-      <div className="mx-auto max-w-4xl px-4 py-5">
+    <main dir={rtl ? "rtl" : "ltr"} className="flex-1 bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1] shadow-[0_4rem_0_0_#0b1d15] [&_*:focus-visible]:outline-[#ffd866]!">
+      <div className="mx-auto w-full max-w-4xl px-4 py-5">
         <h1 className="sr-only">{t.title}</h1>
 
-        {/* plateau : le présentateur et les sous-titres */}
-        <div dir="ltr" className="overflow-hidden rounded-2xl border-2 border-[#3b6350] bg-black shadow-2xl">
-          <div className="relative aspect-[5/6] w-full overflow-hidden bg-gradient-to-b from-[#1f5340] via-[#173d2d] to-[#10291e] sm:aspect-video">
-            <div className="absolute inset-x-0 bottom-[26%] top-16 flex justify-center sm:bottom-[26%] sm:top-3">
+        {/* plateau : la présentatrice, puis les sous-titres juste dessous (jamais par-dessus son visage) */}
+        <div ref={stageRef} dir="ltr" className="scroll-mt-3 overflow-hidden rounded-2xl border-2 border-[#3b6350] bg-[#0d1f17] shadow-2xl">
+          <div className="relative aspect-[6/5] w-full overflow-hidden md:aspect-[9/4]">
+            <Backdrop />
+            <div className="absolute inset-x-0 bottom-0 top-12 flex justify-center">
               <Presenter svgRef={svgRef} />
             </div>
-            <div className="absolute start-3 top-3 rounded bg-black/70 px-2.5 py-1 text-sm font-bold tracking-wider text-[#f0c75e]">SAKIA · BULLETIN</div>
+            <div aria-hidden className="absolute start-3 top-3 rounded bg-black/75 px-2.5 py-1 text-sm font-bold tracking-wider text-[#f0c75e]">
+              SAKIA · BULLETIN
+            </div>
             <div
               className={`absolute end-3 top-3 flex items-center gap-1.5 rounded px-2.5 py-1 text-sm font-bold tracking-wider ${
-                playing ? (isDemo ? "bg-[#f0c75e] text-[#0b1d15]" : "bg-[#c4281f] text-white") : "bg-black/70 text-[#f7f1e1]"
+                playing ? (isDemo ? "bg-[#f0c75e] text-[#0b1d15]" : "bg-[#c4281f] text-white") : "bg-black/75 text-[#f7f1e1]"
               }`}
             >
-              <span className={`h-2.5 w-2.5 rounded-full ${playing ? "animate-pulse bg-current" : "bg-[#9fb8a8]"}`} />
+              <span className={`h-2.5 w-2.5 rounded-full ${playing ? "animate-pulse bg-current motion-reduce:animate-none" : "bg-[#9fb8a8]"}`} />
               {tag}
             </div>
-            {/* sous-titres */}
-            <div className="absolute inset-x-2 bottom-3 flex min-h-[22%] items-center justify-center">
-              <p
-                dir={rtlOf(subLang) ? "rtl" : "ltr"}
-                lang={htmlLangOf(subLang)}
-                aria-live="polite"
-                className={`max-w-[96%] rounded-lg px-4 py-2 text-center text-[clamp(1rem,3.2vw,1.5rem)] font-semibold leading-snug ${
-                  current?.id === "unsure" ? "border-2 border-[#ffb454] bg-[#5a2d08] text-[#fff1d6]" : "bg-black/80 text-white"
-                }`}
-              >
-                {current?.id === "unsure" && "⚠ "}
-                {current ? subText(current) : loaded ? "…" : t.pressListen}
-              </p>
-            </div>
-            <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/60">
-              <div className="h-full bg-[#f0c75e]" style={{ width: `${progress * 100}%` }} />
-            </div>
           </div>
-
-          {/* bandeau de données : tout vient du plan ; il n'apparaît qu'une fois le bulletin lu */}
-          {band && (
-            <div className="grid grid-cols-2 gap-px bg-[#f0c75e]/50 text-base sm:grid-cols-4" dir={rtl ? "rtl" : "ltr"}>
-              <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : `${band.rainMm.toFixed(0)} mm`} />
-              <Cell label={t.tmax} value={band.tmaxMax != null ? `${Math.round(band.tmaxMax)} °C` : "—"} />
-              <Cell label={t.stress} value={band.outOfSeason || noAdvice ? "—" : t.stressLevels[band.stressRisk]} />
-              <Cell
-                label={t.nextIrrigation}
-                alert={noAdvice}
-                value={noAdvice ? t.askCell : band.outOfSeason ? t.outOfSeason : band.next ? `${fmtDay(band.next.date)} · ${doseText(band.next)}` : t.noIrrigation}
-              />
-            </div>
-          )}
+          {/* sous-titres : la bande garde la hauteur de 4 lignes (la plupart des phrases en font 2 ou 3) pour que le bouton ne saute pas */}
+          <div className="flex min-h-[7.25rem] items-center justify-center border-t border-[#2d5a45] bg-[#10261c] px-3 py-2">
+            <p
+              dir={rtlOf(subLang) ? "rtl" : "ltr"}
+              lang={htmlLangOf(subLang)}
+              aria-live="polite"
+              className={`max-w-full rounded-lg px-3 py-1.5 text-center text-[clamp(1rem,3.2vw,1.2rem)] font-semibold leading-snug ${
+                current?.id === "unsure" ? "border-2 border-[#ffb454] bg-[#5a2d08] text-[#fff1d6]" : "text-white"
+              }`}
+            >
+              {current?.id === "unsure" && "⚠ "}
+              {current ? subText(current) : loaded ? "…" : t.pressListen}
+            </p>
+          </div>
+          <div className="h-1.5 bg-black/60">
+            <div ref={barRef} className="h-full bg-[#f0c75e]" style={{ width: 0 }} />
+          </div>
         </div>
 
         {/* première visite : on demande où l'on est et ce que l'on cultive (jamais Kairouan / olivier par défaut) */}
         {needsPlace && (
           <section className="mt-4 rounded-2xl border-2 border-[#f0c75e] bg-[#12281d] p-4">
             <p className="mb-3 text-lg font-bold">{t.placeTitle}</p>
-            {placeFields}
+            {renderPlaceFields(true)}
           </section>
         )}
 
-        {/* UN gros bouton */}
+        {/* UN gros bouton : inactif (aria-disabled, donc atteignable au clavier) tant qu'il manque la région ou la culture */}
         <button
           type="button"
-          disabled={busy || (placeMissing && !playing)}
-          onClick={() => (playing ? stop() : start("auto"))}
-          className="mt-5 min-h-14 w-full rounded-2xl bg-[#f0c75e] px-6 py-4 text-2xl font-bold text-[#0b1d15] shadow-lg disabled:opacity-60"
+          disabled={busy}
+          aria-disabled={placeMissing && !playing ? true : undefined}
+          aria-describedby={placeMissing ? "bl-need" : undefined}
+          onClick={onListen}
+          className={`mt-5 min-h-14 w-full rounded-2xl px-6 py-4 text-2xl font-bold disabled:opacity-60 ${
+            placeMissing && !playing ? "cursor-not-allowed border-2 border-dashed border-[#7fa28d] bg-[#1b3b2b] text-[#d3e2d8]" : "bg-[#f0c75e] text-[#0b1d15] shadow-lg"
+          }`}
         >
           {busy ? t.loading : playing ? `■ ${t.stop}` : `▶ ${t.listen}`}
         </button>
 
-        {placeMissing && <p className="mt-3 text-center text-base font-semibold text-[#fff3c4]">{t.placeNeed}</p>}
+        {placeMissing && (
+          <p id="bl-need" className="mt-3 text-center text-base font-semibold text-[#fff3c4]">
+            {t.placeNeed}
+          </p>
+        )}
 
-        {error && <p role="alert" className="mt-4 rounded-xl border-2 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-base font-semibold text-[#ffe8dd]">{error}</p>}
+        {failed && (
+          <p role="alert" className="mt-4 rounded-xl border-2 border-[#ff9a7a] bg-[#5a1f10] px-4 py-3 text-base font-semibold text-[#ffe8dd]">
+            {t.errPlay}
+          </p>
+        )}
 
-        {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, pluie signalée, provenance, texte non validé */}
+        {/* bandeau de données : tout vient du plan ; il n'apparaît qu'une fois le bulletin lu, avec la région et la culture du bulletin */}
+        {band && (
+          <div className="mt-5 overflow-hidden rounded-2xl border-2 border-[#3b6350] bg-[#f0c75e]/50">
+            <p className="bg-[#0d1f17] px-4 py-2 text-base font-bold text-[#fff3c4]">
+              {nameById(regions, band.regionId)} · {nameById(crops, band.cropId)}
+            </p>
+            <div className="grid grid-cols-2 gap-px text-base md:grid-cols-4">
+              <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : unitText(`${band.rainMm.toFixed(0)} mm`)} />
+              <Cell label={t.tmax} value={band.tmaxMax != null ? unitText(`${Math.round(band.tmaxMax)} °C`) : "—"} />
+              <Cell label={t.stress} value={band.outOfSeason || noAdvice ? "—" : t.stressLevels[band.stressRisk]} />
+              <Cell
+                label={t.nextIrrigation}
+                alert={noAdvice}
+                value={
+                  noAdvice ? (
+                    t.askCell
+                  ) : band.outOfSeason ? (
+                    t.outOfSeason
+                  ) : band.next ? (
+                    <>
+                      {fmtDay(band.next.date)}
+                      <span className="block">{unitText(doseText(band.next))}</span>
+                    </>
+                  ) : (
+                    t.noIrrigation
+                  )
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, pluie signalée, provenance */}
         {loaded && askAPerson && (
-          <aside role="alert" className="mt-5 rounded-2xl border-2 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
+          <div role="alert" className="mt-5 rounded-2xl border-2 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
             <p className="flex items-center gap-2 text-xl font-bold">
               <span aria-hidden>⚠</span>
               {t.unsureTitle}
@@ -521,7 +642,11 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             {unsureLine && (
               <p className="mt-2 text-lg" lang={htmlLangOf(spokenLang)} dir={rtlOf(spokenLang) ? "rtl" : "ltr"}>
                 {unsureLine.text}
-                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && <span className="mt-1 block text-base text-[#ffe3b8]">{unsureLine.en}</span>}
+                {spokenLang !== "en" && unsureLine.en !== unsureLine.text && (
+                  <span className="mt-1 block text-base text-[#ffe3b8]" lang="en" dir="ltr">
+                    {unsureLine.en}
+                  </span>
+                )}
               </p>
             )}
             {reasons.length > 0 && (
@@ -531,11 +656,11 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                 ))}
               </ul>
             )}
-          </aside>
+          </div>
         )}
 
         {loaded && band?.localReports && band.localReports.length > 0 && (
-          <aside className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-base text-[#f2fcff]">
+          <div className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-base text-[#f2fcff]">
             <p className="flex items-center gap-2 text-lg font-bold">
               <span aria-hidden>🌧</span>
               {t.reportsTitle}
@@ -559,7 +684,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             </ul>
             <p className="mt-3 font-semibold">{t.reportsNote}</p>
             {loaded.reportsFictional && <p className="mt-2 font-bold text-[#fff3c4]">{t.reportsFictional}</p>}
-          </aside>
+          </div>
         )}
 
         {loaded && (
@@ -581,14 +706,17 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           </div>
         )}
 
-        {/* « Il a plu » : proposé une fois que la personne a entendu la pluie du bulletin */}
-        {loaded && <RainReportButton regionId={region} regionName={nameOf(regions.find((r) => r.id === region) ?? regions[0])} voiceLang={lang} muted={muted} t={t} />}
+        {/* « Il a plu » : proposé une fois que la personne a entendu la pluie du bulletin (et dit où elle est : le signalement part pour sa région) */}
+        {loaded && region && <RainReportButton regionId={region} regionName={nameById(regions, region)} voiceLang={lang} muted={muted} t={t} />}
 
         {/* OPTIONS : tout le reste, replié */}
         <details className="group mt-6 rounded-2xl border-2 border-[#4b7a62] bg-[#12281d]">
           <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-5 py-3 text-xl font-bold text-[#ffffff]">
-            <span>⚙ {t.options}</span>
-            <span aria-hidden className="text-2xl transition-transform group-open:rotate-180">
+            <span>
+              <span aria-hidden>⚙ </span>
+              {t.options}
+            </span>
+            <span aria-hidden className="text-2xl transition-transform group-open:rotate-180 motion-reduce:transition-none">
               ▾
             </span>
           </summary>
@@ -597,48 +725,44 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               <legend className="mb-2 text-lg font-bold">{t.voice}</legend>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {VOICE_LANGS.map((v) => (
-                  <button key={v.code} type="button" onClick={() => chooseVoice(v.code)} aria-pressed={lang === v.code} lang={v.htmlLang} className={`${toggleBtn(lang === v.code)} flex flex-col items-center px-2`}>
+                  <button key={v.code} type="button" onClick={() => chooseVoice(v.code)} aria-pressed={lang === v.code} lang={v.htmlLang} className={`${toggleBtn(lang === v.code)} flex flex-col items-center justify-center px-2`}>
                     <span>{v.native}</span>
-                    <span lang="en" className="text-sm font-semibold">
-                      {v.english}
-                    </span>
+                    {v.native !== v.english && (
+                      <span lang="en" className="text-sm font-semibold">
+                        {v.english}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </fieldset>
 
-            {placeFields}
+            {renderPlaceFields(false)}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button type="button" onClick={() => setMuted((m) => !m)} aria-pressed={muted} className={toggleBtn(false)}>
-                {muted ? `🔇 ${t.soundOff}` : `🔊 ${t.soundOn}`}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (music) stopMusic(300);
-                  setMusic(!music);
-                  try {
-                    localStorage.setItem(MUSIC_KEY, music ? "off" : "on");
-                  } catch {}
-                }}
-                aria-pressed={music}
-                className={toggleBtn(false)}
-              >
-                {music ? `🎵 ${t.musicOn}` : `🎵 ${t.musicOff}`}
-              </button>
-              <span className="text-base font-bold">{t.subtitles}</span>
-              {(["en", "spoken"] as const).map((m) => (
-                <button key={m} type="button" onClick={() => setSubMode(m)} aria-pressed={subMode === m} className={toggleBtn(subMode === m)}>
-                  {m === "en" ? t.subEn : t.subSpoken}
-                </button>
-              ))}
+            <div role="group" aria-labelledby="bl-subs">
+              <p id="bl-subs" className="mb-2 text-lg font-bold">
+                {t.subtitles}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {(["en", "spoken"] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setSubMode(m)} aria-pressed={subMode === m} className={toggleBtn(subMode === m)}>
+                    {m === "en" ? t.subEn : t.subSpoken}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* un seul interrupteur « son » : il coupe la voix ET la musique */}
+            <button type="button" role="switch" aria-checked={!muted} onClick={() => setMuted((m) => !m)} className={toggleBtn(false)}>
+              {muted ? `🔇 ${t.soundOff}` : `🔊 ${t.soundOn}`}
+            </button>
 
             {loaded && (
               <div>
-                <h2 className="mb-2 text-lg font-bold">{t.fullText}</h2>
-                <ol ref={listRef} className="max-h-72 space-y-1 overflow-y-auto rounded-xl bg-[#173d2d] p-2" dir={rtlOf(subLang) ? "rtl" : "ltr"}>
+                <h2 id="bl-fulltext" className="mb-2 text-lg font-bold">
+                  {t.fullText}
+                </h2>
+                <ol ref={listRef} tabIndex={0} aria-labelledby="bl-fulltext" className="max-h-72 space-y-1 overflow-y-auto rounded-xl bg-[#173d2d] p-2" dir={rtlOf(subLang) ? "rtl" : "ltr"}>
                   {loaded.lines.map((l, i) => (
                     <li key={l.id} lang={htmlLangOf(subLang)} className={`rounded-lg px-3 py-2 text-base ${i === idx ? "bg-[#f0c75e] font-bold text-[#0b1d15]" : "text-[#f7f1e1]"}`}>
                       {subText(l)}
@@ -653,18 +777,38 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               <div>
                 <h2 className="text-lg font-bold">{t.demosTitle}</h2>
                 <p className="mb-3 text-base text-[#e3dcc6]">{t.demosHint}</p>
-                <div className="flex flex-wrap gap-3">
-                  {demos.map((d) => (
-                    <button key={d.id} type="button" disabled={busy} onClick={() => start(d.id)} className="min-h-12 rounded-xl border-2 border-[#4b7a62] bg-[#1b3b2b] px-4 py-3 text-start text-base font-semibold text-[#ffffff] disabled:opacity-60">
-                      ▶ {d.title}
-                    </button>
+                {/* une carte par scénario (son titre, tel qu'enregistré, en anglais), puis un bouton court par voix */}
+                <div className="space-y-3">
+                  {scenarios.map(([title, items], gi) => (
+                    <div key={title} role="group" aria-labelledby={`bl-demo-${gi}`} className="rounded-xl border-2 border-[#3b6350] bg-[#173d2d] p-3">
+                      <p id={`bl-demo-${gi}`} lang="en" dir="ltr" className={`mb-3 text-base font-semibold ${rtl ? "text-end" : "text-start"}`}>
+                        {title}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {items.map((d) => {
+                          const v = VOICE_LANGS.find((l) => l.code === d.lang);
+                          return (
+                            <button
+                              key={d.id}
+                              type="button"
+                              disabled={busy}
+                              onClick={() => onDemo(d.id)}
+                              lang={v?.htmlLang}
+                              className="min-h-12 rounded-xl border-2 border-[#6fa68a] bg-[#12281d] px-2 py-2 text-center text-base font-semibold text-[#ffffff] disabled:opacity-60"
+                            >
+                              ▶ {v?.native ?? d.lang}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
             {showJust && (
-              <aside className="flex items-start gap-3 rounded-xl border-2 border-[#f0c75e] bg-[#2a3a22] px-4 py-3 text-base text-[#f7f1e1]">
+              <div className="flex items-start gap-3 rounded-xl border-2 border-[#f0c75e] bg-[#2a3a22] px-4 py-3 text-base text-[#f7f1e1]">
                 <span className="text-3xl leading-none" aria-hidden>
                   😊
                 </span>
@@ -675,7 +819,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
                   </p>
                   {t.justGloss && <p className="mt-1 text-[#e3dcc6]">{t.justGloss}</p>}
                 </div>
-              </aside>
+              </div>
             )}
 
             <div className="space-y-3 text-base">
@@ -698,24 +842,31 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             setPlaying(true);
             musicRef.current?.duck();
           }}
-          onPause={() => setPlaying(false)}
+          onPause={() => {
+            setPlaying(false);
+            // la voix s'arrête sans que la personne ait touché à « Arrêter » (touche média, casque débranché…) :
+            // la musique ne reste jamais seule à jouer. (Pas pendant la préparation : la pause qu'on s'impose alors est normale ;
+            // pas à la fin non plus : c'est l'outro qui s'en occupe.)
+            const a = audioRef.current;
+            if (a && !a.ended && !startingRef.current) stopMusic(300);
+          }}
           onEnded={() => {
             setPlaying(false);
             // la musique remonte un instant, puis s'éteint
             const m = musicRef.current;
             m?.swell();
             window.setTimeout(() => {
-              m?.stop(1200);
+              m?.stop(1000);
               if (musicRef.current === m) musicRef.current = null;
-            }, 2500);
+            }, OUTRO_MS);
           }}
         />
       </div>
-    </div>
+    </main>
   );
 }
 
-function Cell({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
+function Cell({ label, value, alert }: { label: string; value: ReactNode; alert?: boolean }) {
   return (
     <div className="bg-[#12281d] px-4 py-3">
       <div className="text-sm font-bold uppercase tracking-wide text-[#e3dcc6]">{label}</div>
@@ -726,3 +877,11 @@ function Cell({ label, value, alert }: { label: string; value: string; alert?: b
     </div>
   );
 }
+
+// Un nombre suivi d'une unité (« 35 °C », « 391 m³/ha ») : isolé de gauche à droite et insécable, sinon l'écran en arabe l'inverse
+// (« C° 35 ») ou coupe l'unité en deux lignes.
+const unitText = (s: string) => (
+  <bdi dir="ltr" className="whitespace-nowrap">
+    {s}
+  </bdi>
+);
