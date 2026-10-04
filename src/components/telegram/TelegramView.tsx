@@ -10,8 +10,8 @@ import { STRINGS } from "./strings";
 import TelegramChat from "./TelegramChat";
 import type { Welcome } from "./TelegramChat";
 
-export const BOT_HANDLE = "@sakia_tn_bot";
-export const BOT_URL = "https://t.me/sakia_tn_bot";
+const BOT_HANDLE = "@sakia_tn_bot";
+const BOT_URL = "https://t.me/sakia_tn_bot";
 
 // Les commandes du bot (« /stop ») gardent leur sens de lecture, même au milieu d'une phrase arabe.
 function withCommands(text: string): React.ReactNode {

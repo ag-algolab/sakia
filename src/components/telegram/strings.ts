@@ -49,7 +49,7 @@ const fr: TgStrings = {
   steps: [
     { title: "Ouvrez le bot", body: "Sur Telegram, appuyez sur « Démarrer » et choisissez le français, l'arabe ou l'anglais." },
     { title: "Touchez vos choix", body: "Votre région, votre culture, le dernier arrosage : tout se fait avec des boutons. Vous pouvez aussi écrire « zitoun kairouan »." },
-    { title: "Recevez le plan", body: "Le plan des 7 jours arrive chaque matin, avec un bouton pour le bulletin vocal. Conseil indicatif : la décision vous appartient." },
+    { title: "Recevez le plan", body: "Le plan des 7 jours arrive chaque matin, avec un bouton pour le bulletin vocal. Il rappelle que le conseil est indicatif : la décision vous appartient." },
   ],
   noteTitle: "À savoir sur cette démonstration",
   notes: [
@@ -89,7 +89,7 @@ const en: TgStrings = {
   steps: [
     { title: "Open the bot", body: "On Telegram, tap “Start” and choose French, Arabic or English." },
     { title: "Tap your choices", body: "Your region, your crop, your last irrigation: all with buttons. You can also type “zitoun kairouan”." },
-    { title: "Get the plan", body: "The 7-day plan arrives every morning, with a button for the voice bulletin. Indicative advice: the decision is yours." },
+    { title: "Get the plan", body: "The 7-day plan arrives every morning, with a button for the voice bulletin. It reminds you that the advice is indicative: the decision is yours." },
   ],
   noteTitle: "About this demo",
   notes: [
@@ -129,7 +129,7 @@ const ar: TgStrings = {
   steps: [
     { title: "افتحوا البوت", body: "على تيليغرام، اضغطوا على «ابدأ» واختاروا الفرنسية أو العربية أو الإنجليزية." },
     { title: "اختاروا بالأزرار", body: "الولاية والمحصول وآخر سقية: كل ذلك بالأزرار. ويمكنكم أيضا الكتابة، مثلا «زيتون القيروان»." },
-    { title: "استلموا الخطة", body: "تصلكم خطة الأيام السبعة كل صباح، مع زر للنشرة الصوتية. نصيحة إرشادية: القرار لكم." },
+    { title: "استلموا الخطة", body: "تصلكم خطة الأيام السبعة كل صباح، مع زر للنشرة الصوتية. وتذكّركم بأن النصيحة إرشادية وأن القرار لكم." },
   ],
   noteTitle: "عن هذه التجربة",
   notes: [
@@ -169,7 +169,7 @@ const aeb: TgStrings = {
   steps: [
     { title: "افتح البوت", body: "في تيليغرام اضغط على «ابدأ» واختار الفرنسية ولا العربية ولا الإنجليزية." },
     { title: "اختار بالأزرار", body: "الولاية والزرعة وآخر سقية: كل شي بالأزرار. وتنجم تكتب زادة، مثلا «زيتون القيروان»." },
-    { title: "تجيك الخطة", body: "خطة 7 أيام تجيك كل صباح، وفيها زر للنشرة الصوتية. نصيحة للاسترشاد برك: القرار متاعك." },
+    { title: "تجيك الخطة", body: "خطة 7 أيام تجيك كل صباح، وفيها زر للنشرة الصوتية. وتذكّرك إنو النصيحة للاسترشاد برك وإنو القرار متاعك." },
   ],
   noteTitle: "على هالتجربة",
   notes: [
