@@ -10,6 +10,7 @@ type Dict = Record<string, string>;
 
 const fr: Dict = {
   title: "Ligne vocale : appeler Sakia",
+  backHome: "Retour à l'accueil",
   langOrderTitle: "Langues",
   langOrder:
     "Arabe (touche 2) ou français (touche 1), sous-titres en anglais. La voix arabe parle un arabe standard simple à accent tunisien ; son texte n'est pas validé par un locuteur tunisien.",
@@ -105,6 +106,7 @@ const fr: Dict = {
 
 const en: Dict = {
   title: "Voice line: call Sakia",
+  backHome: "Back to home",
   langOrderTitle: "Languages",
   langOrder:
     "Arabic (key 2) or French (key 1), with English subtitles. The Arabic voice is simple standard Arabic with a Tunisian accent; its text is not validated by a Tunisian speaker.",
@@ -200,6 +202,7 @@ const en: Dict = {
 
 const ar: Dict = {
   title: "الخط الصوتي: اتصلوا بساقية",
+  backHome: "العودة إلى الصفحة الرئيسية",
   langOrderTitle: "اللغات",
   langOrder:
     "يتكلم الخط بالفرنسية (الزر 1) وبالعربية (الزر 2). الترجمة بالإنجليزية. الصوت العربي عربية فصحى بسيطة بلكنة تونسية، وليس باللهجة التونسية؛ ونصّه لم يراجعه متحدث تونسي.",

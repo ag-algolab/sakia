@@ -113,7 +113,11 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
   const answerLang = tool?.result.language ?? "en";
 
   return (
-    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-3xl px-4 py-8">
+    <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-3xl px-4 py-6">
+      {/* d'où l'on vient et comment repartir : cette page n'est pas dans le menu (Anthony, 4 oct. : « on ne sait pas où on est arrivé ») */}
+      <Link href="/" className="inline-flex min-h-11 items-center gap-1.5 text-base font-bold text-sakia-water-deep underline-offset-2 hover:underline">
+        <span aria-hidden className="inline-block rtl:-scale-x-100">←</span> {t("backHome")}
+      </Link>
       {/* ---------- un titre, une ligne, un gros bouton ---------- */}
       <div className="flex flex-col items-center text-center">
         <h1 className="font-display text-3xl font-bold text-sakia-green-deep sm:text-4xl">{t("title")}</h1>

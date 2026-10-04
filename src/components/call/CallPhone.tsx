@@ -212,6 +212,10 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
 
   return (
     <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 py-6">
+      {/* cette page n'est pas dans le menu : un retour à l'accueil bien visible */}
+      <Link href="/" className="inline-flex min-h-11 items-center gap-1.5 text-base font-bold text-sakia-water-deep underline-offset-2 hover:underline">
+        <span aria-hidden className="inline-block rtl:-scale-x-100">←</span> {t("backHome")}
+      </Link>
       {/* Presque pas de texte (demande d'Anthony, 4 oct.) : un titre, l'étiquette d'honnêteté « simulé », une phrase. Le téléphone parle de lui-même. */}
       <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold text-sakia-green">
         {t("title")}
