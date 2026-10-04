@@ -142,6 +142,12 @@ export default {
     .end-url{font:700 34px Geist,sans-serif;color:#fff;margin-top:40px;padding:14px 30px;border-radius:999px;background:rgba(255,255,255,.1)}
     .end-small{font:500 22px/1.4 Geist,sans-serif;color:rgba(244,239,230,.7);margin-top:34px;max-width:1250px}
     .hold{position:absolute;left:${PHONE.x - 236}px;top:${PHONE.y - 492}px;width:472px;height:984px;border-radius:74px;background:#121614;display:flex;align-items:center;justify-content:center;text-align:center;color:#9fb5a5;font:600 30px/1.4 Geist,sans-serif;padding:60px;box-sizing:border-box;border:3px dashed #3c5a47}
+    .tgcard{position:absolute;left:${PHONE.x - 236}px;top:${PHONE.y - 300}px;width:472px;height:600px;border-radius:44px;background:linear-gradient(160deg,#2aabee,#1c7fc4);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;box-sizing:border-box;box-shadow:0 50px 100px rgba(0,0,0,.45)}
+    .tgcard .tg-ic{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+    .tgcard .tg-ic svg{width:72px;height:72px}
+    .tgcard b{font:800 46px Geist,sans-serif;color:#fff;margin-top:26px}
+    .tgcard p{font:600 28px/1.4 Geist,sans-serif;color:#eaf6ff;margin:18px 0 0}
+    .tgcard small{font:700 26px Geist,sans-serif;color:#fff;margin-top:26px;padding:10px 22px;border-radius:999px;background:rgba(0,0,0,.18)}
     .plane{position:absolute;left:${PHONE.x + 170}px;top:${PHONE.y - 470}px;display:flex;align-items:center;gap:12px;padding:12px 22px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 26px Geist,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     .bubble{position:absolute;left:${X}px;top:610px;width:${W}px;padding:26px 30px;border-radius:28px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12)}
     .bubble b{display:block;font:800 22px Geist,sans-serif;letter-spacing:.08em;color:#f2b33d;margin-bottom:10px}
@@ -194,7 +200,8 @@ export default {
     { type: "caption", start: VO_AT[5], end: E("telegram") - 0.2, x: X, y: 330, w: W, text: "And __every morning__, the answer comes by itself on Telegram.", stagger: 0.08 },
     TG
       ? { type: "phone", start: A("telegram"), end: E("telegram") + 0.1, fadeIn: 0.3, fadeOut: 0.3, statusBar: false, taps: false, ...PHONE, segments: [{ at: A("telegram"), media: "tg", from: 0, to: 30 }] }
-      : { type: "html", start: A("telegram") + 0.1, end: E("telegram"), fx: "zoom", html: `<div class="hold">Telegram: the morning message, filmed on Anthony's phone (Sunday morning)</div>` },
+      : // sans vidéo du téléphone : une carte (pas une fausse capture d'écran) qui invite à essayer le vrai robot
+        { type: "html", start: A("telegram") + 0.1, end: E("telegram"), fx: "zoom", html: `<div class="tgcard"><div class="tg-ic" data-at="0.1"><svg viewBox="0 0 24 24"><path fill="#fff" d="M21.5 3.6 2.9 10.8c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.4-1.4ZM8.9 13.4l9.2-5.8c.5-.3.9-.1.5.2l-7.9 7.1-.3 3.3-1.5-4.8Z"/></svg></div><b data-at="0.3">@sakia_tn_bot</b><p data-at="0.6">The real bot, on Telegram.<br>Every morning: today's decision, and a button to hear it.</p><small data-at="0.9">t.me/sakia_tn_bot</small></div>` },
 
     // ---------------------------------------------------------------- 5. appel et SMS, simulés
     { type: "chip", start: A("call"), end: E("call") - 0.2, x: X, y: 250, text: "CALL & SMS · SIMULATED", tone: "sim" },

@@ -272,7 +272,10 @@
     video(L) {
       // une vidéo d'Anthony, image par image, dans un cadre (rectangle arrondi ou plein écran)
       const box = el("div", "vid-layer " + (L.cls ?? ""));
+      // vidéo filmée à la verticale : on la montre entière, sur un fond flou fait de la même image
+      const back = L.fit === "contain" ? el("img", "vid-back", box) : null;
       const img = el("img", null, box);
+      if (back) img.style.objectFit = "contain";
       Object.assign(box.style, { left: (L.x ?? 0) + "px", top: (L.y ?? 0) + "px", width: (L.w ?? 1920) + "px", height: (L.h ?? 1080) + "px" });
       return (t) => {
         const p = presence(L, t);
@@ -281,7 +284,9 @@
         box.style.opacity = p;
         const { s } = segAt(L.segments, t);
         const idx = window.MEDIA[s.media];
-        setSrc(img, idx.base + idx.n[frameAt(idx, localTime(s, t))]);
+        const src = idx.base + idx.n[frameAt(idx, localTime(s, t))];
+        setSrc(img, src);
+        if (back) setSrc(back, src);
         const z = kv(L.zoom ?? 1, t);
         img.style.transform = `scale(${z})`;
       };
