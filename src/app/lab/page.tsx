@@ -97,7 +97,7 @@ export default function LabPage() {
           <li><strong>Month as a categorical feature adds nothing</strong> ({k.M1c.rmse.toFixed(3)} against {k.M1.rmse.toFixed(3)}): a cyclical day-of-year is enough, and the numeric-only model is the one that fits in a browser.</li>
           <li><strong>The hybrid (physics + learned correction) is no better than the pure model</strong> ({k.H1.rmse.toFixed(3)}).</li>
           <li>
-            <strong>The “not sure” safeguard rule was not met.</strong> The disagreement between the model and the water balance tracks the water balance's error (within-month rank correlation about 0.5), but only
+            <strong>The “not sure” safeguard rule was not met.</strong> The disagreement between the model and the water balance tracks the water balance&apos;s error (within-month rank correlation about 0.5), but only
             {" "}{dis.diff.toFixed(3)} better than a naive disagreement (95 %: {dis.ci95[0].toFixed(3)} to {dis.ci95[1].toFixed(3)}), below the 0.10 we had fixed in advance. So it is information only, and it never triggers
             “ask a technician”.
           </li>
@@ -109,7 +109,7 @@ export default function LabPage() {
         <h2 id="travel" className="font-display text-2xl font-extrabold text-sakia-ink">Does it travel? The pipeline does; the trained model only partly</h2>
         <p className="text-sakia-brown">
           Every ingredient (MODIS, Open-Meteo, ESA WorldCover) covers all of Africa, so another region means changing one box in the code. We applied the Kairouan model, unchanged, to three other regions. Error in mm/day;
-          “local calendar” is each region's own monthly average computed on its own data (optimistic for the calendar).
+          “local calendar” is each region&apos;s own monthly average computed on its own data (optimistic for the calendar).
         </p>
         <div className="overflow-x-auto rounded-xl border border-sakia-sand-dark bg-white" role="region" aria-label="Transfer to other regions" tabIndex={0}>
           <table className="w-full text-sm">
@@ -140,7 +140,7 @@ export default function LabPage() {
           </table>
         </div>
         <p className="text-sakia-brown">
-          <strong>What we conclude:</strong> a model trained in one climate regime does not carry to another (the Sahelian rainy-season regime is not Kairouan's). The honest way to extend Sakia across Africa is to train one small model per
+          <strong>What we conclude:</strong> a model trained in one climate regime does not carry to another (the Sahelian rainy-season regime is not Kairouan&apos;s). The honest way to extend Sakia across Africa is to train one small model per
           regime, which this pipeline does with about 90 minutes of free public data per region. Sidi Bouzid has only 4 weather cells, so its apparent success is fragile.
         </p>
       </section>

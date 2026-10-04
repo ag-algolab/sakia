@@ -13,24 +13,24 @@ export default function LanguageCoverage() {
   const t = STRINGS[lang];
   const score = useMemo(() => scoreTestset(), []);
   return (
-    <section dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 pb-12">
-      <h2 className="text-xl font-semibold">{t.languagesTitle}</h2>
-      <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{t.languagesBody}</p>
-      <p className="mt-2 text-sm font-medium">
+    <section dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 pb-8">
+      <h2 className="text-xl font-bold text-sakia-green">{t.languagesTitle}</h2>
+      <p className="mt-1 text-base text-sakia-ink">{t.languagesBody}</p>
+      <p className="mt-2 text-base font-semibold">
         {t.measured(score.ok, score.total)} ·{" "}
         {Object.entries(score.byGroup)
           .map(([g, v]) => `${g} ${v.ok}/${v.total}`)
           .join(" · ")}
       </p>
-      <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">{t.measuredCaveat}</p>
-      <details className="mt-3 text-sm">
-        <summary className="cursor-pointer select-none font-medium">{score.total}</summary>
+      <p className="mt-1 text-sm text-sakia-brown">{t.measuredCaveat}</p>
+      <details className="mt-3 text-base">
+        <summary className="flex min-h-11 cursor-pointer select-none items-center font-semibold">{score.total}</summary>
         <ul className="mt-2 space-y-1">
           {score.results.map((r, i) => (
             <li key={i} className="flex gap-2">
               <span aria-label={r.ok ? "ok" : "non"}>{r.ok ? "✓" : "✗"}</span>
               <span dir="auto">{r.case.text}</span>
-              <span className="text-neutral-500">· {r.case.group}</span>
+              <span className="text-sakia-brown">· {r.case.group}</span>
             </li>
           ))}
         </ul>

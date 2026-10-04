@@ -9,7 +9,7 @@ import { agoKeyboard, cropKeyboard, langKeyboard, parseAction, planKeyboard, rai
 import type { Plan } from "../src/lib/plan";
 import { reporterHash } from "../src/lib/reports";
 import type { Subscriber } from "../src/lib/telegram/store";
-import type { InlineKeyboard, TgUpdate } from "../src/lib/telegram/types";
+import type { InlineKeyboard } from "../src/lib/telegram/types";
 
 type Sent = { kind: string; text: string; markup?: InlineKeyboard };
 let out: Sent[] = [];
@@ -194,8 +194,7 @@ async function main() {
   m = await speak(45);
   check(m.length === 1 && /30 secondes/.test(m[0].text), "message vocal de plus de 30 s refusé");
   deps.voiceLimiter = new RateLimiter(10, 3_600_000);
-  let spoken = 0;
-  for (let i = 0; i < 12; i++) spoken += (await speak()).length > 0 && true ? 1 : 0;
+  for (let i = 0; i < 12; i++) await speak();
   m = await speak();
   check(/Trop de messages vocaux/.test(m[0]?.text ?? ""), "plus de 10 messages vocaux par heure refusés");
   deps.voiceLimiter = new RateLimiter(10, 3_600_000);
@@ -218,18 +217,22 @@ async function main() {
   m = await press("rain:light");
   let conf = m.find((x) => x.kind === "edit")!;
   show("signalement (1re personne)", m);
-  check(/Légère/.test(conf.text) && /Kairouan/.test(conf.text) && /première personne/.test(conf.text) && /au moins 2 personnes/.test(conf.text) && /prudente/.test(conf.text), "1er signalement : confirmation + règle des 2 personnes + valeur prudente");
+  check(/Légère/.test(conf.text) && /Kairouan/.test(conf.text) && /première personne/.test(conf.text) && /au moins 3 personnes/.test(conf.text) && /prudente/.test(conf.text), "1er signalement : confirmation + règle des 3 personnes + valeur prudente");
   check(fakeRows.length === 1 && fakeRows[0].region === "kairouan" && fakeRows[0].mm === 2 && fakeRows[0].level === "light" && fakeRows[0].token === `tg:${chat.id}`, "enregistré : région, journée, bas de la fourchette (2 mm), degré, identifiant anonyme");
   check(!/tg:|4242/.test(conf.text), "aucun identifiant affiché");
   fakeRows.push({ region: "kairouan", day: today, mm: 25, level: "very_heavy", token: "tg:999999999" });
   m = await press("rain:heavy");
   conf = m.find((x) => x.kind === "edit")!;
   show("signalement (2e personne)", m);
-  check(/2 agriculteurs ont signalé de la pluie à Kairouan/.test(conf.text) && /niveau retenu : Beaucoup/.test(conf.text) && /Pris en compte/.test(conf.text), "2 personnes : « 2 agriculteurs ont signalé… », niveau retenu, pris en compte");
+  check(/2 agriculteurs ont signalé de la pluie à Kairouan/.test(conf.text) && /niveau retenu : Beaucoup/.test(conf.text) && /au moins 3 personnes/.test(conf.text) && !/✅/.test(conf.text), "2 personnes : « 2 agriculteurs ont signalé… », niveau retenu, PAS encore pris en compte (il en faut 3, comme le plan)");
   check(fakeRows.filter((r) => r.token === `tg:${chat.id}`).length === 1, "un seul rapport par personne et par jour (le second remplace le premier)");
   check(!/999999999/.test(conf.text), "l'identifiant d'un autre n'est jamais affiché");
   m = await press("rain:light");
   check(/niveau retenu : Légère/.test(m.find((x) => x.kind === "edit")?.text ?? ""), "médiane prudente : 2 mm et 25 mm → 2 mm (Légère)");
+  fakeRows.push({ region: "kairouan", day: today, mm: 8, level: "heavy", token: "tg:888888888" });
+  m = await press("rain:very_light");
+  const third = m.find((x) => x.kind === "edit")?.text ?? "";
+  check(/3 agriculteurs ont signalé/.test(third) && /✅ Pris en compte dans votre plan/.test(third), "3 personnes : seuil atteint, « Pris en compte dans votre plan » (même seuil que le plan)");
   await press("L:ar");
   m = await press("rain:none");
   show("signalement (arabe)", m);

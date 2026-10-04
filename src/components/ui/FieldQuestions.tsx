@@ -118,7 +118,15 @@ export default function FieldQuestions({
   const cardClass = "rounded-3xl bg-white p-4 shadow-[0_18px_40px_-12px_rgba(10,40,25,0.35)] ring-1 ring-black/5 sm:p-5";
 
   if (!loaded || open === null) {
-    return <section id="field" aria-hidden className={`${cardClass} min-h-28 animate-pulse`} />;
+    // Espace réservé à la hauteur du questionnaire (premier visiteur, ~1 100 px) ou du résumé (profil complet : data-profile posé par
+    // le script de layout.tsx) : sans cela, tout le reste de la page sautait vers le bas d'un millier de pixels à l'arrivée du profil.
+    return (
+      <section
+        id="field"
+        aria-hidden
+        className={`${cardClass} min-h-[1100px] animate-pulse lg:min-h-[1190px] [html[data-profile]_&]:min-h-[190px] md:[html[data-profile]_&]:min-h-[140px]`}
+      />
+    );
   }
 
   // ---------- résumé (profil déjà donné) ----------

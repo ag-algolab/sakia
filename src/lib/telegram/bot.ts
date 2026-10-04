@@ -12,7 +12,7 @@ import { bulletinScript, planMessage } from "../messages";
 import type { Lang } from "../messages";
 import { buildPlan } from "../plan";
 import type { Plan } from "../plan";
-import { LEVEL_LABEL, LEVEL_MM } from "../rainLevels";
+import { LEVEL_LABEL, LEVEL_MM, MIN_REPORTERS } from "../rainLevels";
 import type { RainLevel } from "../rainLevels";
 import { loadReports, reporterHash, saveReport, summarize } from "../reports";
 import type { ReportRow } from "../reports";
@@ -346,7 +346,7 @@ async function reportRain(deps: Deps, cb: TgCallback, sub: Subscriber, level: Ra
   const text = [
     s.rainThanks(LEVEL_LABEL[sub.lang][level], region),
     s.rainCount(n, region, LEVEL_LABEL[sub.lang][day?.level ?? level]),
-    n >= 2 ? s.rainApplied : s.rainRule,
+    n >= MIN_REPORTERS ? s.rainApplied : s.rainRule, // le plan n'utilise un jour qu'à partir de MIN_REPORTERS personnes (src/lib/reports.ts)
   ].join("\n\n");
   await editOrSend(deps, chatId, messageId, text, refreshKeyboard(sub.lang));
 }

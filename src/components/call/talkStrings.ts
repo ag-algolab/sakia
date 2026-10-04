@@ -8,11 +8,11 @@ type Dict = Record<string, string>;
 const en: Dict = {
   title: "Talk to Sakia (voice agent)",
   intro:
-    "Speak in Tunisian Darija, Arabic or French: “I have wheat in Kairouan”. An AI agent understands which crop, which region and when you last irrigated. It does not calculate anything and invents no number: it calls our irrigation engine and reads the answer word for word. For anything else it says “ask a technician”.",
+    "Speak in Tunisian Darija, Arabic or French: “I have wheat in Kairouan”. An AI agent understands which crop, which region and when you last irrigated. It does not calculate anything: it calls our irrigation engine and is instructed to read the answer word for word (an instruction, not something we enforce). For anything else it says “ask a technician”.",
   whyAi:
-    "This is where AI earns its place: a spreadsheet or an SMS menu cannot understand a farmer who speaks or writes in Darija, French or a mix of both. The irrigation calculation itself stays deterministic, so it can be checked.",
+    "This is where AI earns its place: a spreadsheet or an SMS menu cannot understand a farmer who speaks in Darija, French or a mix of both. The irrigation calculation itself stays deterministic, so it can be checked.",
   langOrder:
-    "English first for the international jury. In reality the agent starts in Tunisian Darija, then French.",
+    "English first for the international jury. In reality the agent greets in simple standard Arabic (or French) and answers in the language of the farmer's last message.",
   start: "Talk to Sakia",
   stop: "End the conversation",
   again: "Talk again",
@@ -45,7 +45,7 @@ const en: Dict = {
   measured:
     "{passed} of {n} written test phrases handled correctly (French, Arabic, Darija, mixes, off-topic questions). Crop and region found: {both}. Answer read word for word: {verbatim}. Median time to call the engine: {ms} ms. These phrases were written by us and typed, not spoken: real farmers' speech will be harder.",
   limits:
-    "Limits: speech recognition of Tunisian Darija is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. Darija is understood but the answer is read in simple standard Arabic.",
+    "Limits: speech recognition of Tunisian Darija is not guaranteed; the AI agent can misunderstand and then asks again or refuses; the advice is indicative and a person decides. Whether Darija is understood has not been evaluated; the answer is read in simple standard Arabic or in French.",
   backToKeypad: "Back to the keypad phone",
   noAgent: "The voice agent has not been created yet.",
 };
@@ -53,11 +53,11 @@ const en: Dict = {
 const fr: Dict = {
   title: "Parler à Sakia (agent vocal)",
   intro:
-    "Parlez en darija tunisienne, en arabe ou en français : « j'ai du blé à Kairouan ». Un agent d'intelligence artificielle comprend la culture, la région et la date du dernier arrosage. Il ne calcule rien et n'invente aucun chiffre : il appelle notre moteur d'irrigation et lit la réponse mot pour mot. Pour tout le reste, il dit « demandez à un technicien ».",
+    "Parlez en darija tunisienne, en arabe ou en français : « j'ai du blé à Kairouan ». Un agent d'intelligence artificielle comprend la culture, la région et la date du dernier arrosage. Il ne calcule rien : il appelle notre moteur d'irrigation et a pour consigne de lire la réponse mot pour mot (une consigne, pas une garantie technique). Pour tout le reste, il dit « demandez à un technicien ».",
   whyAi:
-    "C'est ici que l'IA sert vraiment : un tableur ou un menu de SMS ne comprend pas un agriculteur qui parle ou écrit en darija, en français ou en mélangeant les deux. Le calcul d'irrigation, lui, reste déterministe, donc vérifiable.",
+    "C'est ici que l'IA sert vraiment : un tableur ou un menu de SMS ne comprend pas un agriculteur qui parle en darija, en français ou en mélangeant les deux. Le calcul d'irrigation, lui, reste déterministe, donc vérifiable.",
   langOrder:
-    "Anglais d'abord pour le jury international. En réalité l'agent commence en darija tunisienne, puis en français.",
+    "Anglais d'abord pour le jury international. En réalité l'agent accueille en arabe standard simple (ou en français) et répond dans la langue du dernier message de l'agriculteur.",
   start: "Parler à Sakia",
   stop: "Terminer la conversation",
   again: "Reparler",
@@ -90,7 +90,7 @@ const fr: Dict = {
   measured:
     "{passed} phrases de test sur {n} traitées correctement (français, arabe, darija, mélanges, questions hors sujet). Culture et région trouvées : {both}. Réponse lue mot pour mot : {verbatim}. Délai médian avant l'appel du moteur : {ms} ms. Ces phrases ont été écrites par nous et tapées, pas dites : la parole de vrais agriculteurs sera plus difficile.",
   limits:
-    "Limites : la reconnaissance vocale de la darija tunisienne n'est pas garantie ; l'agent peut mal comprendre, puis il redemande ou il refuse ; le conseil est indicatif et une personne décide. La darija est comprise, mais la réponse est lue en arabe standard simple.",
+    "Limites : la reconnaissance vocale de la darija tunisienne n'est pas garantie ; l'agent peut mal comprendre, puis il redemande ou il refuse ; le conseil est indicatif et une personne décide. La compréhension de la darija n'a pas été évaluée ; la réponse est lue en arabe standard simple ou en français.",
   backToKeypad: "Retour au téléphone à touches",
   noAgent: "L'agent vocal n'est pas encore créé.",
 };
@@ -98,10 +98,10 @@ const fr: Dict = {
 const ar: Dict = {
   title: "تحدثوا إلى ساقية (وكيل صوتي)",
   intro:
-    "تكلموا بالدارجة التونسية أو بالعربية أو بالفرنسية: «عندي القمح في القيروان». وكيل ذكاء اصطناعي يفهم المحصول والولاية وتاريخ آخر سقي. لا يحسب شيئا ولا يخترع أي رقم: يستدعي محرك السقي عندنا ويقرأ الجواب كلمة بكلمة. وفي كل ما عدا ذلك يقول «اسألوا فنيا».",
+    "تكلموا بالدارجة التونسية أو بالعربية أو بالفرنسية: «عندي القمح في القيروان». وكيل ذكاء اصطناعي يفهم المحصول والولاية وتاريخ آخر سقي. لا يحسب شيئا: يستدعي محرك السقي عندنا، وقد أُعطي تعليمة بقراءة الجواب كلمة بكلمة (مجرد تعليمة، وليست ضمانا تقنيا). وفي كل ما عدا ذلك يقول «اسألوا فنيا».",
   whyAi:
-    "هنا يفيد الذكاء الاصطناعي حقا: جدول بيانات أو قائمة رسائل نصية لا تفهم فلاحا يتكلم أو يكتب بالدارجة أو بالفرنسية أو بخليط منهما. أما حساب السقي فيبقى حتميا، ولذلك يمكن التحقق منه.",
-  langOrder: "الإنجليزية أولا من أجل لجنة التحكيم الدولية. وفي الواقع يبدأ الوكيل بالدارجة التونسية ثم بالفرنسية.",
+    "هنا يفيد الذكاء الاصطناعي حقا: جدول بيانات أو قائمة رسائل نصية لا تفهم فلاحا يتكلم بالدارجة أو بالفرنسية أو بخليط منهما. أما حساب السقي فيبقى حتميا، ولذلك يمكن التحقق منه.",
+  langOrder: "الإنجليزية أولا من أجل لجنة التحكيم الدولية. وفي الواقع يرحّب الوكيل بعربية فصحى بسيطة (أو بالفرنسية) ويجيب بلغة آخر رسالة للفلاح.",
   start: "تحدثوا إلى ساقية",
   stop: "إنهاء المحادثة",
   again: "تحدثوا من جديد",
@@ -134,7 +134,7 @@ const ar: Dict = {
   measured:
     "{passed} من {n} جملة اختبار عولجت بشكل صحيح (فرنسية، عربية، دارجة، خليط، أسئلة خارج الموضوع). المحصول والولاية: {both}. الجواب مقروء كلمة بكلمة: {verbatim}. المدة الوسطى قبل استدعاء المحرك: {ms} مللي ثانية. كتبنا هذه الجمل بأنفسنا وطبعناها، ولم تُنطق: كلام الفلاحين الحقيقيين أصعب.",
   limits:
-    "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. تُفهم الدارجة لكن الجواب يُقرأ بعربية فصحى بسيطة.",
+    "الحدود: التعرف على الدارجة التونسية صوتيا غير مضمون؛ قد يسيء الوكيل الفهم فيعيد السؤال أو يرفض؛ النصيحة إرشادية والقرار لشخص. فهم الدارجة لم يُقيَّم بعد؛ والجواب يُقرأ بعربية فصحى بسيطة أو بالفرنسية.",
   backToKeypad: "العودة إلى الهاتف بالأزرار",
   noAgent: "لم يُنشأ الوكيل الصوتي بعد.",
 };

@@ -10,7 +10,7 @@ import { agentId } from "@/lib/voiceagent/api";
 export const metadata: Metadata = {
   title: "Sakia · Voice line",
   description:
-    "Call Sakia on a simulated basic phone: choose language, crop and last watering with the keypad, hear the irrigation advice in a Tunisian-accented voice, with English subtitles. Works with recordings when offline.",
+    "Call Sakia on a simulated basic phone (no real line exists): choose language, crop and last watering with the keypad, hear the irrigation advice in a Tunisian-accented voice, with English subtitles. Plays demo recordings when there is no internet.",
 };
 
 async function readJson<T>(file: string, fallback: T): Promise<T> {

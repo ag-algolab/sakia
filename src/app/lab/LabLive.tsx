@@ -48,6 +48,7 @@ export default function LabLive({ regions }: { regions: Region[] }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- première requête au chargement de la page (démo sur Kairouan), volontaire
     void run("kairouan");
   }, [run]);
 

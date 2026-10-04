@@ -96,7 +96,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         {!active ? (
-          <button type="button" onClick={start} disabled={!agentReady} className="min-h-12 rounded-xl bg-[#2e9d4f] px-6 text-lg font-bold text-white hover:bg-[#278a45] disabled:opacity-50">
+          <button type="button" onClick={start} disabled={!agentReady} className="min-h-12 rounded-xl bg-[#1d7a3b] px-6 text-lg font-bold text-white hover:bg-[#17652f] disabled:opacity-50">
             🎙 {status === "ended" || status === "error" ? t("again") : t("start")}
           </button>
         ) : (
@@ -120,7 +120,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
 
       <div className="mt-5 grid items-start gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-          <ol className="max-h-80 space-y-2 overflow-y-auto">
+          <ol tabIndex={0} aria-label={t("title")} className="max-h-80 space-y-2 overflow-y-auto">
             {lines.length === 0 && <li className="text-base text-sakia-brown">{t("waiting")}</li>}
             {lines.map((l) => (
               <li key={l.id} className={`rounded-lg px-3 py-2 text-lg ${l.who === "you" ? "bg-sakia-sand" : "bg-sakia-green-light"}`}>
@@ -193,7 +193,7 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
       )}
       <p className="mt-4 text-sm text-sakia-brown">{t("limits")}</p>
       <p className="mt-3">
-        <Link href="/call" className="font-semibold text-sakia-water underline">← {t("backToKeypad")}</Link>
+        <Link href="/call" className="inline-flex min-h-11 items-center font-semibold text-sakia-water-deep underline">← {t("backToKeypad")}</Link>
       </p>
     </main>
   );

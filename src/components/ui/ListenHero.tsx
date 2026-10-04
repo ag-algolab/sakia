@@ -259,7 +259,7 @@ export default function ListenHero({
             ) : state === "error" ? (
               <RetryIcon className="h-12 w-12" />
             ) : busy ? (
-              <span className="sk-spin-fast block h-10 w-10 rounded-full border-4 border-white/40 border-t-white" />
+              <span className="sk-spinner block h-10 w-10 rounded-full border-4 border-white/40 border-t-white" />
             ) : (
               <SpeakerIcon className="h-12 w-12 sm:h-14 sm:w-14" />
             )}
@@ -268,8 +268,8 @@ export default function ListenHero({
         <span dir="rtl" lang="ar-TN" className="font-display text-3xl font-extrabold leading-tight text-sakia-green-deep sm:text-4xl">
           {BIG_LABEL}
         </span>
-        <span className={`max-w-xs text-center text-sm font-semibold leading-snug ${locked ? "text-sakia-alert" : "text-sakia-brown"}`}>
-          {locked ? t("lockedListen") : t("listenCaption")}
+        <span aria-live="polite" className={`max-w-xs text-center text-sm font-semibold leading-snug ${locked ? "text-sakia-alert" : busy ? "text-sakia-green" : "text-sakia-brown"}`}>
+          {locked ? t("lockedListen") : busy ? t("listenLoading") : t("listenCaption")}
         </span>
       </button>
 

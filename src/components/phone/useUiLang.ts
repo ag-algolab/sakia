@@ -22,7 +22,9 @@ function read(): UiLang {
 }
 
 export function useUiLang(): UiLang {
-  const [lang, setLang] = useState<UiLang>("fr");
+  // Avant la lecture du choix de la personne (après l'hydratation), on suit la langue par défaut du site (anglais, voir LangProvider) :
+  // la page et l'en-tête changent ensemble, au lieu d'afficher un instant du français sous un en-tête anglais.
+  const [lang, setLang] = useState<UiLang>("en");
   useEffect(() => {
     const sync = () => setLang(read());
     sync();

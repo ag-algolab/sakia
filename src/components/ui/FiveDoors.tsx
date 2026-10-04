@@ -11,8 +11,6 @@ import { Reveal } from "./motion";
 // RÉEL (Telegram, Web, Appli) ou SIMULÉ (Appel, SMS : une vraie ligne demande un opérateur). Ne jamais promettre un vrai numéro.
 // Voir docs/MARKETING.md « Les cinq portes ».
 
-const TELEGRAM_URL = "https://t.me/sakia_tn_bot";
-
 type Door = { key: string; icon: React.ReactNode; real: boolean; href?: string; external?: boolean };
 
 interface BeforeInstallPromptEvent extends Event {
@@ -50,7 +48,7 @@ export default function FiveDoors() {
   const doors: Door[] = [
     { key: "call", icon: <PhoneIcon className="h-8 w-8" />, real: false, href: "/call" },
     { key: "sms", icon: <SmsIcon className="h-8 w-8" />, real: false, href: "/phone" },
-    { key: "telegram", icon: <SendIcon className="h-8 w-8" />, real: true, href: TELEGRAM_URL, external: true },
+    { key: "telegram", icon: <SendIcon className="h-8 w-8" />, real: true, href: "/telegram" },
     { key: "web", icon: <GlobeIcon className="h-8 w-8" />, real: true, href: "#listen" },
     { key: "app", icon: <DownloadIcon className="h-8 w-8" />, real: true },
   ];
