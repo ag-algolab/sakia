@@ -68,16 +68,11 @@ export type Strings = {
   // inscription : région et culture obligatoires, sans valeur par défaut
   signupTitle: string;
   signupIntro: string;
-  required: string;
-  regionPlaceholder: string;
-  cropPlaceholder: string;
   regionError: string;
   cropError: string;
   signupMissing: string;
   signupDone: (crop: string, region: string) => string;
   prefilled: string;
-  annuals: string;
-  perennials: string;
   changeChoice: string;
   // le téléphone à touches
   phoneLabel: string;
@@ -207,16 +202,11 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainQueueTitle: "Vos signalements",
     signupTitle: "Inscription au SMS du matin",
     signupIntro: "Deux choix obligatoires, rien d'autre : la région et la culture.",
-    required: "obligatoire",
-    regionPlaceholder: "Choisir une région…",
-    cropPlaceholder: "Choisir une culture…",
     regionError: "Choisissez une région.",
     cropError: "Choisissez une culture.",
     signupMissing: "Choisissez une région et une culture pour recevoir le SMS.",
     signupDone: (crop, region) => `Inscription faite : ${crop} · ${region}.`,
     prefilled: "Choix repris du profil enregistré sur cet appareil : vous pouvez les changer.",
-    annuals: "Cultures annuelles",
-    perennials: "Cultures pérennes",
     changeChoice: "Modifier",
     phoneLabel: "Téléphone à touches simulé",
     screenLabel: "Écran du téléphone",
@@ -340,16 +330,11 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainQueueTitle: "تقاريرك",
     signupTitle: "الاشتراك في رسالة الصباح",
     signupIntro: "اختياران إلزاميان فقط: الولاية والمحصول.",
-    required: "إلزامي",
-    regionPlaceholder: "اختر الولاية…",
-    cropPlaceholder: "اختر المحصول…",
     regionError: "اختر الولاية.",
     cropError: "اختر المحصول.",
     signupMissing: "اختر الولاية والمحصول لتصلك الرسالة.",
     signupDone: (crop, region) => `تم الاشتراك: ${crop} · ${region}.`,
     prefilled: "اختيارات مأخوذة من الملف المحفوظ على هذا الجهاز: يمكنك تغييرها.",
-    annuals: "محاصيل سنوية",
-    perennials: "محاصيل دائمة",
     changeChoice: "تعديل",
     phoneLabel: "هاتف بأزرار (محاكاة)",
     screenLabel: "شاشة الهاتف",
@@ -473,16 +458,11 @@ export const STRINGS: Record<UiLang, Strings> = {
     rainQueueTitle: "Your reports",
     signupTitle: "Sign up for the morning SMS",
     signupIntro: "Two required choices, nothing else: region and crop.",
-    required: "required",
-    regionPlaceholder: "Choose a region…",
-    cropPlaceholder: "Choose a crop…",
     regionError: "Choose a region.",
     cropError: "Choose a crop.",
     signupMissing: "Choose a region and a crop to receive the SMS.",
     signupDone: (crop, region) => `Signed up: ${crop} · ${region}.`,
     prefilled: "Choices taken from the profile saved on this device: you can change them.",
-    annuals: "Annual crops",
-    perennials: "Perennial crops",
     changeChoice: "Change",
     phoneLabel: "Simulated keypad phone",
     screenLabel: "Phone screen",

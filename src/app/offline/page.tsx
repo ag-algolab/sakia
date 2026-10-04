@@ -10,16 +10,16 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// Un même libellé dans les trois langues, chacune isolée pour l'affichage (le sens de lecture de l'arabe ne mélange pas les autres).
+// Un même libellé dans les trois langues, chacune isolée (bdi) : le sens de lecture de l'arabe ne déplace pas les séparateurs.
 function Tri({ pick }: { pick: (s: Strings) => string }) {
   return (
     <>
       {UI_LANGS.map((l: UiLang, i) => (
         <span key={l}>
           {i > 0 && " · "}
-          <span lang={l} dir={l === "ar" ? "rtl" : "ltr"}>
+          <bdi lang={l} dir={l === "ar" ? "rtl" : "ltr"}>
             {pick(STRINGS[l])}
-          </span>
+          </bdi>
         </span>
       ))}
     </>
@@ -49,10 +49,14 @@ export default function OfflinePage() {
         <div className="flex flex-wrap items-center gap-3">
           <RetryButton label="Réessayer · إعادة المحاولة · Try again" />
           <Link href="/" className={link}>
-            <Tri pick={(s) => s.home} />
+            <span>
+              <Tri pick={(s) => s.home} />
+            </span>
           </Link>
           <Link href="/phone" className={link}>
-            <Tri pick={(s) => s.openPhone} />
+            <span>
+              <Tri pick={(s) => s.openPhone} />
+            </span>
           </Link>
         </div>
       </div>
