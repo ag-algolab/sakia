@@ -49,7 +49,9 @@
 
 ## 5. Règles qui restent
 
-- Région et culture OBLIGATOIRES (aucune valeur par défaut) sur l'accueil, la preuve et le bulletin.
+- Région et culture OBLIGATOIRES sur l'accueil, la preuve et le bulletin. Seule exception, décidée par Anthony (4 octobre, 09 h 30) :
+  à la toute première visite (ni région ni culture gardées sur l'appareil), l'accueil et la preuve préremplissent un champ d'exemple
+  affiché en clair et modifiable (Kairouan, culture de saison, arrosé il y a 6 jours : `firstVisitProfile`, `src/components/ui/profile.tsx`).
 - Honnêteté d'abord : README et `docs/DATA-CARD.md` font foi. Tout chiffre affiché a une source ou un calcul reproductible (tableau de la
   page À propos). Une simulation se dit simulation.
 - Jamais de secret dans le code, les journaux ou les captures ; jamais de donnée de test dans la vraie base de l'utilisateur.

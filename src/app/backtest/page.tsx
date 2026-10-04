@@ -10,7 +10,7 @@ import { DropIcon, SproutIcon, WaterBarIcon } from "@/components/ui/icons";
 import { useLang } from "@/components/ui/LangProvider";
 import { CountUp, Reveal, useInView } from "@/components/ui/motion";
 import Plant from "@/components/ui/Plant";
-import { EMPTY_PROFILE, loadProfile, saveProfile } from "@/components/ui/profile";
+import { EMPTY_PROFILE, loadProfileOrFirstVisit, saveProfile } from "@/components/ui/profile";
 import type { Profile } from "@/components/ui/profile";
 import RegionPicker from "@/components/ui/RegionPicker";
 import { CROPS } from "@/lib/crops";
@@ -38,7 +38,7 @@ export default function BacktestPage() {
   useEffect(() => {
     // Lu après l'hydratation : le serveur ne connaît pas le profil gardé sur l'appareil.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setProfile(loadProfile());
+    setProfile(loadProfileOrFirstVisit());
     setProfileLoaded(true);
   }, []);
   useEffect(() => {
