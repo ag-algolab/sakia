@@ -9,17 +9,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-sakia-green: #2b5a37;
+  --color-sakia-green: #275233; /* texte vert sur fond vert clair : 7,4:1 (l'ancien #2b5a37 : 6,7:1) */
   --color-sakia-green-light: #e3eedc;
   --color-sakia-green-deep: #123524;
   --color-sakia-brown: #5a3d22;
   --color-sakia-sand: #f0e5cb;
   --color-sakia-sand-dark: #d8c7a4;
   --color-sakia-ink: #24301f;
-  --color-sakia-water: #1d74b6;
+  --color-sakia-water: #115a91; /* 7,2:1 avec du texte blanc (l'ancien #1d74b6 : 5:1) */
   --color-sakia-water-light: #d9ecf8;
   --color-sakia-water-deep: #0e4a75;
-  --color-sakia-alert: #9a3f12;
+  --color-sakia-alert: #7e3410; /* texte rouille sur fond rouille clair : 7,2:1 (l'ancien #9a3f12 : 5,5:1) */
   --color-sakia-alert-light: #fbe4d2;
   --color-sakia-sun: #f2b33d;
   --color-sakia-sun-deep: #d98a1c;
@@ -191,6 +191,20 @@ input {
     opacity: 1;
   }
 }
+@keyframes sk-wind {
+  0%,
+  100% {
+    transform: skewX(-1.1deg);
+  }
+  50% {
+    transform: skewX(1.1deg);
+  }
+}
+@keyframes sk-flowx {
+  to {
+    transform: translateX(var(--shift, -10%));
+  }
+}
 @keyframes sk-sun-pulse {
   0%,
   100% {
@@ -245,6 +259,49 @@ input {
   }
   .sk-sun-pulse {
     animation: sk-sun-pulse 5s ease-in-out infinite;
+  }
+
+  /* Couches des scènes (SceneKit.tsx) : éléments HTML animés par le compositeur (GPU), donc fluides même si la page est chargée. */
+  .sk-l {
+    will-change: transform;
+  }
+  .sk-l-spin {
+    animation: sk-spin 14s linear infinite;
+  }
+  .sk-l-spin-slow {
+    animation: sk-spin 32s linear infinite;
+  }
+  .sk-l-spin-rev {
+    animation: sk-spin-rev 120s linear infinite;
+  }
+  .sk-l-drift {
+    animation: sk-drift 38s ease-in-out infinite alternate;
+  }
+  .sk-l-drift-slow {
+    animation: sk-drift 62s ease-in-out infinite alternate-reverse;
+  }
+  .sk-l-pulse {
+    animation: sk-sun-pulse 5s ease-in-out infinite;
+  }
+  .sk-l-wind {
+    transform-origin: 50% 100%;
+    animation: sk-wind 6.5s ease-in-out infinite;
+  }
+  .sk-l-wind-b {
+    transform-origin: 50% 100%;
+    animation: sk-wind 8s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+  .sk-l-flow {
+    animation: sk-flowx 1.4s linear infinite;
+  }
+  .sk-l-haze {
+    animation: sk-haze 2.2s ease-in-out infinite;
+  }
+  /* hors écran : on met tout en pause */
+  [data-paused="true"] .sk-l,
+  [data-paused="true"] .sk-l * {
+    animation-play-state: paused !important;
   }
 
   /* Apparition à l'entrée dans l'écran. Sans JavaScript (ou avant l'hydratation) tout reste visible. */
@@ -322,9 +379,20 @@ input {
   }
 }
 
+/* Échelle de texte des pages Conseil, Preuve et À propos (et du pied de page) : rien sous 14 px, les étiquettes à 16 px, le texte
+   courant à 18 px. Consigne d'Anthony : le public lit peu et lit sur de petits écrans. On redéfinit les variables de taille de Tailwind
+   dans ce seul sous-arbre ; le bulletin, le téléphone et l'appel gardent leur propre échelle. */
+.sk-type {
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.55;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.4;
+}
 
-
-
-
-
-/* rebuild 1791056062 */
+/* rebuild 1791067710 */

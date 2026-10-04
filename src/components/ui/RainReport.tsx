@@ -10,7 +10,7 @@ import { Reveal } from "./motion";
 import { SunIcon } from "./icons";
 
 // « Signaler la pluie » : l'agriculteur dit combien il a plu chez lui, sur une échelle à cinq degrés (personne ne mesure
-// en millimètres). Quand au moins MIN_REPORTERS (3) personnes différentes de la région signalent la même journée, la médiane prudente
+// en millimètres). Quand au moins 3 personnes différentes de la région (MIN_REPORTERS) signalent la même journée, la médiane prudente
 // remplace la pluie du modèle météo (src/lib/reports.ts). C'est de la donnée locale avec un humain dans la boucle.
 // Jamais présenté comme une mesure : « signalé par des agriculteurs ».
 // Hors connexion : le signalement attend dans l'appareil et part au retour du réseau.
@@ -116,33 +116,42 @@ const DARIJA_LABEL: Record<RainLevel, string> = {
 };
 
 export default function RainReport({ regionId }: { regionId: string }) {
-  const { lang, t, fmtDate, fmtNum } = useLang();
+  const { lang, t, fmtDate, fmtNum, colon } = useLang();
   const [level, setLevel] = useState<RainLevel | null>(null);
   const [offset, setOffset] = useState(0); // 0 = aujourd'hui, 1 = hier
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "queued" | "rate" | "down" | "invalid">("idle");
   const [summary, setSummary] = useState<Summary>([]);
-  const [minReporters, setMinReporters] = useState(MIN_REPORTERS); // repli (hors connexion) = la règle du moteur, jamais un chiffre écrit à la main
+  const [minReporters, setMinReporters] = useState(MIN_REPORTERS);
 
   const label = useCallback(
     (l: RainLevel) => (lang === "aeb" ? DARIJA_LABEL[l] : LEVEL_LABEL[lang][l]),
     [lang],
   );
 
-  const refresh = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/reports?region=${encodeURIComponent(regionId)}`);
-      if (!res.ok) return;
-      const body = (await res.json()) as { days: Summary; minReporters: number };
-      setSummary(body.days ?? []);
-      if (typeof body.minReporters === "number") setMinReporters(body.minReporters);
-    } catch {}
+      return res.ok ? ((await res.json()) as { days: Summary; minReporters: number }) : null;
+    } catch {
+      return null;
+    }
   }, [regionId]);
+  const apply = useCallback((body: { days: Summary; minReporters: number } | null) => {
+    if (!body) return;
+    setSummary(body.days ?? []);
+    if (typeof body.minReporters === "number") setMinReporters(body.minReporters);
+  }, []);
+  const refresh = useCallback(() => load().then(apply), [load, apply]);
 
   useEffect(() => {
-    // chargement initial depuis le serveur : refresh() ne pose l'état qu'après la réponse du réseau, pas pendant l'effet
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh();
-  }, [refresh]);
+    let alive = true;
+    void load().then((body) => {
+      if (alive) apply(body);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [load, apply]);
 
   // Au retour du réseau (et à l'ouverture), on envoie ce qui attendait dans l'appareil.
   useEffect(() => {
@@ -205,7 +214,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
                   }`}
                 >
                   <RainLevelIcon level={l} className={`h-11 w-11 ${on ? "text-white" : l === "none" ? "text-sakia-sun-deep" : "text-sakia-water"}`} />
-                  <span className="text-[13px] font-bold leading-tight">{label(l)}</span>
+                  <span className="text-sm font-bold leading-tight">{label(l)}</span>
                   <span className={`flex items-center gap-1 text-xs font-semibold ${on ? "text-white/85" : "text-sakia-brown/80"}`}>
                     <bdi dir="ltr">{RANGE[l]}</bdi>
                     <span>{t("mm")}</span>
@@ -235,7 +244,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
             type="button"
             onClick={send}
             disabled={!level || status === "sending"}
-            className="sk-press flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-sakia-green px-4 text-lg font-bold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-40"
+            className="sk-press flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-sakia-green px-4 text-lg font-bold text-white shadow-md disabled:cursor-not-allowed disabled:bg-sakia-sand disabled:text-sakia-brown disabled:shadow-none"
           >
             {status === "sending" ? t("loading") : status === "sent" ? t("rainSendAgain") : t("rainSend")}
           </button>
@@ -271,7 +280,7 @@ export default function RainReport({ regionId }: { regionId: string }) {
                     <li key={d.date} className="rounded-xl bg-sakia-sand/60 p-3 text-sm">
                       <p className="font-bold text-sakia-ink first-letter:uppercase">
                         {dayName(d.date)} · {d.n === 1 ? t("rainReported1") : t("rainReportedN", { n: fmtNum(d.n) })}
-                        {d.level ? ` : ${label(d.level)}` : ` : ${fmtNum(d.medianMm, 1)} ${t("mm")}`}
+                        {d.level ? `${colon} ${label(d.level)}` : `${colon} ${fmtNum(d.medianMm, 1)} ${t("mm")}`}
                       </p>
                       <p className={`mt-0.5 font-semibold ${counts ? "text-sakia-water-deep" : "text-sakia-brown"}`}>
                         {counts ? `✓ ${t("rainUsed")}` : t("rainWaiting", { n: fmtNum(minReporters - d.n) })}

@@ -1,0 +1,1 @@
+{"trainedOn":"Kairouan cropland pixels, 2019-2023","label":"MODIS MOD16A2GF satellite evapotranspiration (mm/day)","climatologyMmPerDay":{"1":0.5865,"10":0.4697,"11":0.5209,"12":0.6322,"2":0.5492,"3":0.6676,"4":0.6231,"5":0.5349,"6":0.3337,"7":0.1347,"8":0.2006,"9":0.4323},"model":{"trees":106,"kb":43.2,"kbGzip":11.9}}

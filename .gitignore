@@ -59,3 +59,15 @@ docs/NOTES-*.md
 public/audio/samples/
 public/audio/cache/
 docs/SUBMISSION.md
+ml/.venv/
+ml/data/
+ml/__pycache__/
+catboost_info/
+ml/results/_tiny*
+ml/results/*.cbm
+ml/results/m1.json
+ml/results/h1.json
+ml/results/metrics_prev.json
+ml/results/m1_expected.json
+ml/pip*.log
+docs/PASSATION-UI.md
