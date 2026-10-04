@@ -218,3 +218,18 @@ Coupes de phrases existantes (rien d'inventé, sauf la ligne « محاكاة » 
 - `proofMethod` (aeb) : الطريقة: كل موسم من 2015 عاودناه على الطقس اللي صار فعلا (أرشيف ERA5، Open-Meteo)، كأنّ ساقية كانت تعرفو من قبل. فرضية معقولة: قرار كل نهار يلزمو كان طقس النهار هاذاكا، وهو أصح جزء في التوقّعات.
 - `proofMethodLink` (ar) : المنهجية
 - `proofMethodLink` (aeb) : الطريقة
+
+
+## Pages Appel et Téléphone, points d'Anthony de 08 h 20 (4 oct.)
+
+- `src/components/call/strings.ts` intro (ar) : اتصلوا، استمعوا، واختاروا بأزرار الهاتف. يكفي هاتف بسيط.
+- `src/components/call/strings.ts` keysNow (ar) : الأزرار
+- `src/components/call/strings.ts` talkLink (ar) : أو تحدّثوا مع ساقية مباشرة
+- `src/components/call/strings.ts` hint_lang_en (ar) : الإنجليزية (English)
+- `src/components/call/strings.ts` simBadge (ar) : محاكاة
+- `src/components/phone/strings.ts` talkSakia (ar) : تحدّث مع ساقية
+- `src/components/phone/strings.ts` moreTitle (ar) : كيف تعمل هذه المحاكاة
+- `src/components/phone/strings.ts` phoneTitle (ar) : هاتف بأزرار: رسالة الصباح
+- `src/lib/sms/replies.ts` help (ar) : ساقية: لتغيير المحصول أو الولاية، اتصل بساقية وقلها. خطة، لغة، ايقاف = مسح. *123# قائمة
+
+- `src/lib/ivr/prompts.ts` welcome (ar), ligne vocale en anglais d'abord : للعربية، اضغط ثلاثة.

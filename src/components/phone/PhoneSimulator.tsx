@@ -36,11 +36,13 @@ export default function PhoneSimulator() {
 
   return (
     <div dir={lang === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold text-sakia-green sm:text-3xl">{t.phoneTitle}</h1>
+      {/* l'étiquette d'honnêteté « simulé » est une pastille, comme sur les cinq portes de l'accueil, pas un bandeau rouge
+          (décision d'Anthony, 4 oct. : on présente ce qui est fait) ; le détail est dans « comment marche cette simulation » */}
+      <h1 className="font-display flex flex-wrap items-center gap-3 text-2xl font-bold text-sakia-green sm:text-3xl">
+        {t.phoneTitle}
+        <span className="rounded-md bg-sakia-sun/90 px-2 py-0.5 font-sans text-sm font-extrabold uppercase tracking-wide text-sakia-ink">{t.simBadge}</span>
+      </h1>
       <p className="mt-2 max-w-3xl text-lg leading-8">{t.phoneIntro}</p>
-      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base font-semibold text-sakia-alert">
-        {t.simulated}
-      </p>
 
       <div className="mt-6">
         <SignupPanel lang={lang} showErrors={showErrors} />

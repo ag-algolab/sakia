@@ -30,8 +30,10 @@
 - Le gros bouton d'écoute de l'accueil lit le conseil en arabe tunisien ET affiche des **sous-titres** dans la langue de l'écran (en anglais
   par défaut : le jury ne parle pas arabe). Ils viennent du serveur avec le son, construits à partir du même plan que la voix (en-tête
   `x-advice-subs` de `/api/advice`, `src/lib/adviceClient.ts`, `src/components/ui/ListenHero.tsx`).
-- Ligne téléphonique : ordre **français puis arabe**. L'anglais n'existe qu'en sous-titres, pour le jury. Aucun texte ne doit dire
-  « English first » à propos de l'appel.
+- Ligne téléphonique : **anglais d'abord** (décision d'Anthony, 4 octobre, 08 h 30 : « tapez 1 pour l'anglais, tapez 2 pour le français,
+  tapez 3 pour l'arabe » ; le jury est anglophone). L'accueil est dit en anglais, puis en français, puis en arabe ; avant le choix, la ligne
+  parle anglais. Les touches viennent d'une seule liste (`LANG_CHOICES`, `src/lib/ivr/menu.ts`). Partout où le site répond, l'anglais
+  est la langue par défaut.
 - Les 4 langues de l'écran (fr, en, ar, aeb) restent à parité : `npx tsx scripts/i18n-parity.ts` (compare les clés de `components/ui/i18n.ts`).
   Tout texte arabe ou tunisien nouveau est listé pour relecture par un locuteur natif.
 

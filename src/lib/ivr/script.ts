@@ -5,6 +5,7 @@
 //   - ivrPlanLines   : l'essentiel, environ 25 secondes (où, pluie, chaleur, premier arrosage, arrosages suivants, risque) ;
 //   - ivrDetailLines : le détail de la semaine (touche 3), jour d'arrosage par jour d'arrosage, total, pluie, jour le plus chaud.
 //
+// Trois langues DITES : anglais, français, arabe. Le texte anglais sert aussi de sous-titre aux deux autres : mêmes lignes, mêmes `id`.
 // En arabe, tous les nombres sont écrits en toutes lettres (la voix lit mal les chiffres collés à du texte arabe) et les unités sont
 // dites en entier (« ميليمتر », pas « مم »). Les sous-titres affichent donc les mêmes mots que ceux dits.
 //
@@ -53,12 +54,13 @@ const weekday = (date: string, lang: Lang): string => dayParts(date, lang).weekd
 const diffDays = (a: string, b: string): number => Math.round((Date.parse(`${a}T00:00:00Z`) - Date.parse(`${b}T00:00:00Z`)) / 86400000);
 
 // « aujourd'hui », « demain » ou le jour en toutes lettres. Un rejeu (date passée) n'emploie jamais « aujourd'hui » ni « demain ».
-function when(date: string, plan: Plan, lang: Lang): string {
+// `bare` (anglais seulement) : le jour sans « on » (« Friday 17 July »), pour le détail de la semaine.
+function when(date: string, plan: Plan, lang: Lang, bare = false): string {
   const d = diffDays(date, plan.today);
   if (!plan.replay && d === 0) return lang === "ar" ? "اليوم" : lang === "en" ? "today" : "aujourd'hui";
   if (!plan.replay && d === 1) return lang === "ar" ? "غدا" : lang === "en" ? "tomorrow" : "demain";
   const abs = absoluteDay(date, lang);
-  return lang === "ar" ? `يوم ${abs}` : lang === "en" ? `on ${abs}` : `le ${abs}`;
+  return lang === "ar" ? `يوم ${abs}` : lang === "en" ? (bare ? abs : `on ${abs}`) : `le ${abs}`;
 }
 
 // Une dose se dit de façon que l'agriculteur la comprenne :
@@ -103,12 +105,13 @@ function names(plan: Plan, lang: Lang) {
   const crop = getCrop(plan.cropId);
   const region = getRegion(plan.regionId);
   return {
-    crop: crop ? (lang === "ar" ? crop.nameAr : lang === "en" ? crop.nameEn : spokenName(crop.nameFr)) : plan.cropId,
+    crop: crop ? (lang === "ar" ? crop.nameAr : lang === "en" ? spokenName(crop.nameEn, "en") : spokenName(crop.nameFr)) : plan.cropId,
     region: region ? (lang === "ar" ? region.nameAr : region.nameFr) : plan.regionId,
   };
 }
 
-// Les lignes retirées sont décidées sur le texte FRANÇAIS (le plus long) pour que les trois langues gardent les mêmes `id`.
+// Les lignes retirées sont décidées sur le texte FRANÇAIS (le plus long) pour que les trois langues gardent les mêmes `id` ;
+// scripts/ivr-check.ts vérifie que l'anglais et l'arabe tiennent aussi dans la cible de 25 secondes.
 export function ivrPlanLines(plan: Plan, lang: Lang): PlanLine[] {
   const dropped = droppedIds(buildLines(plan, "fr"));
   return buildLines(plan, lang).filter((l) => !dropped.has(l.id));
@@ -210,7 +213,7 @@ function buildDetail(plan: Plan, lang: Lang): PlanLine[] {
   const n = names(plan, lang);
   const head: PlanLine = {
     id: "dhead",
-    text: lang === "ar" ? `تفاصيل الأسبوع، ${n.crop}.` : lang === "en" ? `Week details, ${n.crop}.` : `Détail de la semaine, ${n.crop}.`,
+    text: lang === "ar" ? `تفاصيل الأسبوع، ${n.crop}.` : lang === "en" ? `This week in detail, ${n.crop}.` : `Détail de la semaine, ${n.crop}.`,
   };
   const unsure = unsureLine(plan, lang);
   if (plan.confidence.level === "none") return [head, { id: "unsure", text: unsure! }];
@@ -227,34 +230,34 @@ function buildDetail(plan: Plan, lang: Lang): PlanLine[] {
     } else {
       irrigations.slice(0, 4).forEach((d, i) => {
         const amount = shortAmount(d, lang);
-        const day = lang === "ar" ? when(d.date, plan, lang) : cap(when(d.date, plan, lang));
+        const day = lang === "ar" ? when(d.date, plan, lang) : cap(when(d.date, plan, lang, true));
         lines.push({ id: `irr${i + 1}`, text: lang === "fr" ? `${day} : ${amount}.` : `${day}: ${amount}.` });
       });
       if (irrigations.length > 1) {
         const amount = spokenAmount(totalAmount(irrigations), lang);
         lines.push({
           id: "total",
-          text: lang === "ar" ? `مجموع الأسبوع: ${amount}.` : lang === "en" ? `Week total: ${amount}.` : `Total de la semaine : ${amount}.`,
+          text: lang === "ar" ? `مجموع الأسبوع: ${amount}.` : lang === "en" ? `Total for the week: ${amount}.` : `Total de la semaine : ${amount}.`,
         });
       }
     }
     const rainy = [...plan.days].sort((a, b) => b.rain - a.rain)[0];
     if (rainy && rainy.rain >= 1) {
       const mm = num(rainy.rain, lang);
-      const day = when(rainy.date, plan, lang);
+      const day = when(rainy.date, plan, lang, true);
       lines.push({
         id: "rain2",
         text:
           lang === "ar"
             ? `أكثر الأيام مطرا ${day}: ${mm} ميليمتر.`
             : lang === "en"
-              ? `Rainiest day ${day}: ${mm} millimetres.`
+              ? `The rainiest day is ${day}, with ${mm} millimetres.`
               : `Jour le plus pluvieux ${day} : ${mm} millimètres.`,
       });
     }
     const hottest = [...plan.days].filter((d) => Number.isFinite(d.tmax)).sort((a, b) => b.tmax - a.tmax)[0];
     if (hottest) {
-      const day = when(hottest.date, plan, lang);
+      const day = when(hottest.date, plan, lang, true);
       const t = num(hottest.tmax, lang);
       lines.push({
         id: "hot2",
@@ -262,7 +265,7 @@ function buildDetail(plan: Plan, lang: Lang): PlanLine[] {
           lang === "ar"
             ? `أشد الأيام حرارة ${day}: ${t} درجة.`
             : lang === "en"
-              ? `Hottest day ${day}: ${t} degrees.`
+              ? `The hottest day is ${day}, at ${t} degrees.`
               : `Jour le plus chaud ${day} : ${t} degrés.`,
       });
     }

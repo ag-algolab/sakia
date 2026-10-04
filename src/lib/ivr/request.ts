@@ -1,8 +1,10 @@
 // Lecture et validation des paramètres des routes /api/ivr/plan et /api/ivr/plan-audio.
-// ?region=kairouan&crop=olivier&lang=fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ][&detail=1]   (ago absent ou « u » = dernier arrosage inconnu → « pas sûr » ; detail=1 = le détail de la semaine)
+// ?region=kairouan&crop=olivier&lang=en|fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ][&detail=1]   (lang absent = anglais ; ago absent ou « u » =
+// dernier arrosage inconnu → « pas sûr » ; detail=1 = le détail de la semaine)
 
 import { getCrop } from "../crops";
 import { getRegion } from "../regions";
+import { DEFAULT_LANG, isIvrLang } from "./menu";
 import type { IvrLang } from "./menu";
 
 export type PlanQuery = { regionId: string; cropId: string; lang: IvrLang; ago: number | null; asOf?: string; detail: boolean };
@@ -11,10 +13,10 @@ export function parsePlanQuery(url: string): { ok: true; q: PlanQuery } | { ok: 
   const p = new URL(url).searchParams;
   const regionId = p.get("region") ?? "kairouan";
   const cropId = p.get("crop") ?? "olivier";
-  const lang = p.get("lang") ?? "fr";
+  const lang = p.get("lang") ?? DEFAULT_LANG;
   if (!getRegion(regionId)) return { ok: false, error: `région inconnue : ${regionId}` };
   if (!getCrop(cropId)) return { ok: false, error: `culture inconnue : ${cropId}` };
-  if (lang !== "fr" && lang !== "ar") return { ok: false, error: "lang : fr ou ar" };
+  if (!isIvrLang(lang)) return { ok: false, error: "lang : en, fr ou ar" };
   const agoRaw = p.get("ago");
   if (agoRaw != null && agoRaw !== "u" && !/^[0-7]$/.test(agoRaw)) return { ok: false, error: "ago : 0 à 7, ou u (inconnu)" };
   const ago = agoRaw == null || agoRaw === "u" ? null : Number(agoRaw);

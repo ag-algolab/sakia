@@ -3,11 +3,11 @@
 // plus la liste de ce qu'il faut dire. Le faux téléphone de /call l'utilise dans le navigateur ; un vrai
 // opérateur ou une ligne SIP l'utiliserait de la même façon, via POST /api/ivr/step.
 //
-// Parcours : langue (1 français, 2 arabe) → région (1 Kairouan, 2 une autre) → groupe de cultures → culture →
+// Parcours : langue (1 anglais, 2 français, 3 arabe) → région (1 Kairouan, 2 une autre) → groupe de cultures → culture →
 // dernier arrosage → lecture du plan → menu de fin (1 une autre culture, 2 terminer, 3 détail de la semaine) → au revoir.
 // 0 répète, * revient en arrière, la ligne se termine après 2 minutes ou après deux silences de suite.
 
-import { AGO_CHOICES, DEFAULT_REGION, GROUPS, MAX_CALL_MS, OTHER_REGIONS } from "./menu";
+import { AGO_CHOICES, DEFAULT_LANG, DEFAULT_REGION, GROUPS, isIvrLang, IVR_LANGS, LANG_CHOICES, MAX_CALL_MS, OTHER_REGIONS } from "./menu";
 import type { GroupId, IvrLang } from "./menu";
 import { cropPromptId } from "./prompts";
 import type { PromptId } from "./prompts";
@@ -46,10 +46,10 @@ export type CallEvent =
 export type StepResult = { state: CallState; say: Say[]; end: boolean };
 
 const prompt = (id: PromptId, lang: IvrLang): Say => ({ kind: "prompt", id, lang });
-// Avant le choix de la langue : l'arabe d'abord (voix à accent tunisien), puis le français. Les touches ne changent pas
-// (1 = français, 2 = arabe) : chaque enregistrement dit sa propre touche.
-const bothLangs = (id: PromptId): Say[] => [prompt(id, "ar"), prompt(id, "fr")];
-const inLang = (id: PromptId, s: CallState): Say[] => (s.lang ? [prompt(id, s.lang)] : bothLangs(id));
+// Avant le choix de la langue : les trois langues dans l'ordre des touches (1 anglais, 2 français, 3 arabe) ;
+// chaque enregistrement d'accueil dit sa propre touche.
+const allLangs = (id: PromptId): Say[] => IVR_LANGS.map((lang) => prompt(id, lang));
+const inLang = (id: PromptId, s: CallState): Say[] => (s.lang ? [prompt(id, s.lang)] : allLangs(id));
 
 export function startCall(): StepResult {
   const state: CallState = {
@@ -69,10 +69,10 @@ export function startCall(): StepResult {
 
 // La question du nœud courant.
 export function ask(s: CallState): Say[] {
-  const lang = s.lang ?? "fr";
+  const lang = s.lang ?? DEFAULT_LANG;
   switch (s.node) {
     case "lang":
-      return bothLangs("welcome");
+      return allLangs("welcome");
     case "region":
       return [prompt("region", lang)];
     case "region_list":
@@ -99,7 +99,7 @@ function enter(s: CallState, node: NodeId): StepResult {
   let say = ask(next);
   if (node === "region" && !next.helpGiven) {
     next = { ...next, helpGiven: true };
-    say = [prompt("help", next.lang ?? "fr"), ...say];
+    say = [prompt("help", next.lang ?? DEFAULT_LANG), ...say];
   }
   if (node === "plan") next = { ...next, plansHeard: next.plansHeard + 1 };
   return { state: next, say, end: false };
@@ -147,10 +147,11 @@ function onKey(s0: CallState, key: Key): StepResult {
   const i = digitIndex(key);
 
   switch (s.node) {
-    case "lang":
-      if (key === "1") return enter({ ...s, lang: "fr" }, "region");
-      if (key === "2") return enter({ ...s, lang: "ar" }, "region");
+    case "lang": {
+      const choice = LANG_CHOICES.find((c) => c.key === key);
+      if (choice) return enter({ ...s, lang: choice.lang }, "region");
       return invalid(s);
+    }
     case "region":
       if (key === "1") return enter({ ...s, regionId: DEFAULT_REGION }, "group");
       if (key === "2") return enter(s, "region_list");
@@ -214,7 +215,7 @@ const NODES: NodeId[] = ["lang", "region", "region_list", "group", "crop", "ago"
 export function parseState(x: unknown): CallState | null {
   if (!x || typeof x !== "object") return null;
   const o = x as Record<string, unknown>;
-  const lang = o.lang === "fr" || o.lang === "ar" ? o.lang : o.lang === null ? null : undefined;
+  const lang = isIvrLang(o.lang) ? o.lang : o.lang === null ? null : undefined;
   if (lang === undefined) return null;
   if (typeof o.node !== "string" || !NODES.includes(o.node as NodeId)) return null;
   if (typeof o.regionId !== "string" || ![DEFAULT_REGION, ...OTHER_REGIONS].includes(o.regionId)) return null;

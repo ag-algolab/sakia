@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Almond.",
+   "startMs": 0,
+   "endMs": 3840,
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 3920,
+   "endMs": 6480,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 48 degrees.",
+   "startMs": 6560,
+   "endMs": 9280,
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare.",
+   "startMs": 9360,
+   "endMs": 18480,
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: medium.",
+   "startMs": 18640,
+   "endMs": 20640,
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Almond.",
+   "en": "Irrigation advice for Kairouan, crop: Almond."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 48 degrees.",
+   "en": "Temperatures may reach 48 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare.",
+   "en": "Our advice: irrigate on Thursday 23 July, with the equivalent of 60 millimetres of rain, which is 602 cubic metres per hectare."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: medium.",
+   "en": "Water-stress risk: medium."
+  }
+ ],
+ "durationMs": 20640
+}

@@ -7,11 +7,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLang } from "@/components/ui/LangProvider";
+import { dateFromAgo, loadProfile, saveProfile, tunisToday } from "@/components/ui/profile";
 import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
 import { AgentCall } from "./agentClient";
 import type { AgentEvent, AgentToolResult } from "./agentClient";
-import { tr, uiLangOf } from "./strings";
+import { uiLangOf } from "./strings";
 import type { UiLang } from "./strings";
 import { tt } from "./talkStrings";
 
@@ -36,16 +37,38 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
   const nextId = useRef(0);
   const logEnd = useRef<HTMLLIElement | null>(null);
 
-  const onEvent = useCallback((e: AgentEvent) => {
-    if (e.type === "status") {
-      setStatus(e.status);
-      if (e.detail) setDetail(e.detail);
-      if (e.mic !== undefined) setMic(e.mic);
-    } else if (e.type === "user") setLines((l) => [...l, { id: ++nextId.current, who: "you", text: e.text }]);
-    else if (e.type === "agent") setLines((l) => [...l, { id: ++nextId.current, who: "agent", text: e.text }]);
-    else if (e.type === "tool") setTool({ args: e.args, result: e.result });
-    else if (e.type === "speaking") setSpeaking(e.value);
+  // Ce que l'agent a compris devient le champ de la personne sur tout le site (accueil, preuve, téléphone) : on change ses réglages
+  // en PARLANT (décision d'Anthony, 4 oct. : sur un téléphone à touches on ne tape pas « olivier kairouan hier », on appelle et on le dit).
+  const [saved, setSaved] = useState<{ crop: string; region: string } | null>(null);
+  const remember = useCallback((r: AgentToolResult) => {
+    if (!getCrop(r.crop_id) || !getRegion(r.region_id)) return;
+    const prev = loadProfile();
+    const ago = r.last_irrigation_days_ago;
+    saveProfile({
+      ...prev,
+      region: r.region_id,
+      crop: r.crop_id,
+      planting: prev.crop === r.crop_id ? prev.planting : "",
+      agoDate: ago != null ? dateFromAgo(String(Math.min(7, Math.max(0, Math.round(ago)))), tunisToday()) : prev.agoDate,
+    });
+    setSaved({ crop: r.crop_id, region: r.region_id });
   }, []);
+
+  const onEvent = useCallback(
+    (e: AgentEvent) => {
+      if (e.type === "status") {
+        setStatus(e.status);
+        if (e.detail) setDetail(e.detail);
+        if (e.mic !== undefined) setMic(e.mic);
+      } else if (e.type === "user") setLines((l) => [...l, { id: ++nextId.current, who: "you", text: e.text }]);
+      else if (e.type === "agent") setLines((l) => [...l, { id: ++nextId.current, who: "agent", text: e.text }]);
+      else if (e.type === "tool") {
+        setTool({ args: e.args, result: e.result });
+        remember(e.result);
+      } else if (e.type === "speaking") setSpeaking(e.value);
+    },
+    [remember],
+  );
 
   useEffect(() => () => call.current?.stop(), []);
   useEffect(() => {
@@ -90,9 +113,6 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
       <h1 className="text-2xl font-bold text-sakia-green">{t("title")}</h1>
       <p className="mt-2 max-w-3xl text-lg">{t("intro")}</p>
       <p className="mt-2 max-w-3xl text-base text-sakia-brown">{t("whyAi")}</p>
-      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base">
-        <strong className="block">{tr(ui, "langOrderTitle")}</strong> {t("langOrder")}
-      </p>
 
       {!agentReady && <p className="mt-4 rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 font-semibold text-sakia-alert">{t("noAgent")}</p>}
 
@@ -175,6 +195,15 @@ export default function Talk({ agentReady, evalSummary }: { agentReady: boolean;
                 <p className="rounded-lg border border-sakia-green bg-sakia-green-light p-2">{t("guardOk")}</p>
               )}
             </div>
+          )}
+          {/* le champ dit à voix haute est enregistré sur l'appareil : l'accueil, la preuve et le téléphone l'utilisent */}
+          {saved && (
+            <p role="status" className="mt-3 rounded-lg bg-sakia-green p-3 text-base font-bold text-white">
+              ✓ {t("fieldSaved", { crop: cropName(saved.crop), region: regionName(saved.region) })}{" "}
+              <Link href="/" className="underline underline-offset-2">
+                {t("seePlan")}
+              </Link>
+            </p>
           )}
         </section>
       </div>

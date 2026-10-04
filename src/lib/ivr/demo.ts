@@ -7,9 +7,9 @@ import type { IvrLang } from "./menu";
 export type ManifestItem = {
   id: string;
   lang: IvrLang;
-  file: string;
+  file: string; // adresse servie, avec l'empreinte du texte (recordingFile : « /audio/ivr/welcome.en.mp3?v=… »)
   text: string;
-  en: string;
+  en: string; // sous-titre anglais (en anglais : le texte lui-même)
   hash: string; // empreinte du texte enregistré (textHash)
   chars: number;
   bytes: number;

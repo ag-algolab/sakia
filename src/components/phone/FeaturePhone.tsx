@@ -6,6 +6,7 @@
 // Le texte du SMS du matin est celui que produit planSms (src/lib/messages.ts), calculé sur l'appareil avec la météo du jour :
 // aucune phrase de conseil n'est écrite ici. Aucun vrai SMS, aucun vrai appel : tout reste dans le navigateur.
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CROPS } from "@/lib/crops";
@@ -477,26 +478,26 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
     <div className={s.layout}>
       {/* ---------- les deux actions ---------- */}
       <div className={s.areaActions}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-sakia-sand-dark bg-white p-3">
-            <button
-              type="button"
-              onClick={startMorning}
-              aria-describedby={ready ? undefined : "signup-status"}
-              className={`${primary} ${ready ? "bg-sakia-green text-white hover:bg-sakia-green-deep" : "border-2 border-sakia-brown bg-sakia-sand text-sakia-ink"}`}
-            >
-              <Envelope className="h-5 w-auto shrink-0" />
-              <span>{t.seeSms}</span>
-            </button>
-            <p className="mt-2 text-sm leading-snug text-sakia-brown">{t.seeSmsNote}</p>
-          </div>
-          <div className="rounded-2xl border border-sakia-sand-dark bg-white p-3">
-            <button type="button" onClick={startCall} className={`${primary} border-2 border-sakia-green bg-white text-sakia-green hover:bg-sakia-green-light`}>
-              <Handset className="h-5 w-5 shrink-0" />
-              <span>{t.simCall}</span>
-            </button>
-            <p className="mt-2 text-sm leading-snug text-sakia-brown">{t.simCallNote}</p>
-          </div>
+        {/* trois gestes, sans phrase d'explication (le jury ne lit pas) : voir le SMS du matin, recevoir l'appel, ou parler à Sakia
+            (l'agent vocal : on change sa culture ou sa région en le disant, l'IA répond avec la voix) */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={startMorning}
+            aria-describedby={ready ? undefined : "signup-status"}
+            className={`${primary} ${ready ? "bg-sakia-green text-white hover:bg-sakia-green-deep" : "border-2 border-sakia-brown bg-sakia-sand text-sakia-ink"}`}
+          >
+            <Envelope className="h-5 w-auto shrink-0" />
+            <span>{t.seeSms}</span>
+          </button>
+          <button type="button" onClick={startCall} className={`${primary} border-2 border-sakia-green bg-white text-sakia-green hover:bg-sakia-green-light`}>
+            <Handset className="h-5 w-5 shrink-0" />
+            <span>{t.simCall}</span>
+          </button>
+          <Link href="/call/talk" className={`${primary} bg-sakia-water-deep text-white`}>
+            <span aria-hidden>🎙</span>
+            <span>{t.talkSakia}</span>
+          </Link>
         </div>
       </div>
 
@@ -607,47 +608,38 @@ export default function FeaturePhone({ lang, regionId, cropId, ago = "", feed, o
 
       {/* ---------- ce que font les touches, ce qui est simulé, journal ---------- */}
       <div className={`${s.areaInfo} space-y-6`}>
+        {/* les touches de réponse, en pastilles : un chiffre, un mot (la description complète reste en info-bulle) */}
         <section aria-labelledby="keys-title">
           <h2 id="keys-title" className="text-xl font-bold text-sakia-green">
             {t.keysTitle}
           </h2>
-          <p className="mt-1 text-base leading-7">{t.keysIntro}</p>
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-3 flex flex-wrap gap-2">
             {(
               [
-                ["1", t.kHelp, t.kHelpDesc, HELP_TEXT[smsLang]],
-                ["2", t.kLang, t.kLangDesc, languageText(smsLang, "en")],
-                ["3", t.kStop, t.kStopDesc, STOP_TEXT[smsLang]],
-                ["*", t.softBack, t.kBackDesc, ""],
+                ["1", t.kHelp, t.kHelpDesc],
+                ["2", t.kLang, t.kLangDesc],
+                ["3", t.kStop, t.kStopDesc],
+                ["*", t.softBack, t.kBackDesc],
               ] as const
-            ).map(([k, label, desc, example]) => (
-              <li key={k} className="flex items-start gap-3">
-                <kbd className="mt-0.5 inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg bg-[#373e3a] px-2 font-mono text-base font-bold text-white">{k}</kbd>
-                <div className="min-w-0">
-                  <p className="text-base font-bold leading-tight">{label}</p>
-                  <p className="text-sm leading-snug text-sakia-brown">{desc}</p>
-                  {example && (
-                    <p className="mt-0.5 text-sm leading-snug text-sakia-ink">
-                      <code dir="auto" className="rounded bg-sakia-sand px-1.5 py-0.5 font-mono text-[0.8125rem]">
-                        {example}
-                      </code>
-                    </p>
-                  )}
-                </div>
+            ).map(([k, label, desc]) => (
+              <li key={k} title={desc} className="flex items-center gap-2 rounded-xl bg-white px-2 py-1.5 ring-1 ring-sakia-sand-dark">
+                <kbd className="inline-flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg bg-[#373e3a] px-2 font-mono text-base font-bold text-white">{k}</kbd>
+                <span className="text-base font-bold">{label}</span>
               </li>
             ))}
           </ul>
         </section>
 
-        <div className="space-y-2 text-sm leading-6 text-sakia-ink">
-          <p>{t.simulatedDetail}</p>
-          <p>{t.limitNote}</p>
-          <p>{t.install}</p>
-          <p className="font-semibold">{t.truth}</p>
-        </div>
-
+        {/* le détail (ce qui est simulé, limites, installation, hors connexion, messages échangés) : replié */}
         <details className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-          <summary className="flex min-h-11 cursor-pointer select-none items-center text-base font-bold text-sakia-green">{t.logTitle}</summary>
+          <summary className="flex min-h-11 cursor-pointer select-none items-center text-base font-bold text-sakia-green">{t.moreTitle}</summary>
+          <div className="mt-1 space-y-2 text-sm leading-6 text-sakia-ink">
+            <p>{t.simulatedDetail}</p>
+            <p>{t.limitNote}</p>
+            <p>{t.install}</p>
+            <p className="font-semibold">{t.truth}</p>
+          </div>
+          <h3 className="mt-3 text-base font-bold text-sakia-green">{t.logTitle}</h3>
           <p className="mt-1 text-sm leading-snug text-sakia-brown">{t.logIntro}</p>
           {sid && (
             <p className="mt-1 text-sm text-sakia-brown">

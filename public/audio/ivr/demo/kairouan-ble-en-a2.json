@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Wheat.",
+   "startMs": 0,
+   "endMs": 3760,
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 3840,
+   "endMs": 6400,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 31 degrees.",
+   "startMs": 6480,
+   "endMs": 9200,
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: no irrigation is needed in the next seven days.",
+   "startMs": 9280,
+   "endMs": 13440,
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "startMs": 13520,
+   "endMs": 15520,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Wheat.",
+   "en": "Irrigation advice for Kairouan, crop: Wheat."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "hot",
+   "text": "Temperatures may reach 31 degrees.",
+   "en": "Temperatures may reach 31 degrees."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: no irrigation is needed in the next seven days.",
+   "en": "Our advice: no irrigation is needed in the next seven days."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 15520
+}

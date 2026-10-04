@@ -16,40 +16,51 @@ export const metadata: Metadata = {
 // problème, IA, langues, garde-fous, tailles, fiche des données) est replié juste dessous, une touche pour l'ouvrir. Rien n'est retiré.
 // Ne rien arrondir vers le haut : si une mesure n'est pas faite, la page le dit.
 
-const FACTS: { icon: React.ReactNode; title: string; body: string; href?: string; link?: string }[] = [
+// Le problème, en UNE phrase courte (Anthony, 4 oct. : « the problem in one sentence » suivi d'un pavé illisible, « on marche sur la
+// tête ») ; la phrase complète du modèle de la Banque mondiale reste repliée plus bas.
+const PROBLEM = "Farmers in Kairouan water by habit, and many cannot read: Sakia tells them, out loud, which day to water and how much.";
+
+// Six cartes : un grand chiffre ou un mot, un titre, une ligne. Chiffres : docs/NOTES-chiffres.md (A2, A8, E1, F1, F4, F5).
+const FACTS: { icon: React.ReactNode; title: string; stat: string; body: string; href?: string; link?: string }[] = [
   {
-    icon: <DropIcon className="h-6 w-6" />,
+    icon: <DropIcon className="h-5 w-5" />,
     title: "The problem",
-    body: "The Kairouan aquifer is drawn at about 230 % of its renewable volume (press report). More than one person in four there cannot read.",
+    stat: "230 %",
+    body: "of what refills Kairouan's aquifer is pumped out (press report). More than 1 person in 4 there cannot read.",
   },
   {
-    icon: <PhoneIcon className="h-6 w-6" />,
+    icon: <PhoneIcon className="h-5 w-5" />,
     title: "What Sakia does",
-    body: "One decision a day: water or wait, and how much. Spoken aloud, on five channels.",
+    stat: "1 a day",
+    body: "One decision: water or wait, and how much. Spoken aloud, on five channels.",
   },
   {
-    icon: <SpeakerIcon className="h-6 w-6" />,
+    icon: <SpeakerIcon className="h-5 w-5" />,
     title: "Where the AI is",
-    body: "It listens, it talks, it answers in Tunisian-accented Arabic. The numbers come from FAO-56 physics: checkable, no hallucination.",
+    stat: "Voice",
+    body: "It listens, it talks, it answers aloud. The numbers stay FAO-56 physics: checkable, no hallucination.",
     href: "/lab",
     link: "Lab: a 43 KB model tested in public",
   },
   {
-    icon: <AlertIcon className="h-6 w-6" />,
+    icon: <AlertIcon className="h-5 w-5" />,
     title: "When it is not sure",
-    body: "It says “Not sure: ask a person” instead of guessing. Weather data over 48 hours old: no advice at all.",
+    stat: "Ask a person",
+    body: "It says so instead of guessing. Weather over 48 hours old: no advice at all.",
   },
   {
-    icon: <DownloadIcon className="h-6 w-6" />,
+    icon: <DownloadIcon className="h-5 w-5" />,
     title: "Small, works offline",
-    body: "383 KB on a first visit, then zero data. A day's advice: about 1 KB of plan, plus 76 KB if you play the voice.",
+    stat: "383 KB",
+    body: "on a first visit, then zero data. A day's advice: about 1 KB, plus 76 KB of voice.",
     href: "/speed",
     link: "Measured against 5 sites",
   },
   {
-    icon: <CheckIcon className="h-6 w-6" />,
+    icon: <CheckIcon className="h-5 w-5" />,
     title: "Real or simulated",
-    body: "Telegram, the web and the app are real. Call and SMS are simulated. The water savings come from a simulation of past seasons.",
+    stat: "3 + 2",
+    body: "Real: Telegram, the web, the app. Simulated: call and SMS. Water savings: a simulation of past seasons.",
   },
 ];
 
@@ -288,22 +299,25 @@ export default function AboutPage() {
   return (
     <main className="sk-type flex flex-1 flex-col">
       <OpenOnHash />
-      <section className="sk-hero-sky px-4 pb-14 pt-8 text-white">
-        <div className="mx-auto max-w-5xl" dir="ltr" lang="en">
+      {/* En-tête sur fond vert foncé UNI (le dégradé doré du bas rendait le texte blanc peu lisible), même marge que les cartes
+          et le menu : le titre, puis le problème en une phrase, en grand. */}
+      <section className="bg-sakia-green-deep pb-14 pt-8 text-white">
+        <div className="mx-auto max-w-5xl px-4" dir="ltr" lang="en">
           <h1 className="font-display text-balance text-4xl font-bold leading-[1.05] sm:text-5xl">What the AI does, and what it does not.</h1>
-          <p className="mt-3 text-base leading-snug text-white/90 sm:text-lg">Sakia speaks to farmers in Tunisian Arabic. This page is in English.</p>
+          <p className="mt-4 max-w-4xl text-xl font-semibold leading-snug text-white sm:text-2xl">{PROBLEM}</p>
         </div>
       </section>
 
       <div dir="ltr" lang="en" className="relative z-10 mx-auto -mt-8 w-full max-w-5xl flex-1 space-y-10 px-4 pb-8 text-start">
-        {/* ---------- en trente secondes ---------- */}
+        {/* ---------- en trente secondes : un grand chiffre ou un mot par carte ---------- */}
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {FACTS.map((f, i) => (
-            <Reveal as="li" key={f.title} delay={Math.min(i, 5) * 60} className="flex flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-              <p className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-sakia-green-light text-sakia-green-deep">{f.icon}</span>
-                <span className="font-display text-xl font-bold leading-tight text-sakia-green-deep">{f.title}</span>
+            <Reveal as="li" key={f.title} delay={Math.min(i, 5) * 60} className="flex flex-col rounded-3xl bg-white p-5 shadow-md ring-1 ring-black/10">
+              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-sakia-brown">
+                <span className="text-sakia-green-deep">{f.icon}</span>
+                {f.title}
               </p>
+              <p className="font-display mt-2 text-4xl font-extrabold leading-none text-sakia-green-deep">{f.stat}</p>
               <p className="mt-2 leading-snug text-sakia-ink">{f.body}</p>
               {f.href && (
                 <Link href={f.href} className={`${linkClass} mt-auto pt-1 text-sm`}>
@@ -332,7 +346,7 @@ export default function AboutPage() {
             In detail
           </h2>
 
-          <Fold id="problem" title="The problem, in one sentence" hint="The World Bank template, with our evidence">
+          <Fold id="problem" title="Full problem statement" hint="The World Bank template, with our evidence">
             <p className="font-display rounded-3xl bg-gradient-to-br from-sakia-green to-sakia-green-deep p-6 text-lg font-semibold leading-relaxed text-white shadow-md">
               Because of Sakia, a smallholder in Kairouan who irrigates from their own well will know which day to irrigate
               and how much, from the weather forecast, through a short call or message that needs no smartphone and no
