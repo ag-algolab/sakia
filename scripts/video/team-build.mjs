@@ -150,7 +150,7 @@ if (!LOCAL) {
     const tChess = at(3, /chess/, 0.1), tWater = at(3, /water/, 0.7), tSakia = at(3, /sakia|sakya|sakiya|saqia/, 0.95);
     // son diplôme, en grand, à gauche (videos/assets/team/diploma.png, tiré de son PDF)
     const DIPLOMA = A("diploma.png");
-    if (DIPLOMA) html(tChess - 0.05, sChess.at + sChess.len + 0.5, `<div class="diploma" data-at="0" data-fx="slide" data-rot="-2"><img src="${DIPLOMA}"></div>`);
+    if (DIPLOMA) html(tChess - 0.05, sChess.at + sChess.len + 0.5, `<div class="diploma" data-at="0" data-fx="slide" data-rot="-2"><img src="${DIPLOMA}"><em>FIDE diploma · Arena FIDE Master, 2026</em></div>`);
     html(tChess - 0.15, sChess.at + sChess.len + 0.7, `<div class="chess" data-at="0" data-fx="pop" data-rot="-6"><span class="pc">♞</span><span><b>Chess player</b><i>limited resources: every move counts</i></span></div><div class="drop" data-at="${(tWater - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="5">💧 Here, the limited resource is water</div><div class="sakiabadge" data-at="${(tSakia - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
   }
   // 4. la ferme de l'amie : illustration générée si elle existe (sans zoom), sinon des mots qui surgissent
@@ -170,7 +170,8 @@ if (!LOCAL) {
     const tInfo = at(L_CALL, /information/, 0.55);
     html(tCall - 0.1, s5.at + s5.len + 0.6, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="save" data-at="${Math.max(1.2, tInfo - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="-4"><b>💧 Sakia: water on the right day, in the right amount</b><i>3 to 27 % less water pumped, in simulation</i></div>`);
   }
-  // 6. le grand-père : sa vraie photo (gp.jpeg d'Anthony, confirmée par lui le 4 oct.), à droite, pendant toute sa phrase
+  // 6. le grand-père : sa vraie photo (gp.jpeg d'Anthony, confirmée par lui le 4 oct.), à GAUCHE (il est déjà à droite
+  // de l'image dans ce plan), pendant toute sa phrase
   const s6 = seg(6);
   const GP = A("grandpere.jpg");
   if (s6 && GP) {
@@ -222,7 +223,7 @@ const spec = {
     .saas.at-bl{left:70px;top:640px;transform-origin:left bottom}.saas.at-tl{left:70px;top:150px;transform-origin:left top}
     .saas.at-c{left:50%;top:760px;margin-left:-260px;transform-origin:center bottom}
     .agbadge.top{right:auto;left:50%;top:36px;margin-left:-140px;transform-origin:center}
-    .diploma{position:absolute;left:60px;top:80px;width:700px;padding:12px;border-radius:18px;background:#fff;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:left center}
+    .diploma{position:absolute;left:70px;top:50px;width:560px;padding:12px;border-radius:14px;background:#fff;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:left center;box-sizing:border-box}
     .diploma img{display:block;width:100%;border-radius:8px}
     .diploma em{display:block;margin-top:10px;font:700 22px Geist,sans-serif;font-style:normal;color:#14231a;text-align:center}
     .saas .txt b{display:block;font:800 32px/1.1 Geist,sans-serif;color:#14231a}
@@ -256,7 +257,7 @@ const spec = {
     .drop{position:absolute;right:80px;top:290px;padding:16px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 44px Fraunces,serif;box-shadow:0 14px 34px rgba(0,0,0,.35);transform-origin:right center}
     .teamchip{position:absolute;right:80px;top:90px;padding:18px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 30px Geist,sans-serif;letter-spacing:.06em;box-shadow:0 12px 30px rgba(0,0,0,.35)}
     .gp img:not(.vid-back){filter:sepia(.25) saturate(.9) contrast(1.05)}
-    .gpcard{position:absolute;right:90px;top:60px;width:390px;padding:14px 14px 16px;background:#fff;border-radius:10px;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:right center;box-sizing:border-box}
+    .gpcard{position:absolute;left:90px;top:60px;width:390px;padding:14px 14px 16px;background:#fff;border-radius:10px;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:left center;box-sizing:border-box}
     .gpcard img{display:block;width:100%;height:auto;border-radius:4px}
     .gpcard em{display:block;margin-top:10px;font:600 23px Geist,sans-serif;font-style:normal;color:#14231a;text-align:center}
     .gplabel{position:absolute;left:80px;bottom:200px;padding:14px 24px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font:600 28px Geist,sans-serif}
