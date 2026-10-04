@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Assumptions from "@/components/ui/Assumptions";
 import { regionName } from "@/components/ui/catalog";
-import { moodOf } from "@/components/ui/Farmer";
-import type { DayMood } from "@/components/ui/Farmer";
+import { skyOf } from "@/components/ui/DaySky";
+import type { DaySky } from "@/components/ui/DaySky";
 import FieldQuestions from "@/components/ui/FieldQuestions";
 import FiveDoors from "@/components/ui/FiveDoors";
 import HeroPanorama from "@/components/ui/HeroPanorama";
@@ -42,12 +42,12 @@ function CountryTag() {
 }
 
 // Le temps du jour, à côté du pays : « Kairouan · today · 28 °C ». C'est ce qui change d'un jour à l'autre (avec le paysage et
-// l'agriculteur, Farmer.tsx) : le site n'a plus l'air identique tous les jours. Rejeu : la date de la canicule à la place de « today ».
-function WeatherTag({ plan, day, mood, replay }: { plan: Plan | null; day: PlanDay | null; mood: DayMood; replay: boolean }) {
+// son ciel, DaySky.tsx) : le site n'a plus l'air identique tous les jours. Rejeu : la date de la canicule à la place de « today ».
+function WeatherTag({ plan, day, sky, replay }: { plan: Plan | null; day: PlanDay | null; sky: DaySky; replay: boolean }) {
   const { t, lang, fmtNum, fmtDate } = useLang();
   const region = plan ? getRegion(plan.regionId) : undefined;
   if (!plan || !region) return null;
-  const Icon = mood.sky === "rain" ? RainIcon : mood.sky === "heat" ? ThermoIcon : SunIcon;
+  const Icon = sky === "rain" ? RainIcon : sky === "heat" ? ThermoIcon : SunIcon;
   const when = replay ? fmtDate(plan.today, { day: "numeric", month: "long" }) : t("today");
   const temp = day && Number.isFinite(day.tmax) ? ` · ${fmtNum(Math.round(day.tmax))} °C` : "";
   return (
@@ -144,7 +144,7 @@ export default function Home() {
     setAttention((n) => n + 1);
     document.getElementById("field")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
-  // Rejeu de la canicule, aller et retour : on remonte en haut de page, là où tout change (ciel, agriculteur, réponse).
+  // Rejeu de la canicule, aller et retour : on remonte en haut de page, là où tout change (ciel, temps du jour, réponse).
   // Sans ça, on restait sur le bouton et on ne voyait pas ce qui avait changé (Anthony, 4 oct.).
   const toggleReplay = useCallback(() => {
     setReplay((r) => !r);
@@ -194,15 +194,15 @@ export default function Home() {
   const stale = ageMin != null && ageMin > STALE_AFTER_HOURS * 60;
 
   // Le haut de page suit la météo du jour, celle du plan affiché (avant tout choix : le plan de repli, Kairouan, calculé sur
-  // l'appareil). L'agriculteur prend la houe seulement quand LE plan de la personne (région et culture choisies) dit d'arroser.
+  // l'appareil) : ciel d'aube, de chaleur ou de pluie.
   const heroPlan = replay ? replayPlan : local.plan;
   const heroDay = todayOf(heroPlan);
-  const mood = moodOf(heroDay, replay, (replay || chosen) && heroDay?.action === "irriguer");
-  const sky = mood.sky === "heat" ? "sk-hero-heat" : mood.sky === "rain" ? "sk-hero-rain" : "sk-hero-sky";
+  const daySky = skyOf(heroDay, replay);
+  const skyClass = daySky === "heat" ? "sk-hero-heat" : daySky === "rain" ? "sk-hero-rain" : "sk-hero-sky";
   const tags = (
     <div className="mb-3 flex flex-wrap items-center gap-2">
       <CountryTag />
-      <WeatherTag plan={heroPlan} day={heroDay} mood={mood} replay={replay} />
+      <WeatherTag plan={heroPlan} day={heroDay} sky={daySky} replay={replay} />
     </div>
   );
 
@@ -210,14 +210,14 @@ export default function Home() {
   return (
     <main className="sk-type flex flex-1 flex-col">
       {/* ---------- héros : Kairouan, avec le temps du jour ---------- */}
-      <section className={`${sky} relative overflow-hidden text-white transition-colors`}>
+      <section className={`${skyClass} relative overflow-hidden text-white transition-colors`}>
         {/* téléphone et tablette : texte, puis scène */}
         <div className="relative mx-auto max-w-3xl px-4 pt-6 md:hidden">
           {tags}
           <h1 className="font-display text-[2.2rem] font-bold leading-[1.04]">{t("heroTitle")}</h1>
           <p className="mt-3 max-w-md text-base leading-snug text-white/90">{t("heroSub")}</p>
           <div className="relative mt-3">
-            <HeroScene mood={mood} className="pointer-events-none block w-full" />
+            <HeroScene sky={daySky} className="pointer-events-none block w-full" />
           </div>
         </div>
 
@@ -229,7 +229,7 @@ export default function Home() {
             <p className="mt-4 max-w-4xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-[1500px]">
-            <HeroPanorama mood={mood} className="block w-full" />
+            <HeroPanorama sky={daySky} className="block w-full" />
           </div>
         </div>
       </section>
