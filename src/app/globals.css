@@ -224,6 +224,11 @@ input {
   .sk-spin-fast {
     animation: sk-spin 14s linear infinite;
   }
+  /* cercle de chargement : un tour en moins d'une seconde (à 14 s par tour il avait l'air figé) */
+  .sk-spinner {
+    animation: sk-spin 0.9s linear infinite;
+    will-change: transform;
+  }
   .sk-spin-rev {
     animation: sk-spin-rev 120s linear infinite;
   }
