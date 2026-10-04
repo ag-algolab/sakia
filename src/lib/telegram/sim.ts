@@ -168,7 +168,8 @@ let globalStart = 0;
 let globalCount = 0;
 
 // Mémoire du processus, comme les autres limites du site : un frein, pas un blocage strict en déploiement multi-instances.
-export function simAllowed(ip: string, now: number = Date.now()): { ok: true } | { ok: false; retryAfter: number } {
+export function simAllowed(address: string, now: number = Date.now()): { ok: true } | { ok: false; retryAfter: number } {
+  const ip = address.slice(0, 64); // l'en-tête d'adresse vient du client : on borne la taille de la clé gardée en mémoire
   if (now - globalStart >= WINDOW_MS) {
     globalStart = now;
     globalCount = 0;
@@ -192,8 +193,9 @@ export function simAllowed(ip: string, now: number = Date.now()): { ok: true } |
 
 // ---------- exécution ----------
 
-// Valeurs par défaut des colonnes de la table subscribers (docs/supabase.sql), comme la vraie base à la première écriture.
-const DEFAULT_ROW = { lang: "fr", region_id: "kairouan", crop_id: "olivier", soil: "limoneux", system: "goutte", last_irrigation: null, daily_bulletin: true } as const;
+// Valeurs par défaut des colonnes de la table subscribers (docs/supabase.sql), SAUF la région et la culture : la démonstration
+// ne devine jamais l'une ni l'autre (la vraie table, elle, aurait « Kairouan » et « olivier » par défaut).
+const DEFAULT_ROW = { lang: "fr", soil: "limoneux", system: "goutte", last_irrigation: null, daily_bulletin: true } as const;
 
 function memoryStore(seed: Subscriber | null): Store & { row: () => Subscriber | null } {
   let row = seed;
@@ -202,6 +204,8 @@ function memoryStore(seed: Subscriber | null): Store & { row: () => Subscriber |
       return row;
     },
     async upsert(_id, patch) {
+      // Pas de ligne sans région ni culture choisies : la fin de la configuration (finishSetup) les donne toujours.
+      if (!row && (!patch.region_id || !patch.crop_id)) throw new Error("région et culture obligatoires");
       row = { ...DEFAULT_ROW, ...row, ...patch, chat_id: SIM_CHAT_ID } as Subscriber;
       return row;
     },

@@ -103,6 +103,15 @@ const smoothOk = () => !window.matchMedia("(prefers-reduced-motion: reduce)").ma
 
 // ---------- affichage ----------
 
+// Langue d'un message du bot (arabe, français ou anglais), pour que le lecteur d'écran prenne la bonne voix même quand
+// la page est dans une autre langue. Repère simple : les messages du bot sont des modèles fixes.
+function langOf(text: string): "ar" | "fr" | "en" {
+  const arabic = (text.match(/[؀-ۿ]/g) ?? []).length;
+  const latin = (text.match(/[A-Za-zÀ-ÿ]/g) ?? []).length;
+  if (arabic > latin) return "ar";
+  return /[àâçéèêëîïôùûü]|\b(le|la|les|des|une?|vous|votre|dans|pour|avec|quelle?|il|elle|je|ne|pas|de|du|et|ou|aujourd|mettre|changer)\b/i.test(text) ? "fr" : "en";
+}
+
 function Keyboard({
   id,
   kb,
@@ -137,7 +146,7 @@ function Keyboard({
               {pending === btn.callback_data && (
                 <span aria-hidden className="absolute start-1.5 top-1.5 h-3 w-3 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin" />
               )}
-              <span dir="auto" className="min-w-0 [overflow-wrap:anywhere]">
+              <span dir="auto" lang={langOf(btn.text)} className="min-w-0 [overflow-wrap:anywhere]">
                 {btn.text}
               </span>
             </button>
@@ -382,10 +391,10 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-bold leading-tight">Sakia · bot</p>
-            <p className="truncate text-xs leading-tight text-white/80">{s.chatSub}</p>
+            <p className="truncate text-[13px] leading-tight text-white/80">{s.chatSub}</p>
           </div>
         </div>
-        <p className="bg-sakia-sun/25 px-3 py-1.5 text-center text-[13px] font-bold leading-snug text-sakia-brown">{s.banner}</p>
+        <p className="bg-sakia-sun/25 px-3 py-1.5 text-center text-sm font-bold leading-snug text-sakia-brown">{s.banner}</p>
 
         {/* conversation : sens physique fixe (bot à gauche, vous à droite) ; chaque ligne règle son propre sens d'écriture */}
         <div className="relative min-h-0 flex-1">
@@ -410,7 +419,7 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
                 <div className={`${bubbleBase} ${b.who === "me" ? "rounded-tr-md bg-sakia-green text-white" : "rounded-tl-md bg-white text-sakia-ink"}`}>
                   <span className="sr-only">{b.who === "me" ? s.you : s.bot}. </span>
                   {/* dir="auto" : chaque bulle prend le sens de sa première lettre (une bulle arabe se lit de droite à gauche) */}
-                  <p dir="auto" className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                  <p dir="auto" lang={b.who === "bot" ? langOf(b.text) : undefined} className="whitespace-pre-wrap [overflow-wrap:anywhere]">
                     {b.text}
                   </p>
                 </div>
