@@ -16,10 +16,11 @@ export const VO_LINES = [
   "Speech recognition lets Noor talk instead of type. Rules find the crop and the place.",
   "A fixed FAO-56 water balance, on the weather forecast, computes the advice, even inside the browser. A Tunisian-accented voice reads it.",
   "It's small: under 400 kilobytes on a first visit, and it works offline.",
-  "Open-Meteo weather, FAO-56 tables, ElevenLabs voices. And the limits: no field trial yet, no weather station in the calculation.",
-  "We also tested a small CatBoost model on free satellite data: a modest gain, a failure in the Sahel. Both are published.",
-  "The numbers can't hallucinate: fixed sentences, and when Sakia isn't sure, it says so.",
-  "Built this weekend, by me, with an AI coding assistant.",
+  "Open-Meteo weather, FAO-56, ElevenLabs voices. The limits: no field trial yet, and no weather station.",
+  "We also tested a small model on satellite data: a modest gain, a failure in the Sahel. Both published.",
+  "The numbers can't hallucinate. And when Sakia isn't sure, it says so.",
+  // voix de synthèse : jamais « by me » dans la bouche d'un narrateur qui n'est pas Anthony
+  "Built this weekend by Anthony, with an AI coding assistant.",
 ];
 const TAKES = "videos/build/takes/tech-vo.json";
 const vo = existsSync(TAKES) ? JSON.parse(readFileSync(TAKES, "utf8")) : null;
@@ -30,12 +31,12 @@ const voDur = VO_LINES.map((line, i) => {
 
 // chapitres : morceau du film (début, image stable, fin disponible), phrases de la voix off, durée minimale
 const CHAPTERS = [
-  { id: "intro", film: [0.0, 6.8, 8.0], lines: [0], min: 6.8 },
-  { id: "steps", film: [8.0, 25.6, 27.0], lines: [1, 2], min: 17.6 },
-  { id: "small", film: [27.0, 35.9, 37.0], lines: [3], min: 8.9 },
-  { id: "stack", film: [37.0, 45.9, 47.0], lines: [4], min: 8.9 },
+  { id: "intro", film: [0.0, 6.8, 8.0], lines: [0], min: 6.5 },
+  { id: "steps", film: [8.0, 25.6, 27.0], lines: [1, 2], min: 17.0 },
+  { id: "small", film: [27.0, 35.9, 37.0], lines: [3], min: 8.6 },
+  { id: "stack", film: [37.0, 45.9, 47.0], lines: [4], min: 8.6 },
   { id: "lab", lab: true, lines: [5], min: 7.0 },
-  { id: "safe", film: [47.0, 56.6, 57.0], lines: [6, 7], min: 9.6 },
+  { id: "safe", film: [47.0, 56.6, 57.0], lines: [6, 7], min: 8.6 },
 ];
 function layout(tempo) {
   let t = 0;
@@ -101,6 +102,7 @@ export default {
 
     // ------------------------------------------------ le film, dernier chapitre (une personne reste aux commandes)
     { type: "video", start: ch.safe.at, end: ch.safe.at + ch.safe.len + 0.2, fadeIn: 0.25, fadeOut: 0.6, x: 0, y: 0, w: 1920, h: 1080, segments: [filmSeg(ch.safe)] },
+    ...(vo?.synthetic ? [{ type: "note", start: Math.max(0, L.total - 4.2), end: L.total + 0.2, x: 96, y: 1030, w: 1700, text: "Narration: synthetic voice (ElevenLabs)." }] : []),
   ],
   music: { file: "videos/build/music-11.wav", gain: vo ? -24 : -21, duckGain: -8, fadeIn: 1.5, fadeOut: 2.5, duck: vo ? VO_AT.map((at, i) => ({ from: at - 0.1, to: at + voDur[i] / tempo + 0.1 })) : [] },
   audio: vo
@@ -109,4 +111,4 @@ export default {
         .map((t) => ({ file: vo.file, at: VO_AT[t.line], from: t.start, to: t.end, gain: 0, fadeIn: 0.02, fadeOut: 0.05, rate: tempo !== 1 ? tempo : undefined, filter: "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" }))
     : [],
 };
-console.log(`technique : ${L.total.toFixed(1)} s (${vo ? `voix off d'Anthony, tempo ${tempo}` : "sans voix off"})`);
+console.log(`technique : ${L.total.toFixed(1)} s (${vo ? `voix off ${vo.synthetic ? "de synthèse" : "d'Anthony"}, tempo ${tempo}` : "sans voix off"})`);

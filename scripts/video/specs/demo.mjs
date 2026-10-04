@@ -246,7 +246,7 @@ export default {
     // ---------------------------------------------------------------- 8. fin
     {
       type: "html", start: A("end", 0.1), end: E("end"), fadeOut: 0.01, fx: "zoom",
-      html: `<div class="end-wrap"><div class="end-logo" data-at="0">{{WHEEL}}</div><div class="end-name" data-at="0.15">Sakia</div><div class="end-tag" data-at="0.4">One decision a day.</div><div class="end-doors" data-at="0.8">Can't read? Listen. No smartphone? Call. No network? It's already on your phone.</div><div class="end-url" data-at="1.3">sakia-opal.vercel.app</div><div class="end-small" data-at="1.6">Call and SMS are simulated in the browser. Web, app and Telegram are real. The advice is indicative: a person decides.</div></div>`,
+      html: `<div class="end-wrap"><div class="end-logo" data-at="0">{{WHEEL}}</div><div class="end-name" data-at="0.15">Sakia</div><div class="end-tag" data-at="0.4">One decision a day.</div><div class="end-doors" data-at="0.8">Can't read? Listen. No smartphone? Call. No network? It's already on your phone.</div><div class="end-url" data-at="1.3">sakia-opal.vercel.app</div><div class="end-small" data-at="1.6">Call and SMS are simulated in the browser. Web, app and Telegram are real. The advice is indicative: a person decides.${vo?.synthetic ? " Narration: synthetic voice (ElevenLabs)." : ""}</div></div>`,
     },
   ],
   music: {
@@ -263,4 +263,4 @@ export default {
     ...voEvents,
   ],
 };
-console.log(`démo : ${P.total.toFixed(1)} s (${vo ? "voix off d'Anthony" : "durées estimées, sans voix off"} ; voix de l'appli ${flex.appVoice} s, ${keyClips.length} touches, tempo ${flex.tempo})`);
+console.log(`démo : ${P.total.toFixed(1)} s (${vo ? (vo.synthetic ? "voix off de synthèse" : "voix off d'Anthony") : "durées estimées, sans voix off"} ; voix de l'appli ${flex.appVoice} s, ${keyClips.length} touches, tempo ${flex.tempo})`);
