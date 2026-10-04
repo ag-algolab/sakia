@@ -20,7 +20,7 @@
 | Web app (installable) | **Real** |
 | Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot. Always on: it is a webhook of this site, not a program kept running; its state (token, webhook, backlog, subscriber base) is readable at `/api/telegram/health` |
 | Telegram bot in the browser (`/telegram`) | **Simulated Telegram, real bot code**: the page runs the same bot logic on our server with a fake Telegram, so the demo needs no Telegram account. Nothing is sent to Telegram and nothing is stored; the voice is off (the bot answers with the text of the bulletin) |
-| Spoken bulletin (drawn avatar, ElevenLabs voice, English subtitles) | **Real** audio; demo bulletins are recorded |
+| Spoken advice on the home page (ElevenLabs voice in Tunisian Arabic, subtitles in the screen's language) | **Real** audio; demo bulletins are recorded |
 | Voice line (keypad call) and SMS | **Simulated in the browser.** On the simulated keypad phone the morning SMS arrives by itself and the farmer answers with the keys; the call is a button on the same page. Real telephony is not possible in the time (see limits) |
 | Sakia-ML research model (CatBoost, 43 KB) | **Real**, tested in public, **shadow mode**: it changes no advice. Protocol, results and failures in `ml/`; live demo on `/lab` |
 | Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
@@ -60,7 +60,7 @@ The trade-off we accept: fewer questions means less precision. Sakia uses defaul
 
 ## Localizing AI, in practice
 
-- **Language and voice:** French and Arabic with a Tunisian-accented voice; farmers can type in Arabizi. **The Tunisian dialect is not validated by a native speaker** and speech-recognition accuracy on Tunisian speech is not guaranteed (see the data card).
+- **Language and voice:** English, French and Arabic, with a Tunisian-accented Arabic voice (the spoken advice is in Tunisian Arabic, subtitled in the screen's language; the voice line greets in English first); typed messages in Arabizi are understood too. **The Tunisian dialect is not validated by a native speaker** and speech-recognition accuracy on Tunisian speech is not guaranteed (see the data card).
 - **The device people own:** a basic phone through a call or an SMS, handled by the server; a smartphone through Telegram or the installable app.
 - **Local evidence:** the problem statement relies on Tunisian figures (literacy, aquifer, the SMS pilot) and the weather source was checked against Tunisian stations.
 - **Humans in the loop:** the advice is indicative, a person always decides, and a technician is the fallback whenever Sakia says it is not sure.
