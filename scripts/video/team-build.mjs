@@ -170,7 +170,13 @@ if (!LOCAL) {
     const tInfo = at(L_CALL, /information/, 0.55);
     html(tCall - 0.1, s5.at + s5.len + 0.6, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="save" data-at="${Math.max(1.2, tInfo - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="-4"><b>💧 Sakia: water on the right day, in the right amount</b><i>3 to 27 % less water pumped, in simulation</i></div>`);
   }
-  // 6. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
+  // 6. le grand-père : sa vraie photo (gp.jpeg d'Anthony, confirmée par lui le 4 oct.), à droite, pendant toute sa phrase
+  const s6 = seg(6);
+  const GP = A("grandpere.jpg");
+  if (s6 && GP) {
+    const tGp = at(6, /grandfather/, 0.08);
+    html(tGp - 0.1, s6.at + s6.len + 0.3, `<div class="gpcard" data-at="0" data-fx="slide" data-rot="3"><img src="${GP}"><em>My grandfather, a farmer in France</em></div>`);
+  }
 }
 
 // « localiser l'IA » : le résultat qui fonde la position (phrase 3), puis la méthode en six temps (phrases 6 à 8)
@@ -250,6 +256,9 @@ const spec = {
     .drop{position:absolute;right:80px;top:290px;padding:16px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 44px Fraunces,serif;box-shadow:0 14px 34px rgba(0,0,0,.35);transform-origin:right center}
     .teamchip{position:absolute;right:80px;top:90px;padding:18px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 30px Geist,sans-serif;letter-spacing:.06em;box-shadow:0 12px 30px rgba(0,0,0,.35)}
     .gp img:not(.vid-back){filter:sepia(.25) saturate(.9) contrast(1.05)}
+    .gpcard{position:absolute;right:90px;top:60px;width:390px;padding:14px 14px 16px;background:#fff;border-radius:10px;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:right center;box-sizing:border-box}
+    .gpcard img{display:block;width:100%;height:auto;border-radius:4px}
+    .gpcard em{display:block;margin-top:10px;font:600 23px Geist,sans-serif;font-style:normal;color:#14231a;text-align:center}
     .gplabel{position:absolute;left:80px;bottom:200px;padding:14px 24px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font:600 28px Geist,sans-serif}
     .endcard{position:absolute;inset:0;background:radial-gradient(1300px 900px at 50% 45%,rgba(31,74,51,.55) 0%,rgba(18,48,31,.35) 55%,rgba(11,27,20,0) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center}
     .endcard .logo{width:130px;height:130px;color:#f4efe6}.endcard .logo svg{width:100%;height:100%}
