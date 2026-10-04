@@ -36,7 +36,7 @@ type PlanJson = {
 
 (async () => {
   // 1) pages
-  for (const p of ["/", "/bulletin", "/call", "/call/talk", "/phone", "/about", "/backtest", "/offline"]) {
+  for (const p of ["/", "/bulletin", "/call", "/call/talk", "/phone", "/about", "/backtest", "/offline", "/lab", "/speed", "/story"]) {
     await check(`page ${p}`, async () => {
       const { res, ms } = await get(p);
       must(res.status === 200, `HTTP ${res.status}`);
