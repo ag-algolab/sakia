@@ -6,9 +6,8 @@ import FieldQuestions from "@/components/ui/FieldQuestions";
 import FiveDoors from "@/components/ui/FiveDoors";
 import HeroPanorama from "@/components/ui/HeroPanorama";
 import HeroScene from "@/components/ui/HeroScene";
-import { AlertIcon, DropIcon, RainIcon, SproutIcon, ThermoIcon } from "@/components/ui/icons";
+import { AlertIcon, DropIcon, RainIcon, SproutIcon, ThermoIcon, TunisiaFlagIcon } from "@/components/ui/icons";
 import ListenHero from "@/components/ui/ListenHero";
-import RainReport from "@/components/ui/RainReport";
 import { useLang } from "@/components/ui/LangProvider";
 import { Reveal } from "@/components/ui/motion";
 import { EMPTY_PROFILE, agoFromDate, dateFromAgo, loadProfile, saveProfile, tunisToday, validDate } from "@/components/ui/profile";
@@ -24,6 +23,17 @@ import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
 const REPLAY_DATE = "2026-07-17";
 const REPLAY_SCENE = { crop: "tomate", ago: "7" };
 const STALE_AFTER_HOURS = 5;
+
+// Où l'on est, en un coup d'œil : un petit drapeau et le nom du pays, discrets (le titre, lui, ne dit pas « Tunisie »).
+function CountryTag() {
+  const { t } = useLang();
+  return (
+    <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-black/20 py-1 ps-1.5 pe-3 text-sm font-semibold tracking-wide text-white/90 ring-1 ring-white/20">
+      <TunisiaFlagIcon className="h-4 w-6 rounded-[3px]" />
+      {t("heroTag")}
+    </p>
+  );
+}
 
 export default function Home() {
   const { t, fmtDate, fmtNum, colon } = useLang();
@@ -153,6 +163,7 @@ export default function Home() {
       <section className={`${hot ? "sk-hero-heat" : "sk-hero-sky"} relative overflow-hidden text-white`}>
         {/* téléphone et tablette : texte, puis scène */}
         <div className="relative mx-auto max-w-3xl px-4 pt-6 md:hidden">
+          <CountryTag />
           <h1 className="font-display text-[2.2rem] font-bold leading-[1.04]">{t("heroTitle")}</h1>
           <p className="mt-3 max-w-md text-base leading-snug text-white/90">{t("heroSub")}</p>
           <div className="relative mt-3">
@@ -163,8 +174,9 @@ export default function Home() {
         {/* ordinateur : panorama pleine largeur, texte posé sur le ciel */}
         <div className="relative hidden md:block">
           <div className="relative z-10 mx-auto max-w-5xl px-6 pt-12" style={{ paddingBottom: "min(19vw, 300px)" }}>
-            <h1 className="font-display max-w-2xl text-6xl font-bold leading-[1.03]">{t("heroTitle")}</h1>
-            <p className="mt-4 max-w-xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
+            <CountryTag />
+            <h1 className="font-display text-6xl font-bold leading-[1.03]">{t("heroTitle")}</h1>
+            <p className="mt-4 max-w-4xl text-xl leading-snug text-white/90">{t("heroSub")}</p>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto w-full max-w-[1500px]">
             <HeroPanorama hot={hot} className="block w-full" />
@@ -261,9 +273,6 @@ export default function Home() {
       </div>
 
       <div className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-8">
-        {/* ---------- signaler la pluie (solidarité locale) ---------- */}
-        {!replay && chosen && <RainReport regionId={profile.region} />}
-
         {/* ---------- les 7 prochains jours ---------- */}
         {!ready && (
           <section aria-label={t("planTitle")}>

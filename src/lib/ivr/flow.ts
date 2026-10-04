@@ -5,40 +5,23 @@
 //
 // Parcours : langue (1 français, 2 arabe) → région (1 Kairouan, 2 une autre) → groupe de cultures → culture →
 // dernier arrosage → lecture du plan → menu de fin (1 une autre culture, 2 terminer, 3 détail de la semaine) → au revoir.
-// Touche 7 (au choix de la région et au menu de fin) : SIGNALER DE LA PLUIE → région → cinq degrés de pluie (1 à 5) →
-// enregistrement (par la page, route /api/ivr/rain) → confirmation et nombre de personnes qui ont signalé aujourd'hui → menu de fin.
 // 0 répète, * revient en arrière, la ligne se termine après 2 minutes ou après deux silences de suite.
 
 import { AGO_CHOICES, DEFAULT_REGION, GROUPS, MAX_CALL_MS, OTHER_REGIONS } from "./menu";
 import type { GroupId, IvrLang } from "./menu";
 import { cropPromptId } from "./prompts";
 import type { PromptId } from "./prompts";
-import { RAIN_LEVELS } from "./rain";
-import type { RainLevel } from "./rain";
 
 export type Key = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "*" | "#";
 export const KEYS: Key[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 
-export type NodeId =
-  | "lang"
-  | "region"
-  | "region_list"
-  | "group"
-  | "crop"
-  | "ago"
-  | "plan"
-  | "detail"
-  | "again"
-  | "rain_level" // « combien a-t-il plu aujourd'hui ? »
-  | "rain_done" // enregistrement du signalement et confirmation
-  | "ended";
+export type NodeId = "lang" | "region" | "region_list" | "group" | "crop" | "ago" | "plan" | "detail" | "again" | "ended";
 
 // Ce qu'il faut faire entendre. `plan` = lecture du plan de la culture (texte et chiffres venus du moteur) ;
-// `detail: true` = le détail de la semaine pour ce même plan ; `rain` = enregistrer le signalement de pluie puis le confirmer.
+// `detail: true` = le détail de la semaine pour ce même plan.
 export type Say =
   | { kind: "prompt"; id: PromptId; lang: IvrLang }
-  | { kind: "plan"; regionId: string; cropId: string; lang: IvrLang; ago: number | null; detail: boolean }
-  | { kind: "rain"; regionId: string; level: RainLevel; lang: IvrLang };
+  | { kind: "plan"; regionId: string; cropId: string; lang: IvrLang; ago: number | null; detail: boolean };
 
 export type CallState = {
   node: NodeId;
@@ -47,8 +30,6 @@ export type CallState = {
   groupId: GroupId | null;
   cropId: string | null;
   ago: number | null | undefined; // undefined = pas encore demandé ; null = « je ne sais pas »
-  intent: "advice" | "rain"; // « rain » : l'appelant veut signaler de la pluie (la région choisie sert au signalement)
-  rainLevel: RainLevel | null;
   elapsedMs: number;
   silences: number; // silences consécutifs
   helpGiven: boolean;
@@ -59,7 +40,7 @@ export type CallEvent =
   | { type: "key"; key: Key }
   | { type: "silence" } // aucune touche pendant SILENCE_MS après la fin de la question
   | { type: "tick"; ms: number } // temps écoulé depuis le dernier événement de temps
-  | { type: "played" } // le plan (ou la confirmation du signalement) a fini d'être lu
+  | { type: "played" } // le plan a fini d'être lu
   | { type: "hangup" };
 
 export type StepResult = { state: CallState; say: Say[]; end: boolean };
@@ -76,8 +57,6 @@ export function startCall(): StepResult {
     groupId: null,
     cropId: null,
     ago: undefined,
-    intent: "advice",
-    rainLevel: null,
     elapsedMs: 0,
     silences: 0,
     helpGiven: false,
@@ -93,8 +72,7 @@ export function ask(s: CallState): Say[] {
     case "lang":
       return bothLangs("welcome");
     case "region":
-      // pour signaler de la pluie la question est « dans quelle région a-t-il plu ? » ; sinon on rappelle la touche 7
-      return s.intent === "rain" ? [prompt("rain_where", lang)] : [prompt("region", lang), prompt("rain_hint", lang)];
+      return [prompt("region", lang)];
     case "region_list":
       return [prompt("region_list", lang)];
     case "group":
@@ -107,11 +85,7 @@ export function ask(s: CallState): Say[] {
     case "detail":
       return [{ kind: "plan", regionId: s.regionId, cropId: s.cropId ?? "olivier", lang, ago: s.ago ?? null, detail: s.node === "detail" }];
     case "again":
-      return [prompt("again", lang), prompt("rain_hint", lang)];
-    case "rain_level":
-      return [prompt("rain_ask", lang)];
-    case "rain_done":
-      return [{ kind: "rain", regionId: s.regionId, level: s.rainLevel ?? "none", lang }];
+      return [prompt("again", lang)];
     case "ended":
       return [];
   }
@@ -120,7 +94,6 @@ export function ask(s: CallState): Say[] {
 // Entrer dans un nœud : la première fois qu'on arrive au choix de région, on rappelle les touches 0 et *.
 function enter(s: CallState, node: NodeId): StepResult {
   let next: CallState = { ...s, node, silences: 0 };
-  if (node === "again") next = { ...next, intent: "advice", rainLevel: null };
   let say = ask(next);
   if (node === "region" && !next.helpGiven) {
     next = { ...next, helpGiven: true };
@@ -138,7 +111,7 @@ function finish(s: CallState, id: PromptId): StepResult {
 function back(s: CallState): StepResult {
   switch (s.node) {
     case "region":
-      return enter({ ...s, lang: null, intent: "advice" }, "lang");
+      return enter({ ...s, lang: null }, "lang");
     case "region_list":
       return enter(s, "region");
     case "group":
@@ -153,11 +126,6 @@ function back(s: CallState): StepResult {
       return enter(s, "again");
     case "again":
       return enter({ ...s, groupId: null, cropId: null, ago: undefined }, "group");
-    case "rain_level":
-      // arrivé par le menu de fin (un plan a été lu) : retour au menu de fin ; sinon retour au choix de la région
-      return s.plansHeard > 0 ? enter(s, "again") : enter({ ...s, rainLevel: null }, "region");
-    case "rain_done":
-      return enter(s, "again");
     default:
       return { state: s, say: ask(s), end: false };
   }
@@ -168,9 +136,6 @@ function invalid(s: CallState): StepResult {
 }
 
 const digitIndex = (k: Key): number => (/^[1-9]$/.test(k) ? Number(k) - 1 : -1);
-
-// Après le choix de la région : le groupe de cultures, ou la quantité de pluie si l'appelant veut signaler de la pluie.
-const afterRegion = (s: CallState, regionId: string): StepResult => enter({ ...s, regionId }, s.intent === "rain" ? "rain_level" : "group");
 
 function onKey(s0: CallState, key: Key): StepResult {
   const s: CallState = { ...s0, silences: 0 };
@@ -185,12 +150,11 @@ function onKey(s0: CallState, key: Key): StepResult {
       if (key === "2") return enter({ ...s, lang: "ar" }, "region");
       return invalid(s);
     case "region":
-      if (key === "1") return afterRegion(s, DEFAULT_REGION);
+      if (key === "1") return enter({ ...s, regionId: DEFAULT_REGION }, "group");
       if (key === "2") return enter(s, "region_list");
-      if (key === "7") return enter({ ...s, intent: "rain" }, "region"); // signaler de la pluie : on redemande la région
       return invalid(s);
     case "region_list":
-      if (i >= 0 && i < OTHER_REGIONS.length) return afterRegion(s, OTHER_REGIONS[i]);
+      if (i >= 0 && i < OTHER_REGIONS.length) return enter({ ...s, regionId: OTHER_REGIONS[i] }, "group");
       return invalid(s);
     case "group":
       if (i >= 0 && i < GROUPS.length) return enter({ ...s, groupId: GROUPS[i].id }, "crop");
@@ -207,18 +171,12 @@ function onKey(s0: CallState, key: Key): StepResult {
     }
     case "plan":
     case "detail":
-    case "rain_done":
-      // un appui pendant la lecture coupe le plan (ou la confirmation) et passe au menu de fin
+      // un appui pendant la lecture coupe le plan et passe au menu de fin
       return enter(s, "again");
     case "again":
       if (key === "1") return enter({ ...s, groupId: null, cropId: null, ago: undefined }, "group");
       if (key === "2") return finish(s, "bye");
       if (key === "3") return enter(s, "detail");
-      if (key === "7") return enter({ ...s, intent: "rain" }, "rain_level"); // la région est celle de l'appel
-      return invalid(s);
-    case "rain_level":
-      // 1 à 5 : pas de pluie, quelques gouttes, légère, beaucoup, énormément
-      if (i >= 0 && i < RAIN_LEVELS.length) return enter({ ...s, rainLevel: RAIN_LEVELS[i] }, "rain_done");
       return invalid(s);
   }
 }
@@ -229,7 +187,7 @@ export function step(state: CallState, event: CallEvent): StepResult {
     case "key":
       return onKey(state, event.key);
     case "silence": {
-      if (state.node === "plan" || state.node === "detail" || state.node === "rain_done") return { state, say: [], end: false };
+      if (state.node === "plan" || state.node === "detail") return { state, say: [], end: false };
       const silences = state.silences + 1;
       if (silences >= 2) return finish({ ...state, silences }, "bye");
       return { state: { ...state, silences }, say: ask(state), end: false };
@@ -240,7 +198,7 @@ export function step(state: CallState, event: CallEvent): StepResult {
       return { state: { ...state, elapsedMs }, say: [], end: false };
     }
     case "played":
-      if (state.node === "plan" || state.node === "detail" || state.node === "rain_done") return enter(state, "again");
+      if (state.node === "plan" || state.node === "detail") return enter(state, "again");
       return { state, say: [], end: false };
     case "hangup":
       return { state: { ...state, node: "ended" }, say: [], end: true };
@@ -249,7 +207,7 @@ export function step(state: CallState, event: CallEvent): StepResult {
 
 // ---------- validation d'un état reçu de l'extérieur (POST /api/ivr/step) ----------
 
-const NODES: NodeId[] = ["lang", "region", "region_list", "group", "crop", "ago", "plan", "detail", "again", "rain_level", "rain_done", "ended"];
+const NODES: NodeId[] = ["lang", "region", "region_list", "group", "crop", "ago", "plan", "detail", "again", "ended"];
 
 export function parseState(x: unknown): CallState | null {
   if (!x || typeof x !== "object") return null;
@@ -263,10 +221,6 @@ export function parseState(x: unknown): CallState | null {
   const allCrops = GROUPS.flatMap((g) => g.crops);
   if (o.cropId !== null && (typeof o.cropId !== "string" || !allCrops.includes(o.cropId))) return null;
   if (o.ago !== undefined && o.ago !== null && !AGO_CHOICES.some((c) => c.ago === o.ago)) return null;
-  const intent = o.intent === undefined ? "advice" : o.intent;
-  if (intent !== "advice" && intent !== "rain") return null;
-  const rainLevel = o.rainLevel === undefined || o.rainLevel === null ? null : (RAIN_LEVELS as string[]).includes(o.rainLevel as string) ? (o.rainLevel as RainLevel) : undefined;
-  if (rainLevel === undefined) return null;
   const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) && v >= 0 && v < 1e9 ? v : null);
   const elapsedMs = num(o.elapsedMs);
   const silences = num(o.silences);
@@ -279,8 +233,6 @@ export function parseState(x: unknown): CallState | null {
     groupId,
     cropId: o.cropId as string | null,
     ago: o.ago as number | null | undefined,
-    intent,
-    rainLevel,
     elapsedMs,
     silences,
     helpGiven: o.helpGiven,

@@ -40,7 +40,7 @@ export default function Close({ t }: SceneProps) {
         <Words text="English first, for the jury." t={t} start={0.3} step={0.12} />
       </h2>
       <h2 className="f-display f-abs" style={{ left: 140, top: 390, margin: 0, width: 1250, fontSize: 118, color: "var(--accent)", ...windowed(t, 2.0, 4.5, 0.2, 0.6) }}>
-        <Words text="In reality: Darija first, then French." t={t} start={2.2} step={0.12} />
+        <Words text="In reality: Arabic first, then French." t={t} start={2.2} step={0.12} />
       </h2>
       <p className="f-abs" style={{ left: 140, top: 690, margin: 0, width: 1300, fontSize: 38, fontWeight: 700, ...windowed(t, 3.4, 4.5, 0.4, 0.6) }}>
         The spoken bulletin and the app. The keypad line today: French (1), Arabic (2).

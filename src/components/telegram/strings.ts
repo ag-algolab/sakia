@@ -55,7 +55,7 @@ const fr: TgStrings = {
   notes: [
     "Ce chat exécute le même code que le vrai bot, sur notre serveur, pour la démonstration.",
     "Il ne demande aucun compte Telegram, n'envoie rien à Telegram et n'enregistre rien dans notre base de données : la conversation reste dans votre navigateur.",
-    "Ici, la voix est coupée : le bot répond avec le texte du bulletin, et les messages vocaux ne sont pas possibles. Les signalements de pluie faits ici ne sont pas enregistrés.",
+    "Ici, la voix est coupée : le bot répond avec le texte du bulletin, et les messages vocaux ne sont pas possibles.",
     "Le vrai bot demande Telegram. Sa voix de synthèse vient d'ElevenLabs (un service externe) ; sans elle, il envoie le texte.",
     "Le vrai bot garde votre identifiant de conversation, votre langue, votre région, votre culture et quelques réglages. La commande /stop permet de les supprimer.",
   ],
@@ -95,7 +95,7 @@ const en: TgStrings = {
   notes: [
     "This chat runs the same code as the real bot, on our server, for demonstration.",
     "It needs no Telegram account, sends nothing to Telegram and saves nothing in our database: the conversation stays in your browser.",
-    "Here the voice is off: the bot answers with the text of the bulletin, and voice messages are not possible. Rain reports made here are not saved.",
+    "Here the voice is off: the bot answers with the text of the bulletin, and voice messages are not possible.",
     "The real bot needs Telegram. Its synthetic voice comes from ElevenLabs (an external service); without it, it sends the text.",
     "The real bot keeps your chat identifier, language, region, crop and a few settings. The /stop command lets you delete them.",
   ],
@@ -135,7 +135,7 @@ const ar: TgStrings = {
   notes: [
     "هذه المحادثة تشغّل نفس برنامج البوت الحقيقي، على خادمنا، للعرض فقط.",
     "لا تتطلب حسابا على تيليغرام، ولا ترسل شيئا إلى تيليغرام، ولا تحفظ شيئا في قاعدة بياناتنا: تبقى المحادثة في متصفحكم.",
-    "هنا الصوت متوقف: يردّ البوت بنص النشرة، ولا يمكن إرسال رسائل صوتية. والإبلاغات عن المطر التي تتم هنا لا تُحفظ.",
+    "هنا الصوت متوقف: يردّ البوت بنص النشرة، ولا يمكن إرسال رسائل صوتية.",
     "البوت الحقيقي يتطلب تيليغرام. وصوته الاصطناعي من ElevenLabs (خدمة خارجية)، وبدونها يرسل النص.",
     "البوت الحقيقي يحتفظ بمعرّف المحادثة واللغة والولاية والمحصول وبعض الإعدادات. والأمر /stop يتيح حذفها.",
   ],
@@ -175,7 +175,7 @@ const aeb: TgStrings = {
   notes: [
     "المحادثة هاذي تخدم بنفس برنامج البوت الحقيقي، في السيرفر متاعنا، للتجربة برك.",
     "ما تطلبش حساب تيليغرام، وما تبعث شي لتيليغرام، وما تسجّل شي في قاعدة المعلومات متاعنا: المحادثة تبقى في المتصفح متاعك.",
-    "هنا الصوت مقطوع: البوت يجاوب بنص النشرة، وما تنجمش تبعث رسائل صوتية. وبلاغات الشتا اللي تعملها هنا ما تتسجّلش.",
+    "هنا الصوت مقطوع: البوت يجاوب بنص النشرة، وما تنجمش تبعث رسائل صوتية.",
     "البوت الحقيقي يلزمو تيليغرام. وصوته الاصطناعي من ElevenLabs (خدمة من برّا)، ومن غيرها يبعث النص.",
     "البوت الحقيقي يخزّن رقم المحادثة واللغة والولاية والزرعة وشوية إعدادات. والأمر /stop يخليك تمسحهم.",
   ],

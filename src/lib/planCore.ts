@@ -3,11 +3,10 @@
 // Le chargement de la météo est dans plan.ts (serveur).
 
 import { getCrop } from "./crops";
-import { MIN_REPORTERS } from "./rainLevels";
 import { getRegion } from "./regions";
 import { EFFICIENCY, SOILS, simulate, sum } from "./waterBalance";
 import type { IrrigationSystem, SimDay, SoilName } from "./waterBalance";
-import type { Day, Forecast, LocalReport } from "./weather";
+import type { Day, Forecast } from "./weather";
 
 export type PlanRequest = {
   regionId: string;
@@ -49,7 +48,7 @@ export type ConfidenceReason =
   | "short_horizon"; // la prévision disponible ne couvre pas tout l'horizon demandé
 
 // Remarque utile mais qui ne retire pas la confiance (ex. de la pluie possible : c'est normal, on le dit).
-export type ConfidenceNote = "uncertain_rain" | "local_reports" | "extreme_heat";
+export type ConfidenceNote = "uncertain_rain" | "extreme_heat";
 
 export type Confidence = {
   level: "ok" | "low" | "none"; // none = aucun conseil donné
@@ -69,7 +68,6 @@ export type Plan = {
   status: "ok" | "hors_vegetation";
   replay: boolean; // true = rejeu d'une date passée avec la météo observée
   confidence: Confidence;
-  localReports?: LocalReport[]; // jours où la pluie vient de signalements d'agriculteurs, pas du modèle
   days: PlanDay[];
   summary: {
     nextIrrigation?: string;
@@ -179,8 +177,6 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
   if (planDays.slice(0, 3).some((d) => d.rainProb != null && d.rainProb >= 30 && d.rainProb <= 70)) notes.push("uncertain_rain");
   // Le calcul ne modélise pas le stress thermique : on prévient quand une chaleur extrême est prévue.
   if (planDays.slice(0, 3).some((d) => Number.isFinite(d.tmax) && d.tmax >= 42)) notes.push("extreme_heat");
-  const localReports = fc.localReports?.filter((r) => r.date >= startDate && r.date <= until) ?? [];
-  if (localReports.length > 0) notes.push("local_reports");
   const covered = planDays.filter((d) => !d.estimated).length;
   if (status === "ok" && covered < Math.min(horizon, 7)) reasons.push("short_horizon");
 
@@ -198,7 +194,6 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
     status,
     replay,
     confidence,
-    localReports: localReports.length > 0 ? localReports : undefined,
     days: level === "none" ? [] : planDays,
     summary: {
       nextIrrigation: level === "none" ? undefined : irrig[0]?.date,
@@ -218,9 +213,6 @@ export function computePlan(req: PlanRequest, fc: Forecast, opts: ComputeOptions
       `${SOILS[soil].nameFr} (eau utile indicative), irrigation ${system} (efficience ${Math.round(EFFICIENCY[system] * 100)} %).`,
       `Coefficients de culture FAO-56${crop.status === "a_verifier" ? " (certaines valeurs ajustées ou interpolées : voir la fiche de la culture)" : ""}.`,
       "Pluie utile (règle FAO-56) : ignorée si inférieure à 0,2 × ET0, comptée entièrement sinon ; ruissellement non modélisé.",
-      ...(localReports.length > 0
-        ? [`Pluie corrigée par des signalements d'agriculteurs (au moins ${MIN_REPORTERS} personnes différentes, médiane) pour ${localReports.length} jour(s) : ${localReports.map((r) => `${r.date} : ${r.medianMm} mm signalés au lieu de ${r.modelMm.toFixed(1)} mm prévus`).join(" ; ")}.`]
-        : []),
       crop.treesPerHa ? `Densité supposée : ${crop.treesPerHa} arbres/ha (à ajuster).` : "Besoins exprimés en mm et en m³/ha.",
       estimatedFrom
         ? `À partir du ${estimatedFrom}, météo estimée par la climatologie 2015-2025 (pas une prévision).`

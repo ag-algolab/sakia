@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/ui/motion";
-import { MIN_REPORTERS } from "@/lib/rainLevels";
 import LiveSizes from "./LiveSizes";
 
 export const metadata: Metadata = {
@@ -112,14 +111,6 @@ const DATASETS = [
     "A few rows",
     "Nothing else is stored; no name, no phone number, no precise location",
   ],
-  [
-    "Farmers' rain reports",
-    `Correct the model's rain (${MIN_REPORTERS} or more different people agree)`,
-    "Collected by Sakia through the web app, the bulletin, Telegram, SMS and the voice line",
-    "Produced for this project; each report keeps only a salted hash of an identifier (pseudonymous, not anonymous)",
-    "Demo reports only: fictitious and labelled so",
-    "No real reports yet; a scale of five levels, not millimetres; at most 3 days back",
-  ],
 ];
 
 const NOT_COVERED = [
@@ -128,7 +119,7 @@ const NOT_COVERED = [
   "No farmer registry, no market prices, no water salinity, no real irrigation calendar of the administration (the “fixed weekly schedule” in the backtest is a benchmark we built, not the State's).",
   "Relative yield is estimated only for the 9 crops with a published Ky, never for trees.",
   "Speech recognition of the Tunisian dialect has not been measured on real farmers; the dialect text is not validated by a native speaker.",
-  "Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings; rain reports carry only a salted hash. Speech is processed by ElevenLabs under its own terms (retention still to be confirmed).",
+  "Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous), the governorate and a few settings. Speech is processed by ElevenLabs under its own terms (retention still to be confirmed).",
   "The weather source was checked against Tunisian stations at Kairouan and one station 47 km away, over limited periods, not across the country.",
 ];
 
@@ -210,7 +201,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-4xl" dir="ltr" lang="en">
           <h1 className="font-display max-w-xl text-4xl font-bold leading-[1.05] sm:text-6xl">What the AI does, and what it does not.</h1>
           <p className="mt-3 max-w-lg text-base leading-snug text-white/90 sm:text-lg">
-            This page is in English. Sakia speaks to farmers in a Tunisian-accented voice, and writes in Tunisian Arabic (Darija, not yet validated by a native speaker), standard Arabic, French and English.
+            This page is in English. Sakia speaks to farmers in a Tunisian-accented voice, and writes in Tunisian Arabic (text not yet validated by a native speaker), standard Arabic, French and English.
           </p>
         </div>
       </section>
@@ -249,8 +240,8 @@ export default function AboutPage() {
         </p>
         <p className="leading-relaxed text-sakia-ink">
           What a spreadsheet cannot do is meet the farmer where the language is the barrier. 27.9 % of people aged 10 and
-          over in Kairouan cannot read (17.3 % across Tunisia; INS, 2024 census), and many speak only Tunisian Arabic
-          (Darija), which is spoken far more than it is written. So AI is used for three things: speech recognition (a
+          over in Kairouan cannot read (17.3 % across Tunisia; INS, 2024 census), and many speak only Tunisian Arabic,
+          which is spoken far more than it is written. So AI is used for three things: speech recognition (a
           farmer can speak instead of type), a voice agent that works out the crop and the region and reads our
           server&apos;s answer, and a voice that answers aloud in Tunisian-accented Arabic.
         </p>
@@ -268,16 +259,16 @@ export default function AboutPage() {
       <Section id="languages" title="Languages">
         <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
           <li>
-            <strong>Tunisian Arabic (Darija) comes first.</strong> The on-screen text and the recorded bulletins can be in
-            Darija, written in Arabic letters, because it is the language of farmers who do not read standard Arabic
-            comfortably. The Darija text is not yet validated by a native speaker. Everywhere else the voice answers in
+            <strong>Tunisian Arabic comes first.</strong> The on-screen text and the recorded bulletins can be in
+            Tunisian Arabic, written in Arabic letters, because it is the language of farmers who do not read standard
+            Arabic comfortably. That text is not yet validated by a native speaker. Everywhere else the voice answers in
             Tunisian-accented Arabic.
           </li>
           <li>Standard Arabic and French are available on every channel; English in the web app, the Telegram bot and the SMS simulator (the voice line speaks French and Arabic).</li>
           <li>A message typed in French, Arabic or Latin-script Tunisian (“zitoun kairouan”) is understood in the SMS simulator and the Telegram bot.</li>
           <li>
-            <strong>Our answer to “what about a less-supported language?”</strong> Darija is exactly that case. It has no
-            standard spelling, and the speech-recognition provider has not evaluated it. Our Darija text is built from
+            <strong>Our answer to “what about a less-supported language?”</strong> Tunisian Arabic is exactly that case. It has no
+            standard spelling, and the speech-recognition provider has not evaluated it. Our Tunisian Arabic text is built from
             fixed templates in common Tunisian words, with an automated check that rejects Moroccan and Egyptian forms.
             It has <strong>not yet been checked by a native speaker</strong>, and we will publish recognition results as
             measured, even if they are poor.
@@ -305,31 +296,14 @@ export default function AboutPage() {
           </li>
           <li>
             Personal data is limited to a Telegram chat identifier (pseudonymous, not anonymous) plus language, region,
-            crop and a few settings; rain reports carry only a salted hash. Our database stores no name, phone number,
-            precise location or IP address.
+            crop and a few settings. Our database stores no name, phone number, precise location or IP address. Raw IP
+            addresses are held in server memory for rate limits and appear in the hosting provider&apos;s logs.
           </li>
         </ul>
         <Table label="When the tool says “not sure” or adds a note" head={["When the tool says…", "What the user sees"]} rows={REASONS} />
         <p className="text-sm text-sakia-brown">
           On the home screen, a softer “old data” notice also appears after 5 hours (the forecast is refreshed about every 3 hours).
         </p>
-      </Section>
-
-      <Section id="rain" title="Farmers as weather stations">
-        <p className="leading-relaxed text-sakia-ink">
-          Weather models see a grid of 9 to 25 km, not your field, and our check against Tunisian stations shows that they
-          see only about half of the heavy rain. Few farmers have a rain gauge, so a farmer can report how much rain fell
-          at their place, on a five-step scale (none, a few drops, light, a lot, a huge amount). When at least{" "}
-          <strong>{MIN_REPORTERS} different people</strong> of the same region report the same day, their cautious median replaces
-          the model&apos;s rain for that day, and the irrigation plan is recomputed. A human stays in the loop, and the
-          data is local.
-        </p>
-        <ul className="list-disc space-y-1 ps-5 text-sakia-ink">
-          <li>One report per person, per region and per day; values bounded; today and the last 3 days only.</li>
-          <li>Median, not average: it limits the effect of one false report. Each step counts for the low end of its range, because wrongly skipping an irrigation hurts the crop more than wasting a little water. The rule is a brake, not a guarantee: it is not abuse-proof (the simulated SMS channel does not identify senders).</li>
-          <li>Our database stores no name and no IP address, only a salted hash of an identifier (pseudonymous, not anonymous). On the web, each device gets an identity issued and signed by the server. IP addresses are held in server memory for rate limits (20 reports per hour per address; at most 10 reports and 2 identities per address per day) and appear in the hosting provider&apos;s logs.</li>
-          <li>Always shown as “reported by farmers, not measured”. <strong>In this demonstration the reports are fictional.</strong></li>
-        </ul>
       </Section>
 
       <Section id="size" title="Small AI: measured sizes">
@@ -370,11 +344,12 @@ export default function AboutPage() {
         <p className="leading-relaxed text-sakia-ink">
           <strong>What we conclude.</strong> At Kairouan the weather source is good for evapotranspiration (within a few
           percent) and temperature (0.6 °C). A study in Morocco found an underestimation of 2 to 37 %: we do not find that
-          here. The <strong>measured weakness is heavy rain</strong>, which is exactly what farmers&apos; rain reports
-          correct, with deliberately cautious values. A local correction factor for evapotranspiration is not defensible
-          today: the gap changes sign from one station to another, and the only complete series near Kairouan dates from
-          2019–2020. At least a year of measurements is needed; that is the roadmap, not a promise. The analysis scripts
-          are not included in this repository: treat these figures as our own unpublished analysis until they are added.
+          here. The <strong>measured weakness is heavy rain</strong>: on the 43 days when the station measured 10 mm or
+          more, the model saw about half of it, and the plan uses the model&apos;s rain as it is, with no correction. A
+          local correction factor for evapotranspiration is not defensible today: the gap changes sign from one station
+          to another, and the only complete series near Kairouan dates from 2019–2020. At least a year of measurements
+          is needed; that is the roadmap, not a promise. The analysis scripts are not included in this repository: treat
+          these figures as our own unpublished analysis until they are added.
         </p>
         <h3 className="pt-2 text-base font-bold text-sakia-brown">E. Evaluations: done and not done</h3>
         <Table label="Evaluations: done and not done" head={["Evaluation", "Status"]} rows={EVALUATIONS} />

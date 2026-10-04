@@ -18,13 +18,12 @@
 | "Not sure — ask a person" safeguard, built into the engine | **Real** |
 | Offline: the plan is recomputed in the browser from the last saved forecast | **Real**, checked in Chrome with the server stopped. Not yet checked in a phone's airplane mode |
 | Web app (installable) | **Real** |
-| Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot |
+| Telegram bot (plan, spoken bulletin) | **Real** — https://t.me/sakia_tn_bot. Always on: it is a webhook of this site, not a program kept running; its state (token, webhook, backlog, subscriber base) is readable at `/api/telegram/health` |
 | Telegram bot in the browser (`/telegram`) | **Simulated Telegram, real bot code**: the page runs the same bot logic on our server with a fake Telegram, so the demo needs no Telegram account. Nothing is sent to Telegram and nothing is stored; the voice is off (the bot answers with the text of the bulletin) |
 | Spoken bulletin (drawn avatar, ElevenLabs voice, English subtitles) | **Real** audio; demo bulletins are recorded |
 | Voice line (keypad call) and SMS | **Simulated in the browser.** On the simulated keypad phone the morning SMS arrives by itself and the farmer answers with the keys; the call is a button on the same page. Real telephony is not possible in the time (see limits) |
 | Sakia-ML research model (CatBoost, 43 KB) | **Real**, tested in public, **shadow mode**: it changes no advice. Protocol, results and failures in `ml/`; live demo on `/lab` |
 | Voice agent you can talk to | **Real** ElevenLabs conversation with a language model (claude-sonnet-4-5) that is instructed to read the answers our server returns: 15 of 15 plan answers were read word for word on 20 typed test phrases, but this is an instruction, not something we enforce |
-| Farmers' rain reports ("solidarity") | Server side done; channels in progress. **Demo reports are fictitious and labelled as such** |
 
 ## What the AI does — and where it deliberately does not
 
@@ -37,7 +36,7 @@ The irrigation numbers come from a **deterministic FAO-56 water balance, on purp
 | **Works offline** | the engine (the plan is recomputed in the browser), the cached plan, the recorded and the last-loaded audio |
 | **Needs the network** | live speech recognition, live speech synthesis, fresh weather |
 
-**The advice itself uses no trained model.** Separately, we trained and tested a small research model in public (next section), in shadow mode: it changes no advice. Our other local-data contribution is **farmers' own rain reports**; calibrating the weather source against Tunisian stations is the roadmap (see the data card).
+**The advice itself uses no trained model.** Separately, we trained and tested a small research model in public (next section), in shadow mode: it changes no advice. Our local-data contribution is checking the weather source against Tunisian stations (see the data card); calibrating it further is the roadmap.
 
 ## Research: Sakia-ML, a satellite-trained second opinion (shadow mode)
 
@@ -64,8 +63,8 @@ The trade-off we accept: fewer questions means less precision. Sakia uses defaul
 - **Language and voice:** French and Arabic with a Tunisian-accented voice; farmers can type in Arabizi. **The Tunisian dialect is not validated by a native speaker** and speech-recognition accuracy on Tunisian speech is not guaranteed (see the data card).
 - **The device people own:** a basic phone through a call or an SMS, handled by the server; a smartphone through Telegram or the installable app.
 - **Local evidence:** the problem statement relies on Tunisian figures (literacy, aquifer, the SMS pilot) and the weather source was checked against Tunisian stations.
-- **Humans in the loop:** farmers correct the weather through rain reports, and a technician is always the fallback.
-- **Our method, and the test that shows why it matters:** use free global data, check it against local reality (Tunisian stations, farmers' own reports), write the test before running it, train a small model per climate, publish what fails, keep a person in the loop. We applied it to a small learned model: trained around Kairouan it carries over to the Tunisian steppe and to Morocco, and **fails in the Sahel** (see [`ml/`](ml/README.md) and the `/lab` page). An AI is not "global": it has a climate, a language, a phone and people. Each new regime needs its own small model, which this pipeline trains in about 90 minutes from free data.
+- **Humans in the loop:** the advice is indicative, a person always decides, and a technician is the fallback whenever Sakia says it is not sure.
+- **Our method, and the test that shows why it matters:** use free global data, check it against local reality (Tunisian stations), write the test before running it, train a small model per climate, publish what fails, keep a person in the loop. We applied it to a small learned model: trained around Kairouan it carries over to the Tunisian steppe and to Morocco, and **fails in the Sahel** (see [`ml/`](ml/README.md) and the `/lab` page). An AI is not "global": it has a climate, a language, a phone and people. Each new regime needs its own small model, which this pipeline trains in about 90 minutes from free data.
 
 ## Weak connection, measured (4 October 2026)
 
@@ -99,8 +98,7 @@ The spoken advice is made once per region, crop and day, then shared: a schedule
 - **Weather:** Open-Meteo (forecast + ERA5 archive), reference evapotranspiration (FAO Penman–Monteith), at the governorate capital.
 - **Crop water use:** `ETc = Kc × ET0` with FAO-56 coefficients (and Pereira et al. 2024 for trees); root-zone depletion balance; irrigate the day the daily consumption would cross the stress threshold.
 - **Backtest:** replays each season of 2015–2026 with a fixed seasonal schedule (a benchmark hypothesis, not the State's actual calendar) versus the advised schedule. The relative-yield estimate (FAO-33) exists only for crops with a published Ky, **never for trees**.
-- **Rain reports:** farmers choose a level (none, very light, light, a lot, a huge amount); each level counts for the **bottom** of its range, because overestimating rain skips an irrigation while underestimating it only wastes a little water. At least 3 different people must report the same day before the model's rain is replaced (the replacement is the cautious median of the reports). On the web, each device gets an anonymous identity issued and signed by the server; this is a brake, not a guarantee. The simulated SMS channel does not identify senders, so the rule is **not abuse-proof**.
-- Code: `src/lib/` (engine: `planCore.ts` is pure and runs in the browser), `src/app/api/` (plan, forecast, backtest, catalog, reports, voice, telegram, sms, ivr, agent).
+- Code: `src/lib/` (engine: `planCore.ts` is pure and runs in the browser), `src/app/api/` (plan, forecast, backtest, catalog, advice, voice, telegram, sms, ivr, agent).
 
 ## Data and limits
 

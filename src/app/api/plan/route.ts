@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       horizonDays: horizon ? Math.min(30, Math.max(1, Number(horizon))) : undefined,
     });
     // Rejeu d'une date passée (la canicule du 17 juillet) : météo observée, le résultat ne bouge plus, le CDN le garde un jour.
-    // Le plan du jour, lui, n'est jamais gardé : il suit la prévision et les signalements de pluie.
+    // Le plan du jour, lui, n'est jamais gardé : il suit la prévision.
     if (asOf) return Response.json(plan, { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } });
     return Response.json(plan);
   } catch (e) {

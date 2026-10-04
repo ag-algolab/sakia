@@ -95,17 +95,16 @@ export default function BacktestPage() {
         {t("proofBanner")}
       </div>
 
-      {/* ---------- en-tête ---------- */}
-      <section className="sk-hero-sky relative overflow-hidden px-4 pb-20 pt-8 text-white">
+      {/* ---------- en-tête : un titre, une phrase, sur toute la largeur (la réserve « simulation » est dans le bandeau du haut) ---------- */}
+      <section className="sk-hero-sky relative overflow-hidden px-4 pb-16 pt-7 text-white sm:pb-20">
         <div aria-hidden className="pointer-events-none absolute -end-10 top-4 h-44 w-44 rounded-full bg-sakia-sun/25 blur-3xl" />
-        <div className="relative mx-auto max-w-4xl">
-          <h1 className="font-display max-w-xl text-4xl font-bold leading-[1.05] sm:text-6xl">{t("proofHeadline")}</h1>
-          <p className="mt-3 max-w-lg text-base leading-snug text-white/90 sm:text-lg">{t("proofSub")}</p>
-          <p className="mt-2 max-w-lg text-sm leading-snug text-white/75">{t("observedWeather")}</p>
+        <div className="relative mx-auto max-w-5xl">
+          <h1 className="font-display text-balance text-4xl font-bold leading-[1.05] sm:text-5xl">{t("proofHeadline")}</h1>
+          <p className="mt-3 text-pretty text-base leading-snug text-white/90 sm:text-lg">{t("proofSub")}</p>
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto -mt-12 w-full max-w-4xl flex-1 space-y-6 px-4 pb-10">
+      <div className="relative z-10 mx-auto -mt-10 w-full max-w-5xl flex-1 space-y-6 px-4 pb-10 sm:-mt-12">
         {/* région et culture : les mêmes que sur l'accueil, obligatoires */}
         <div className="grid gap-4 rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/5 md:grid-cols-2">
           <div>
@@ -160,17 +159,19 @@ export default function BacktestPage() {
 
                 {/* les deux chiffres clés : celui qui raconte le mieux l'histoire de cette culture passe en premier
                     (le piment : de 63 à 4 jours de soif, pour 3 % d'eau seulement ; l'olivier : 25 % d'eau, aucun jour de soif) */}
-                {thirstFirst ? (
-                  <>
-                    <ThirstTile stressFixed={stressFixed} stressAdaptive={stressAdaptive} noStress={noStress} cropObj={cropObj} regionObj={regionObj} />
-                    <WaterTile s={s} />
-                  </>
-                ) : (
-                  <>
-                    <WaterTile s={s} cropObj={cropObj} regionObj={regionObj} />
-                    <ThirstTile stressFixed={stressFixed} stressAdaptive={stressAdaptive} noStress={noStress} />
-                  </>
-                )}
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {thirstFirst ? (
+                    <>
+                      <ThirstTile stressFixed={stressFixed} stressAdaptive={stressAdaptive} noStress={noStress} cropObj={cropObj} regionObj={regionObj} />
+                      <WaterTile s={s} />
+                    </>
+                  ) : (
+                    <>
+                      <WaterTile s={s} cropObj={cropObj} regionObj={regionObj} />
+                      <ThirstTile stressFixed={stressFixed} stressAdaptive={stressAdaptive} noStress={noStress} />
+                    </>
+                  )}
+                </div>
 
                 {loaded && <OtherCrops key={`${region}|${crop}|${soil}|${system}`} crop={crop} url={url} />}
 
@@ -208,7 +209,10 @@ export default function BacktestPage() {
                     <Legend color="bg-sakia-sand-dark" label={t("fixedLabel")} />
                     <Legend color="bg-[#2b8fd6]" label={t("adaptiveLabel")} />
                   </div>
-                  <ul className="mt-4 space-y-3">
+                  <ul
+                    className="mt-4 space-y-3 lg:grid lg:grid-flow-col lg:grid-cols-2 lg:gap-x-10 lg:gap-y-3 lg:space-y-0"
+                    style={{ gridTemplateRows: `repeat(${Math.ceil(data.seasons.length / 2)}, auto)` }}
+                  >
                     {data.seasons.map((x, i) => (
                       <Reveal as="li" key={x.year} delay={Math.min(i, 6) * 40} className="grid grid-cols-[3rem_1fr] items-center gap-2">
                         <span className="text-sm font-bold text-sakia-ink" dir="ltr">
@@ -278,7 +282,7 @@ function OtherCrops({ crop, url }: { crop: string; url: (c: string) => string })
         <Reveal className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <h2 className="font-display text-2xl font-bold text-sakia-green-deep">{t("otherCrops")}</h2>
           <p className="text-sm text-sakia-brown">{t("otherCropsSub")}</p>
-          <ul className="mt-4 space-y-4">
+          <ul className="mt-4 grid gap-x-10 gap-y-4 lg:grid-cols-2">
             {others.map((o, i) => {
               const c = CROPS.find((x) => x.id === o.id);
               if (!c) return null;
@@ -317,7 +321,7 @@ function OtherCrops({ crop, url }: { crop: string; url: (c: string) => string })
 function WaterTile({ s, cropObj, regionObj }: { s: BacktestResult["summary"]; cropObj?: Crop; regionObj?: Region }) {
   const { t, fmtNum } = useLang();
   return (
-    <Reveal className="relative overflow-hidden rounded-3xl bg-sakia-green-deep p-6 text-white shadow-md">
+    <Reveal className="relative flex flex-col overflow-hidden rounded-3xl bg-sakia-green-deep p-6 text-white shadow-md">
       <DropIcon className="sk-sway pointer-events-none absolute -end-6 -top-6 h-44 w-44 text-white/[0.07]" />
       {cropObj && regionObj && <CropLine cropObj={cropObj} regionObj={regionObj} className="relative flex items-center gap-2 text-sm font-semibold text-white/80" />}
       <p className="font-display relative text-[5.5rem] font-extrabold leading-none text-[#7fc8f2] sm:text-[7rem]" dir="ltr">
@@ -327,7 +331,7 @@ function WaterTile({ s, cropObj, regionObj }: { s: BacktestResult["summary"]; cr
       <p className="relative text-sm text-white/70">
         {t("waterSavedSub")} · {s.seasons} {t("seasons")}
       </p>
-      <div className="relative mt-5 space-y-2" dir="ltr">
+      <div className="relative mt-auto space-y-2 pt-5" dir="ltr">
         <div className="flex items-center gap-3">
           <span className="w-28 shrink-0 text-xs font-semibold text-white/75">{t("fixedLabel")}</span>
           <div className="h-4 flex-1 rounded-full bg-white/10">

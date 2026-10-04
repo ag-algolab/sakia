@@ -20,7 +20,7 @@ export type VoiceLangInfo = {
 
 export const VOICE_LANGS: VoiceLangInfo[] = [
   // la darija vient en premier : c'est la langue des agriculteurs qui ne lisent pas l'arabe standard
-  { code: "aeb", native: "الدارجة التونسية", english: "Tunisian Arabic (Darija)", htmlLang: "ar-TN", rtl: true, locale: "ar-TN-u-nu-latn", validated: false }, // à valider par un Tunisien
+  { code: "aeb", native: "الدارجة التونسية", english: "Tunisian Arabic", htmlLang: "ar-TN", rtl: true, locale: "ar-TN-u-nu-latn", validated: false }, // à valider par un Tunisien
   { code: "fr", native: "Français", english: "French", htmlLang: "fr", rtl: false, locale: "fr-FR", validated: true },
   { code: "ar", native: "العربية الفصحى", english: "Modern Standard Arabic", htmlLang: "ar", rtl: true, locale: "ar-TN-u-nu-latn", validated: false }, // à valider par un Tunisien
   { code: "en", native: "English", english: "English", htmlLang: "en", rtl: false, locale: "en-GB", validated: true },

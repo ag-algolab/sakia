@@ -31,6 +31,19 @@ export type SeasonResult = {
   none: PolicyResult;
 };
 
+// Hypothèses affichées avec la preuve (écrites en français ; l'écran les traduit : src/components/ui/assumptionsText.ts, garde-fou
+// scripts/assumptions-check.ts). Si on change une phrase ici, on change aussi sa règle de reconnaissance.
+export function backtestAssumptions(everyDays: number, cropStatus: string): string[] {
+  return [
+    "Météo observée ERA5 (Open-Meteo) du chef-lieu (pas des prévisions passées), saisons rejouées depuis 2015.",
+    `Calendrier fixe saisonnier : une irrigation tous les ${everyDays} jours, dose calée sur la demande moyenne du mois sur toutes les saisons (référence volontairement exigeante). HYPOTHÈSE à remplacer par le calendrier réel de l'administration.`,
+    "Rendement relatif : relation FAO-33, estimation par modèle et non mesure ; fiable pour des déficits modérés seulement.",
+    cropStatus === "a_verifier"
+      ? "Coefficients de culture FAO-56, certaines valeurs ajustées ou interpolées : résultats indicatifs."
+      : "Coefficients de culture FAO-56 lus tels quels.",
+  ];
+}
+
 export type BacktestResult = {
   cropId: string;
   seasons: SeasonResult[];
@@ -182,13 +195,6 @@ export function backtest(
       fixedEveryDays: everyDays,
       fixedNetMm,
     },
-    assumptions: [
-      "Météo observée ERA5 (Open-Meteo) du chef-lieu (pas des prévisions passées), saisons rejouées depuis 2015.",
-      `Calendrier fixe saisonnier : une irrigation tous les ${everyDays} jours, dose calée sur la demande moyenne du mois sur toutes les saisons (référence volontairement exigeante). HYPOTHÈSE à remplacer par le calendrier réel de l'administration.`,
-      "Rendement relatif : relation FAO-33, estimation par modèle et non mesure ; fiable pour des déficits modérés seulement.",
-      crop.status === "a_verifier"
-        ? "Coefficients de culture FAO-56, certaines valeurs ajustées ou interpolées : résultats indicatifs."
-        : "Coefficients de culture FAO-56 lus tels quels.",
-    ],
+    assumptions: backtestAssumptions(everyDays, crop.status),
   };
 }

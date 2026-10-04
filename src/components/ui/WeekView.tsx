@@ -24,13 +24,12 @@ function tubeTone(r: number) {
 }
 
 export default function WeekView({ plan }: { plan: Plan }) {
-  const { lang, t, fmtDate, fmtNum, colon } = useLang();
+  const { lang, t, fmtDate, fmtNum } = useLang();
   const days = plan.days;
   if (days.length === 0) return null;
   const watering = days.filter((d) => d.action === "irriguer");
   const last = days[days.length - 1];
   const lastPct = Math.round(reserveOf(last) * 100);
-  const notes = (plan.localReports ?? []).filter((r) => days.some((d) => d.date === r.date));
   const dayShort = (iso: string) => {
     const label = fmtDate(iso, { weekday: "short" });
     return isArabic(lang) ? label.replace(/^ال/, "") : label;
@@ -150,22 +149,6 @@ export default function WeekView({ plan }: { plan: Plan }) {
             <p className="mt-1 text-sm font-medium leading-snug">{t("noWateringBody", { day: fmtDate(last.date, { weekday: "long" }), pct: fmtNum(lastPct) })}</p>
           </div>
         </Reveal>
-      )}
-
-      {/* pluie signalée par des agriculteurs (remplace celle du modèle) */}
-      {notes.length > 0 && (
-        <ul className="space-y-2">
-          {notes.map((r) => (
-            <li key={r.date} className="flex items-start gap-2 rounded-2xl bg-sakia-water-light/70 px-4 py-3 text-sm font-semibold leading-snug text-sakia-water-deep">
-              <RainIcon className="mt-0.5 h-5 w-5 shrink-0" />
-              <span>
-                <span className="first-letter:uppercase">{fmtDate(r.date, { weekday: "short", day: "numeric", month: "short" })}</span>
-                {colon}{" "}
-                {t("rainInPlan", { n: fmtNum(r.n), mm: fmtNum(r.medianMm, 1), model: fmtNum(r.modelMm, 1) })}
-              </span>
-            </li>
-          ))}
-        </ul>
       )}
     </div>
   );

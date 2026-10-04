@@ -57,6 +57,20 @@ export function clipLines(plan: Plan, lang: VoiceLang, choice?: Partial<SoilChoi
 
 export const clipText = (plan: Plan, lang: VoiceLang, choice?: Partial<SoilChoice>) => clipLines(plan, lang, choice).map((l) => l.text).join(" ");
 
+// Sous-titres du message court : les MÊMES phrases que la voix (mêmes `id`, même plan, donc mêmes chiffres), écrites dans la langue de
+// l'écran : un juré qui ne parle pas darija lit ce que la voix dit. Si la langue demandée est celle de la voix, c'est le texte dit lui-même.
+// `w` = nombre de lettres DITES par la voix (espaces et ponctuation exclus) : le message court est un simple mp3 préparé à l'avance,
+// sans alignement mot à mot ; le navigateur s'en sert pour caler la phrase affichée sur le son par simple proportion.
+export type ClipSub = { id: string; text: string; w: number };
+
+export function clipSubtitles(plan: Plan, spoken: VoiceLang, shown: VoiceLang, choice?: Partial<SoilChoice>): ClipSub[] {
+  const said = clipLines(plan, spoken, choice);
+  const text = new Map(clipLines(plan, shown, choice).map((l) => [l.id, l.text]));
+  return said
+    .map((l) => ({ id: l.id, text: text.get(l.id) ?? "", w: Math.max(1, l.text.replace(/[^\p{L}\p{N}]/gu, "").length) }))
+    .filter((s) => s.text !== "");
+}
+
 // L'empreinte suit le TEXTE (pas les paramètres) : deux demandes qui disent la même chose partagent le même fichier, et la voix
 // ne peut jamais contredire le plan.
 export function clipKey(text: string): string {

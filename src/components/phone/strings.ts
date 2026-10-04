@@ -56,15 +56,6 @@ export type Strings = {
   languagesBody: string;
   measured: (ok: number, total: number) => string;
   measuredCaveat: string;
-  // rapports de pluie
-  rainTitle: string;
-  rainIntro: string;
-  rainDemo: string;
-  rainDayLabel: string;
-  rainPending: string;
-  rainSent: (n: number) => string;
-  rainRejected: string;
-  rainQueueTitle: string;
   // inscription : région et culture obligatoires, sans valeur par défaut
   signupTitle: string;
   signupIntro: string;
@@ -94,7 +85,6 @@ export type Strings = {
   lcdTomorrow: string;
   lcdWaitingPlan: string;
   lcdNewMsg: string;
-  lcdRainQ: string;
   lcdLangTitle: string;
   lcdStopQ: string;
   lcdYes: string;
@@ -117,12 +107,9 @@ export type Strings = {
   // touches : libellé court (écran) et ce qu'elles font
   keysTitle: string;
   keysIntro: string;
-  keysCaution: string;
-  kRain: string;
   kHelp: string;
   kLang: string;
   kStop: string;
-  kRainDesc: string;
   kHelpDesc: string;
   kLangDesc: string;
   kStopDesc: string;
@@ -143,7 +130,7 @@ export type Strings = {
 
 export const STRINGS: Record<UiLang, Strings> = {
   fr: {
-    truth: "Fonctionne sans internet après un premier chargement (vérifié dans Chrome, serveur arrêté ; pas encore en mode avion sur un téléphone) ; ne remplace pas le réseau mobile.",
+    truth: "Fonctionne sans internet après un premier chargement (vérifié dans Chrome, serveur arrêté ; non vérifié en mode avion sur un téléphone) ; ne remplace pas le réseau mobile.",
     offline: "Hors connexion",
     lastPlan: "dernier plan mis à jour",
     noPlan: "aucun plan enregistré sur cet appareil",
@@ -192,14 +179,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "Arabe tunisien (écriture arabe et écriture latine « arabizi »), français et anglais, avec tolérance aux fautes de frappe. Le dialecte n'est pas garanti : voici ce qui a été mesuré.",
     measured: (ok, total) => `${ok} phrases comprises sur ${total}`,
     measuredCaveat: "Phrases écrites à la main par l'équipe, pas recueillies auprès d'agriculteurs : ce n'est pas une mesure sur le terrain.",
-    rainTitle: "Signaler la pluie tombée chez vous",
-    rainIntro: "Il a plu ? Dites-le en un geste. Quand au moins 3 personnes différentes de la région signalent le même jour, leur valeur prudente remplace la pluie prévue dans le plan. Aucun nom, aucune adresse IP dans notre base : seulement une empreinte salée d'un identifiant gardé dans cet appareil (pseudonyme, pas anonyme).",
-    rainDemo: "Démonstration : les rapports affichés ici sont fictifs. Ce sont des signalements d'agriculteurs, pas des mesures.",
-    rainDayLabel: "Quel jour ?",
-    rainPending: "en attente : part dès que le réseau revient",
-    rainSent: (n) => `envoyé · ${n} personne${n > 1 ? "s ont" : " a"} signalé ce jour`,
-    rainRejected: "refusé",
-    rainQueueTitle: "Vos signalements",
     signupTitle: "Inscription au SMS du matin",
     signupIntro: "Deux choix obligatoires : la région et la culture. Ajoutez le dernier arrosage : sans lui, le SMS dit « pas sûr ».",
     regionError: "Choisissez une région.",
@@ -227,7 +206,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     lcdTomorrow: "demain",
     lcdWaitingPlan: "Calcul du SMS…",
     lcdNewMsg: "1 nouveau message",
-    lcdRainQ: "Pluie tombée chez vous aujourd'hui ?",
     lcdLangTitle: "Langue des SMS",
     lcdStopQ: "Arrêter les SMS et effacer vos réglages ?",
     lcdYes: "Oui",
@@ -249,19 +227,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     srNewMessage: "Nouveau message de Sakia.",
     keysTitle: "Répondre avec les touches",
     keysIntro: "Ici, on répond sans écrire : chaque touche envoie un court message, identique à un SMS écrit à la main. C'est le serveur de Sakia qui répond.",
-    keysCaution: "Le serveur traite un signalement de pluie comme un vrai signalement : n'envoyez que la pluie réellement tombée chez vous.",
-    kRain: "Pluie",
     kHelp: "Aide",
     kLang: "Langue",
     kStop: "Stop",
-    kRainDesc: "Dire s'il a plu chez vous aujourd'hui : rien, peu, beaucoup ou énormément.",
     kHelpDesc: "Recevoir le message d'aide du service.",
     kLangDesc: "Choisir la langue des SMS : français, arabe ou anglais.",
     kStopDesc: "Effacer vos réglages et arrêter les SMS.",
     kBackDesc: "Revenir en arrière.",
     logTitle: "Messages échangés avec le serveur",
     logIntro: "Ce que le téléphone a vraiment envoyé à POST /api/sms/incoming, et ce que le serveur a répondu.",
-    logEmpty: "Rien pour l'instant : le serveur n'est appelé que lorsque vous appuyez sur une touche de réponse.",
+    logEmpty: "Aucun message : le serveur n'est appelé que lorsque vous appuyez sur une touche de réponse.",
     logOut: "Envoyé",
     logIn: "Reçu",
     logAuto: "automatique : règle la langue des réponses",
@@ -271,7 +246,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     planNeedChoice: "Choisissez d'abord une région et une culture dans l'inscription, plus haut.",
   },
   ar: {
-    truth: "تعمل بدون إنترنت بعد التحميل الأول (جُرّبت في Chrome مع إيقاف الخادم، ولم تُجرَّب بعد في وضع الطيران على هاتف)، ولا تعوّض شبكة الهاتف.",
+    truth: "تعمل بدون إنترنت بعد التحميل الأول (جُرّبت في Chrome مع إيقاف الخادم، ولم تُجرَّب في وضع الطيران على هاتف)، ولا تعوّض شبكة الهاتف.",
     offline: "بدون اتصال",
     lastPlan: "آخر تحديث للخطة",
     noPlan: "لا توجد خطة محفوظة على هذا الجهاز",
@@ -320,14 +295,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "العربية التونسية (بالحروف العربية وبالحروف اللاتينية «عربيزي»)، والفرنسية والإنجليزية، مع التسامح مع أخطاء الكتابة. اللهجة غير مضمونة: هذا ما تم قياسه.",
     measured: (ok, total) => `${ok} جملة مفهومة من ${total}`,
     measuredCaveat: "جمل كتبها الفريق يدويا، لم تُجمع من فلاحين: ليس قياسا ميدانيا.",
-    rainTitle: "أبلغ عن المطر الذي نزل عندك",
-    rainIntro: "هل نزل المطر؟ قلها بضغطة واحدة. عندما يبلغ ثلاثة أشخاص مختلفين على الأقل في الولاية عن نفس اليوم، تحل قيمتهم الحذرة محل المطر المتوقع في الخطة. بلا اسم وبلا عنوان IP في قاعدة بياناتنا: فقط بصمة رقمية مملّحة لمعرّف محفوظ في هذا الجهاز (اسم مستعار، وليس مجهولا).",
-    rainDemo: "عرض تجريبي: التقارير المعروضة هنا وهمية. هي تقارير من فلاحين وليست قياسات.",
-    rainDayLabel: "أي يوم؟",
-    rainPending: "في الانتظار: تُرسل فور عودة الشبكة",
-    rainSent: (n) => `أُرسل · ${n} أشخاص أبلغوا عن هذا اليوم`,
-    rainRejected: "مرفوض",
-    rainQueueTitle: "تقاريرك",
     signupTitle: "الاشتراك في رسالة الصباح",
     signupIntro: "اختياران إلزاميان: الولاية والمحصول. أضف آخر سقية: من دونها تقول الرسالة «غير متأكد».",
     regionError: "اختر الولاية.",
@@ -347,7 +314,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     seeSms: "شاهد رسالة السادسة صباحا",
     seeSmsNote: "محسوبة الآن بطقس اليوم.",
     simCall: "محاكاة مكالمة",
-    simCallNote: "الخط الصوتي التجريبي: تستمع إلى النصيحة وتختار بالأزرار.",
+    simCallNote: "الخط الصوتي المحاكى: تستمع إلى النصيحة وتختار بالأزرار.",
     simulatedDetail:
       "تُحسب رسالة الصباح الآن بطقس اليوم، بنفس المحرك الذي تستعمله خدمة الرسائل؛ ولا يوجد أي مشغّل متصل. تمر الردود عبر بوابة الرسائل في الخادم كما يفعل مزوّد حقيقي، والخادم هو الذي يجيب.",
     lcdPickChoice: "اختر الولاية والمحصول فوق",
@@ -355,7 +322,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     lcdTomorrow: "غدا",
     lcdWaitingPlan: "جار تحضير الرسالة…",
     lcdNewMsg: "رسالة جديدة واحدة",
-    lcdRainQ: "هل نزل المطر عندك اليوم؟",
     lcdLangTitle: "لغة الرسائل",
     lcdStopQ: "إيقاف الرسائل ومسح إعداداتك؟",
     lcdYes: "نعم",
@@ -377,19 +343,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     srNewMessage: "رسالة جديدة من ساقية.",
     keysTitle: "الرد بالأزرار",
     keysIntro: "هنا نجيب دون كتابة: كل زر يرسل رسالة قصيرة مطابقة لرسالة نصية مكتوبة باليد. وخادم ساقية هو الذي يرد.",
-    keysCaution: "يعامل الخادم تبليغ المطر كتبليغ حقيقي: أرسل فقط المطر الذي نزل فعلا عندك.",
-    kRain: "مطر",
     kHelp: "مساعدة",
     kLang: "اللغة",
     kStop: "إيقاف",
-    kRainDesc: "قل هل نزل المطر عندك اليوم: لا مطر، قليل، غزير أو غزير جدا.",
     kHelpDesc: "استقبال رسالة المساعدة من الخدمة.",
     kLangDesc: "اختيار لغة الرسائل: الفرنسية أو العربية أو الإنجليزية.",
     kStopDesc: "مسح إعداداتك وإيقاف الرسائل.",
     kBackDesc: "الرجوع إلى الخلف.",
     logTitle: "الرسائل المتبادلة مع الخادم",
     logIntro: "ما أرسله الهاتف فعلا إلى POST /api/sms/incoming وما ردّ به الخادم.",
-    logEmpty: "لا شيء بعد: لا يُستدعى الخادم إلا عند الضغط على زر رد.",
+    logEmpty: "لا شيء: لا يُستدعى الخادم إلا عند الضغط على زر رد.",
     logOut: "أُرسل",
     logIn: "وصل",
     logAuto: "تلقائي: يضبط لغة الردود",
@@ -399,7 +362,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     planNeedChoice: "اختر أولا الولاية والمحصول في الاشتراك أعلاه.",
   },
   en: {
-    truth: "Works without internet after a first load (checked in Chrome with the server stopped; not yet in a phone's airplane mode); it does not replace the mobile network.",
+    truth: "Works without internet after a first load (checked in Chrome with the server stopped; not checked in a phone's airplane mode); it does not replace the mobile network.",
     offline: "Offline",
     lastPlan: "last plan updated",
     noPlan: "no plan saved on this device",
@@ -448,14 +411,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     languagesBody: "Tunisian Arabic (Arabic script and Latin-letter “arabizi”), French and English, tolerating typing mistakes. The dialect is not guaranteed: here is what was measured.",
     measured: (ok, total) => `${ok} of ${total} sentences understood`,
     measuredCaveat: "Sentences written by hand by the team, not collected from farmers: this is not a field measurement.",
-    rainTitle: "Report the rain that fell at your place",
-    rainIntro: "Did it rain? Tell us in one tap. When at least 3 different people in the region report the same day, their cautious value replaces the forecast rain in the plan. No name and no IP address in our database: only a salted hash of an identifier kept on this device (pseudonymous, not anonymous).",
-    rainDemo: "Demonstration: the reports shown here are fictitious. They are farmers' reports, not measurements.",
-    rainDayLabel: "Which day?",
-    rainPending: "waiting: sent as soon as the network is back",
-    rainSent: (n) => `sent · ${n} ${n > 1 ? "people have" : "person has"} reported that day`,
-    rainRejected: "rejected",
-    rainQueueTitle: "Your reports",
     signupTitle: "Sign up for the morning SMS",
     signupIntro: "Two required choices: region and crop. Add your last irrigation: without it, the SMS says \"not sure\".",
     regionError: "Choose a region.",
@@ -483,7 +438,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     lcdTomorrow: "tomorrow",
     lcdWaitingPlan: "Preparing the SMS…",
     lcdNewMsg: "1 new message",
-    lcdRainQ: "Did it rain at your place today?",
     lcdLangTitle: "SMS language",
     lcdStopQ: "Stop the SMS and erase your settings?",
     lcdYes: "Yes",
@@ -505,19 +459,16 @@ export const STRINGS: Record<UiLang, Strings> = {
     srNewMessage: "New message from Sakia.",
     keysTitle: "Reply with the keys",
     keysIntro: "Here you reply without writing: each key sends a short message, identical to an SMS written by hand. Sakia's server does the answering.",
-    keysCaution: "The server treats a rain report as a real report: only send rain that really fell at your place.",
-    kRain: "Rain",
     kHelp: "Help",
     kLang: "Language",
     kStop: "Stop",
-    kRainDesc: "Say whether it rained at your place today: none, a little, a lot or a huge amount.",
     kHelpDesc: "Receive the service's help message.",
     kLangDesc: "Choose the SMS language: French, Arabic or English.",
     kStopDesc: "Erase your settings and stop the SMS.",
     kBackDesc: "Go back.",
     logTitle: "Messages exchanged with the server",
     logIntro: "What the phone really sent to POST /api/sms/incoming, and what the server answered.",
-    logEmpty: "Nothing yet: the server is only called when you press a reply key.",
+    logEmpty: "No messages: the server is only called when you press a reply key.",
     logOut: "Sent",
     logIn: "Received",
     logAuto: "automatic: sets the language of the replies",

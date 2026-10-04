@@ -6,7 +6,6 @@ import { timeLines } from "../voice";
 import { ttsWithTimestamps } from "../voice/elevenlabs";
 import { MODEL_ID, SELECTED_VOICE } from "../voice/voices";
 import type { IvrLang } from "./menu";
-import { rainCountText } from "./rain";
 import { ivrDetailLines, ivrPlanLines } from "./script";
 import { BudgetError, clipKey, readClip, recordCredits, reserveChars, writeClip } from "./store";
 
@@ -76,15 +75,4 @@ export async function linesClip(spoken: SpokenLine[], english: Map<string, strin
 export async function planClip(plan: Plan, lang: IvrLang, detail = false): Promise<PlanClip> {
   const linesOf = detail ? ivrDetailLines : ivrPlanLines;
   return linesClip(linesOf(plan, lang), new Map(linesOf(plan, "en").map((l) => [l.id, l.text])));
-}
-
-// « N personnes ont signalé aujourd'hui… » dit après la confirmation d'un signalement de pluie.
-export const rainCountLines = (n: number, lang: IvrLang) => ({
-  spoken: [{ id: "count", text: rainCountText(n, lang) }],
-  english: new Map([["count", rainCountText(n, "en")]]),
-});
-
-export async function rainCountClip(n: number, lang: IvrLang): Promise<PlanClip> {
-  const { spoken, english } = rainCountLines(n, lang);
-  return linesClip(spoken, english);
 }

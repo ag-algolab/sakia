@@ -21,10 +21,9 @@ export const CANDIDATES: VoiceCandidate[] = [
 // Voix retenue par Anthony : Rima M (bibliothèque ElevenLabs, accent tunisien), pour le français et l'arabe.
 // Pour changer : modifier ici, ou fixer VOICE_ID dans l'environnement.
 const RIMA = CANDIDATES.find((c) => c.key === "rima")!;
-export const SELECTED_VOICE: { id: string; name: string; validated: boolean } = {
+export const SELECTED_VOICE: { id: string; name: string } = {
   id: process.env.VOICE_ID || RIMA.voiceId,
   name: process.env.VOICE_ID ? "voix personnalisée" : RIMA.name,
-  validated: !process.env.VOICE_ID,
 };
 
 // Modèle retenu par Anthony après écoute : eleven_v4 (le moins cher des modèles de qualité : ~0,12 crédit par caractère).
@@ -52,17 +51,4 @@ export const SAMPLE_TEXT: Record<"fr" | "ar" | "aeb" | "en" | "ko", string> = {
   aeb: "عسلامة بيكم، ومرحبا بيكم في ساقية. نصيحتنا: اسقيو غدوة الصباح بكّري، قبل ما تسخن الدنيا. يعطيكم الصحة على الخدمة اللي تعملوها لبلادنا.",
   en: "Hello everyone, and welcome to Sakia. Our advice: irrigate tomorrow morning, preferably before the heat. Thank you for the service you give to the country.",
   ko: "안녕하세요, 여러분. 사키아에 오신 것을 환영합니다. 권장 사항입니다. 내일 아침, 더위가 오기 전에 관개하세요. 나라를 위해 애써 주시는 모든 분께 감사드립니다.",
-};
-
-// Drapeau « signalements fictifs » : voir flags.ts (partagé avec le navigateur).
-export { REPORTS_ARE_FICTIONAL } from "./flags";
-
-// Remerciement dit à voix haute quand une personne signale la pluie (fichiers public/audio/thanks-<langue>.mp3, générés une
-// fois par scripts/voice-thanks.ts). Pour celles et ceux qui ne lisent pas. Textes darija, arabe standard et coréen à faire valider.
-export const THANKS_TEXT: Record<"aeb" | "fr" | "ar" | "en" | "ko", string> = {
-  aeb: "يعيشك! بفضلك جيرانك يعرفو قدّاش نزلت الشتا.",
-  fr: "Merci ! Grâce à vous, vos voisins savent combien il a plu.",
-  ar: "شكرا لك! بفضلك يعرف جيرانك كم هطل من المطر.",
-  en: "Thank you! Thanks to you, your neighbours know how much it rained.",
-  ko: "감사합니다! 덕분에 이웃들이 비가 얼마나 왔는지 알 수 있어요.",
 };

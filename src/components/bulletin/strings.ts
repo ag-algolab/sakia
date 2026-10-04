@@ -54,45 +54,17 @@ export type Strings = {
   justTitle: string;
   justBody: string; // toujours en coréen
   justGloss: string; // traduction dans la langue de l'interface (vide en coréen)
-  voiceNote: string; // {name}
   indicative: string;
   // garde-fou « pas sûr : demandez à une personne »
   unsureTitle: string;
   askCell: string;
   reasons: Record<ConfidenceReason, string>;
-  // pluie signalée par des agriculteurs (corrige le modèle météo ; « signalé », jamais « mesuré »)
-  reportsTitle: string;
-  reportsRow: string; // {rel} {n} {level} {model}
-  reportsNote: string;
-  reportsFictional: string;
-  relDays: [string, string, string, string]; // aujourd'hui, hier, avant-hier, il y a trois jours
-  rainLevels: Record<"none" | "very_light" | "light" | "heavy" | "very_heavy", string>;
-  // bouton « Il a plu » : un agriculteur signale la pluie chez lui
-  rainBtn: string;
-  rainAsk: string;
-  rainSend: string;
-  rainSendAgain: string;
-  rainSent: string;
-  rainQueued: string;
-  rainErrRate: string;
-  rainErrDown: string;
-  rainErrInvalid: string;
-  rainRule: string;
   // volet « Options » et texte complet
   options: string;
   placeTitle: string;
   choose: string;
   placeNeed: string;
   fullText: string;
-  // récompense : remercier les personnes qui signalent la pluie
-  rewardThanks: string;
-  rewardCountOne: string;
-  rewardCount: string; // {n}
-  rewardTiers: [string, string, string]; // 1, 5 et 15 jours signalés
-  rewardNext: string; // {k} {name}
-  rewardTop: string;
-  rewardImpactUsed: string; // {n}
-  rewardImpactWaiting: string; // {n} {need}
 };
 
 const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
@@ -135,12 +107,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "Why a drawn presenter, not a video?",
     why: "The whole bulletin is one audio file of 130 to 200 KB. The presenter is drawn as vector graphics in your browser, and the mouth follows the loudness of the sound. A generated video would weigh tens of megabytes: too heavy for a weak mobile network. Small AI: small file, same message.",
     audioSize: "This bulletin: {kb} KB of audio",
-    inclusionTitle: "Why Darija?",
-    inclusion: "Many farmers around Kairouan cannot read, and speak Darija, not the standard Arabic of the news. A bulletin in standard Arabic would not reach them, so the first voice here is Tunisian Darija, then French, standard Arabic, English and Korean.",
+    inclusionTitle: "Why Tunisian Arabic?",
+    inclusion: "Many farmers around Kairouan cannot read, and speak Tunisian Arabic, not the standard Arabic of the news. A bulletin in standard Arabic would not reach them, so the first voice here is Tunisian Arabic, then French, standard Arabic, English and Korean.",
     justTitle: "Just for you",
     justBody: "서울에서 이 프로젝트를 평가해 주시는 분들께 드립니다. 사키아 방송은 한국어로도 인사드립니다. 튀니지 농부들을 위한 아주 작은 AI가 여러분의 언어로 말을 건넵니다. 😊",
     justGloss: "For whoever evaluates this from Seoul: the Sakia bulletin also speaks Korean. A very small AI for Tunisian farmers says hello in your language.",
-    voiceNote: "Voice: {name} (provisional, not yet validated by ear).",
     indicative: "Indicative advice, to be checked with the regional agriculture office.",
     unsureTitle: "Not sure: ask a person",
     askCell: "Ask a person",
@@ -152,35 +123,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "Rain is possible in the next 3 days (30 to 70 % chance).",
       short_horizon: "The forecast does not cover the whole week.",
     },
-    reportsTitle: "Rain corrected by farmers' reports",
-    reportsRow: "{rel}: {n} farmers reported “{level}” (the forecast said {model} mm).",
-    reportsNote: "This is a report by farmers. It replaces the forecast for that day.",
-    reportsFictional: "In this demonstration the reports are fictional.",
-    relDays: ["Today", "Yesterday", "The day before yesterday", "Three days ago"],
-    rainLevels: { none: "no rain", very_light: "very light rain, a few drops", light: "light rain", heavy: "a lot of rain", very_heavy: "a huge amount of rain" },
-    rainBtn: "It rained",
-    rainAsk: "How much did it rain at your place?",
-    rainSend: "Send my report",
-    rainSendAgain: "Send another report",
-    rainSent: "Thank you. Your report counts once 3 different people in the region report the same day. Press “Listen” again to hear the bulletin with the reports.",
-    rainQueued: "No network: your report is kept on your phone and will be sent when the network is back.",
-    rainErrRate: "Too many reports from this phone. Try again later.",
-    rainErrDown: "Could not save the report right now. Try again later.",
-    rainErrInvalid: "The report was not accepted (day too old or invalid).",
-    rainRule: "Anonymous: no name, no address. One report per person, per region and per day. When 3 or more different people agree for a day, their middle value replaces the forecast for that day.",
     options: "Options",
     placeTitle: "Where are you, and what do you grow? The bulletin is about your fields.",
     choose: "Choose…",
     placeNeed: "Choose your region and your crop to hear your bulletin.",
     fullText: "Full text of the bulletin",
-    rewardThanks: "Thank you, neighbour!",
-    rewardCountOne: "You have helped on 1 day.",
-    rewardCount: "You have helped on {n} different days.",
-    rewardTiers: ["Helper", "Rain watcher", "Rain guardian"],
-    rewardNext: "{k} more day(s) to become “{name}”.",
-    rewardTop: "You are a Rain guardian. Thank you for looking after your neighbours!",
-    rewardImpactUsed: "{n} people agree for that day: the bulletin now uses your region's report.",
-    rewardImpactWaiting: "{n} person reported that day. {need} more and the bulletin will use it.",
   },
   fr: {
     title: "Bulletin Sakia",
@@ -221,12 +168,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     whyTitle: "Pourquoi un présentateur dessiné, pas une vidéo ?",
     why: "Tout le bulletin tient dans un fichier audio de 130 à 200 Ko. Le présentateur est dessiné en vectoriel dans votre navigateur et sa bouche suit le volume du son. Une vidéo générée pèserait des dizaines de mégaoctets : trop lourd pour un réseau mobile faible. Petite IA : petit fichier, même message.",
     audioSize: "Ce bulletin : {kb} Ko d'audio",
-    inclusionTitle: "Pourquoi la darija ?",
-    inclusion: "Beaucoup d'agriculteurs autour de Kairouan ne savent pas lire et parlent la darija, pas l'arabe standard des journaux. Un bulletin en arabe standard ne les atteindrait pas : la première voix ici est donc la darija tunisienne, puis le français, l'arabe standard, l'anglais et le coréen.",
+    inclusionTitle: "Pourquoi l'arabe tunisien ?",
+    inclusion: "Beaucoup d'agriculteurs autour de Kairouan ne savent pas lire et parlent l'arabe tunisien, pas l'arabe standard des journaux. Un bulletin en arabe standard ne les atteindrait pas : la première voix ici est donc l'arabe tunisien, puis le français, l'arabe standard, l'anglais et le coréen.",
     justTitle: "Juste pour vous",
     justBody: "서울에서 이 프로젝트를 평가해 주시는 분들께 드립니다. 사키아 방송은 한국어로도 인사드립니다. 튀니지 농부들을 위한 아주 작은 AI가 여러분의 언어로 말을 건넵니다. 😊",
     justGloss: "Pour celles et ceux qui évaluent depuis Séoul : le bulletin Sakia parle aussi coréen. Une toute petite IA pour les agriculteurs tunisiens vous salue dans votre langue.",
-    voiceNote: "Voix : {name} (provisoire, pas encore validée à l'oreille).",
     indicative: "Conseil indicatif, à valider auprès de l'administration agricole régionale.",
     unsureTitle: "Pas sûr : demandez à une personne",
     askCell: "Demandez à une personne",
@@ -238,35 +184,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "De la pluie est possible dans les 3 jours (probabilité de 30 à 70 %).",
       short_horizon: "La prévision ne couvre pas toute la semaine.",
     },
-    reportsTitle: "Pluie corrigée par des signalements d'agriculteurs",
-    reportsRow: "{rel} : {n} agriculteurs ont signalé « {level} » (la prévision disait {model} mm).",
-    reportsNote: "Ceci est un signalement d'agriculteurs. Il remplace la prévision pour ce jour.",
-    reportsFictional: "Dans cette démonstration, les signalements sont fictifs.",
-    relDays: ["Aujourd'hui", "Hier", "Avant-hier", "Il y a trois jours"],
-    rainLevels: { none: "pas de pluie", very_light: "pluie très légère, quelques gouttes", light: "pluie légère", heavy: "beaucoup de pluie", very_heavy: "énormément de pluie" },
-    rainBtn: "Il a plu",
-    rainAsk: "Combien a-t-il plu chez vous ?",
-    rainSend: "Envoyer mon signalement",
-    rainSendAgain: "Envoyer un autre signalement",
-    rainSent: "Merci. Votre signalement compte dès que 3 personnes différentes de la région signalent la même journée. Appuyez de nouveau sur « Écouter » pour entendre le bulletin avec les signalements.",
-    rainQueued: "Pas de réseau : votre signalement reste dans votre téléphone et partira au retour du réseau.",
-    rainErrRate: "Trop de signalements depuis ce téléphone. Réessayez plus tard.",
-    rainErrDown: "Impossible d'enregistrer le signalement pour le moment. Réessayez plus tard.",
-    rainErrInvalid: "Le signalement n'a pas été accepté (jour trop ancien ou invalide).",
-    rainRule: "Anonyme : aucun nom, aucune adresse. Un seul signalement par personne, par région et par jour. Quand au moins 3 personnes différentes sont d'accord pour un jour, leur valeur médiane remplace la prévision pour ce jour.",
     options: "Options",
     placeTitle: "Où êtes-vous et que cultivez-vous ? Le bulletin parle de vos champs.",
     choose: "Choisir…",
     placeNeed: "Choisissez votre région et votre culture pour entendre votre bulletin.",
     fullText: "Texte complet du bulletin",
-    rewardThanks: "Merci, voisin !",
-    rewardCountOne: "Vous avez aidé 1 jour.",
-    rewardCount: "Vous avez aidé {n} jours différents.",
-    rewardTiers: ["Voisin serviable", "Guetteur de pluie", "Gardien de la pluie"],
-    rewardNext: "Encore {k} jour(s) pour devenir « {name} ».",
-    rewardTop: "Vous êtes Gardien de la pluie. Merci de veiller sur vos voisins !",
-    rewardImpactUsed: "{n} personnes sont d'accord pour ce jour : le bulletin utilise maintenant le signalement de votre région.",
-    rewardImpactWaiting: "{n} personne a signalé ce jour-là. Encore {need} et le bulletin l'utilisera.",
   },
   ar: {
     title: "نشرة ساقية",
@@ -312,7 +234,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justTitle: "خصيصا لكم",
     justBody: "서울에서 이 프로젝트를 평가해 주시는 분들께 드립니다. 사키아 방송은 한국어로도 인사드립니다. 튀니지 농부들을 위한 아주 작은 AI가 여러분의 언어로 말을 건넵니다. 😊",
     justGloss: "إلى من يقيّم هذا المشروع من سيول: نشرة ساقية تتكلم الكورية أيضا. ذكاء اصطناعي صغير جدا لفائدة الفلاحين التونسيين يحيّيكم بلغتكم.",
-    voiceNote: "الصوت: {name} (مؤقت، لم نتحقق منه بعد بالاستماع).",
     indicative: "نصيحة إرشادية، يجب التحقق منها لدى المندوبية الجهوية للتنمية الفلاحية.",
     unsureTitle: "غير متأكد: اسألوا شخصا مختصا",
     askCell: "اسألوا شخصا مختصا",
@@ -324,35 +245,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "قد تهطل أمطار خلال 3 أيام (احتمال بين 30 و70 %).",
       short_horizon: "التوقعات المتوفرة لا تغطي الأسبوع كاملا.",
     },
-    reportsTitle: "مطر مصحَّح ببلاغات الفلاحين",
-    reportsRow: "{rel}: أبلغ {n} من الفلاحين عن «{level}» (التوقعات: {model} مم).",
-    reportsNote: "هذا بلاغ من الفلاحين، وقد أخذنا به بدل التوقعات لذلك اليوم.",
-    reportsFictional: "في هذا العرض التجريبي، البلاغات مفترضة وغير حقيقية.",
-    relDays: ["اليوم", "أمس", "أول أمس", "قبل ثلاثة أيام"],
-    rainLevels: { none: "لا مطر", very_light: "مطر خفيف جدا، قطرات", light: "مطر خفيف", heavy: "مطر غزير", very_heavy: "مطر غزير جدا" },
-    rainBtn: "هطل المطر",
-    rainAsk: "كم هطل من المطر عندكم؟",
-    rainSend: "أرسل بلاغي",
-    rainSendAgain: "أرسل بلاغا آخر",
-    rainSent: "شكرا. يُحتسب بلاغكم عندما يبلّغ ثلاثة أشخاص مختلفين في الولاية عن اليوم نفسه. اضغطوا «استمع» من جديد لسماع النشرة مع البلاغات.",
-    rainQueued: "لا توجد شبكة: يبقى بلاغكم في هاتفكم ويُرسل عند عودة الشبكة.",
-    rainErrRate: "بلاغات كثيرة من هذا الهاتف. أعيدوا المحاولة لاحقا.",
-    rainErrDown: "تعذّر حفظ البلاغ الآن. أعيدوا المحاولة لاحقا.",
-    rainErrInvalid: "لم يُقبل البلاغ (يوم قديم أو غير صالح).",
-    rainRule: "مجهول: لا اسم ولا عنوان. بلاغ واحد لكل شخص ولكل ولاية ولكل يوم. عندما يتفق ثلاثة أشخاص مختلفين أو أكثر على يوم ما، تعوّض قيمتهم الوسطى التوقعات لذلك اليوم.",
     options: "خيارات",
     placeTitle: "أين أنتم وماذا تزرعون؟ النشرة تخص حقولكم.",
     choose: "اختاروا…",
     placeNeed: "اختاروا ولايتكم ومحصولكم لسماع نشرتكم.",
     fullText: "النص الكامل للنشرة",
-    rewardThanks: "شكرا يا جار!",
-    rewardCountOne: "ساعدتم في يوم واحد.",
-    rewardCount: "ساعدتم في {n} أيام مختلفة.",
-    rewardTiers: ["مساعد", "راصد المطر", "حارس المطر"],
-    rewardNext: "بقي {k} يوم لتصبحوا «{name}».",
-    rewardTop: "أنتم حارس المطر. شكرا لاعتنائكم بجيرانكم!",
-    rewardImpactUsed: "اتفق {n} أشخاص على ذلك اليوم: النشرة تعتمد الآن بلاغ ولايتكم.",
-    rewardImpactWaiting: "أبلغ {n} شخص عن ذلك اليوم. بقي {need} ليعتمده النشرة.",
   },
   ko: {
     title: "사키아 방송",
@@ -398,7 +295,6 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
     justTitle: "여러분을 위해",
     justBody: "서울에서 이 프로젝트를 평가해 주시는 분들께 드립니다. 사키아 방송은 한국어로도 인사드립니다. 튀니지 농부들을 위한 아주 작은 AI가 여러분의 언어로 말을 건넵니다. 😊",
     justGloss: "",
-    voiceNote: "음성: {name} (임시, 청취 검증 전).",
     indicative: "참고용 조언이며 지역 농업 당국의 확인이 필요합니다.",
     unsureTitle: "확실하지 않음: 담당자에게 문의하세요",
     askCell: "담당자에게 문의",
@@ -410,35 +306,11 @@ const BASE: Record<Exclude<UiLang, "aeb">, Strings> = {
       uncertain_rain: "앞으로 3일 안에 비가 올 수 있습니다(가능성 30~70%).",
       short_horizon: "예보가 일주일 전체를 다루지 않습니다.",
     },
-    reportsTitle: "농민 신고로 보정된 비",
-    reportsRow: "{rel}: 농민 {n}명이 “{level}”라고 신고했습니다 (예보는 {model}mm).",
-    reportsNote: "이것은 농민들의 신고입니다. 그날은 예보 대신 반영했습니다.",
-    reportsFictional: "이 시연에서 신고는 가상의 데이터입니다.",
-    relDays: ["오늘", "어제", "그저께", "사흘 전"],
-    rainLevels: { none: "비 없음", very_light: "아주 약한 비, 몇 방울", light: "약한 비", heavy: "많은 비", very_heavy: "매우 많은 비" },
-    rainBtn: "비가 왔어요",
-    rainAsk: "지금 계신 곳에 비가 얼마나 왔나요?",
-    rainSend: "신고 보내기",
-    rainSendAgain: "신고 하나 더 보내기",
-    rainSent: "감사합니다. 같은 지역에서 서로 다른 3명이 같은 날을 신고하면 반영됩니다. “듣기”를 다시 눌러 신고가 반영된 방송을 들어 보세요.",
-    rainQueued: "네트워크가 없어 신고는 휴대폰에 보관되었다가 연결되면 전송됩니다.",
-    rainErrRate: "이 휴대폰에서 신고가 너무 많습니다. 나중에 다시 시도해 주세요.",
-    rainErrDown: "지금은 신고를 저장할 수 없습니다. 나중에 다시 시도해 주세요.",
-    rainErrInvalid: "신고가 받아들여지지 않았습니다(너무 오래된 날짜이거나 올바르지 않음).",
-    rainRule: "익명입니다: 이름도 주소도 없습니다. 사람마다, 지역마다, 하루에 한 번만 신고할 수 있습니다. 서로 다른 3명 이상이 같은 날에 동의하면 그 중간값이 그날의 예보를 대신합니다.",
     options: "옵션",
     placeTitle: "어디에 계시고 무엇을 재배하시나요? 방송은 당신의 밭 이야기입니다.",
     choose: "선택…",
     placeNeed: "방송을 들으려면 지역과 작물을 선택해 주세요.",
     fullText: "방송 전체 텍스트",
-    rewardThanks: "고맙습니다, 이웃님!",
-    rewardCountOne: "1일 동안 도와주셨습니다.",
-    rewardCount: "서로 다른 {n}일 동안 도와주셨습니다.",
-    rewardTiers: ["도우미", "비 관측자", "비 지킴이"],
-    rewardNext: "“{name}”가 되려면 {k}일 남았습니다.",
-    rewardTop: "당신은 비 지킴이입니다. 이웃을 살펴 주셔서 감사합니다!",
-    rewardImpactUsed: "그날은 {n}명이 같은 신고를 했습니다. 이제 방송이 우리 지역의 신고를 사용합니다.",
-    rewardImpactWaiting: "그날은 {n}명이 신고했습니다. {need}명이 더 신고하면 방송이 사용합니다.",
   },
 };
 
@@ -457,9 +329,6 @@ export const STRINGS: Record<UiLang, Strings> = {
     soundOff: "الصوت مقطوع",
     noteMismatch: "النشرة هاذي متاع {region} · {crop}، موش على اختيارك توا.",
     errPlay: "ما نجمناش نشغّلو النشرة: ما فمّاش انترنت وما فمّاش نشرة مسجّلة.",
-    rainBtn: "نزلت الشتا",
-    rainAsk: "قدّاش نزلت الشتا عندكم؟",
-    rewardThanks: "يعيشك يا جار!",
     placeTitle: "وين تسكن، وشنوة تزرع؟ النشرة على أرضك.",
     choose: "اختار…",
     placeNeed: "اختار الولاية والزرع باش تسمع النشرة متاعك.",

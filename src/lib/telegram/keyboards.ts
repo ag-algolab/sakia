@@ -6,8 +6,6 @@
 //   L:<lang> (changer de langue)  act:<voice|upd|chg|irr|del|daily>
 
 import { CROPS } from "../crops";
-import { LEVEL_LABEL, RAIN_LEVELS, isRainLevel } from "../rainLevels";
-import type { RainLevel } from "../rainLevels";
 import { REGIONS } from "../regions";
 import type { Lang } from "../messages";
 import { sortLocale, t } from "./i18n";
@@ -93,19 +91,9 @@ function standardRows(s: ReturnType<typeof t>): InlineKeyboard {
       [{ text: s.btnVoice, callback_data: "act:voice" }],
       [{ text: s.btnRefresh, callback_data: "act:upd" }],
       [{ text: s.btnIrrigated, callback_data: "act:irr" }],
-      [{ text: s.btnRain, callback_data: "act:rain" }],
       [{ text: s.btnChange, callback_data: "act:chg" }],
     ],
   };
-}
-
-// Échelle de pluie à cinq degrés (src/lib/rainLevels.ts) : personne ne mesure la pluie en millimètres.
-export function rainKeyboard(lang: Lang): InlineKeyboard {
-  return { inline_keyboard: RAIN_LEVELS.map((l) => [{ text: LEVEL_LABEL[lang][l], callback_data: `rain:${l}` }]) };
-}
-
-export function refreshKeyboard(lang: Lang): InlineKeyboard {
-  return { inline_keyboard: [[{ text: t(lang).btnRefresh, callback_data: "act:upd" }]] };
 }
 
 export function stopKeyboard(lang: Lang): InlineKeyboard {
@@ -113,7 +101,7 @@ export function stopKeyboard(lang: Lang): InlineKeyboard {
   return { inline_keyboard: [[{ text: s.btnDailyOn, callback_data: "act:daily" }], [{ text: s.btnDelete, callback_data: "act:del" }]] };
 }
 
-export type ActName = "voice" | "upd" | "chg" | "irr" | "rain" | "del" | "daily";
+export type ActName = "voice" | "upd" | "chg" | "irr" | "del" | "daily";
 
 export type Action =
   | { kind: "lang"; lang: Lang }
@@ -121,13 +109,12 @@ export type Action =
   | { kind: "region"; lang: Lang; regionId: string }
   | { kind: "crop"; lang: Lang; regionId: string; cropId: string }
   | { kind: "ago"; lang: Lang; regionId: string; cropId: string; code: AgoCode }
-  | { kind: "rain"; level: RainLevel }
   | { kind: "act"; name: ActName };
 
 const isLang = (x: string): x is Lang => x === "fr" || x === "ar" || x === "en";
 const isRegion = (x: string) => REGIONS.some((r) => r.id === x);
 const isCrop = (x: string) => CROPS.some((c) => c.id === x);
-const ACTS: string[] = ["voice", "upd", "chg", "irr", "rain", "del", "daily"];
+const ACTS: string[] = ["voice", "upd", "chg", "irr", "del", "daily"];
 
 // Lit les données d'un bouton ; renvoie null pour tout ce qui n'est pas reconnu (jamais d'erreur).
 export function parseAction(data: string | undefined): Action | null {
@@ -140,7 +127,6 @@ export function parseAction(data: string | undefined): Action | null {
     return { kind: "crop", lang, regionId: p[2], cropId: p[3] };
   if (p[0] === "a" && p.length === 5 && isLang(lang) && isRegion(p[2]) && isCrop(p[3]) && (AGO_CODES as readonly string[]).includes(p[4]))
     return { kind: "ago", lang, regionId: p[2], cropId: p[3], code: p[4] as AgoCode };
-  if (p[0] === "rain" && p.length === 2 && isRainLevel(p[1])) return { kind: "rain", level: p[1] };
   if (p[0] === "act" && p.length === 2 && ACTS.includes(p[1])) return { kind: "act", name: p[1] as ActName };
   return null;
 }

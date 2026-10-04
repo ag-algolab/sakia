@@ -24,16 +24,11 @@ export type PromptId =
   | "bye"
   | "invalid"
   | "timeout"
-  | "rain_hint" // « pour signaler de la pluie, tapez 7 », dit après le choix de la région et après chaque lecture
-  | "rain_where" // « dans quelle région a-t-il plu ? »
-  | "rain_ask" // « combien a-t-il plu aujourd'hui ? » (cinq degrés, touches 1 à 5)
-  | "rain_thanks" // « merci, votre signalement est enregistré »
-  | "rain_fail" // « je n'ai pas pu enregistrer votre signalement »
   | "unsure"; // garde-fou « pas sûr : demandez à une personne », identique à la ligne `unsure` du moteur
 
 export const PROMPT_IDS: PromptId[] = [
   "welcome", "help", "region", "region_list", "group", "crop_cereales", "crop_legumes", "crop_arbres", "crop_autres",
-  "ago", "wait", "again", "bye", "invalid", "timeout", "rain_hint", "rain_where", "rain_ask", "rain_thanks", "rain_fail", "unsure",
+  "ago", "wait", "again", "bye", "invalid", "timeout", "unsure",
 ];
 
 type Triple = { fr: string; ar: string; en: string };
@@ -136,32 +131,6 @@ const TEXTS: Record<PromptId, Triple> = {
     fr: "La durée maximale de l'appel est atteinte. Merci et au revoir.",
     ar: "انتهت المدة القصوى للمكالمة. شكرا وإلى اللقاء.",
     en: "The maximum call length has been reached. Thank you and goodbye.",
-  },
-  // Signalements de pluie des agriculteurs (docs/HANDOFF.md section 13). Cinq degrés, pas de millimètres : personne ne mesure la pluie.
-  rain_hint: {
-    fr: "Pour signaler de la pluie, tapez 7.",
-    ar: "للتبليغ عن مطر، اضغط سبعة.",
-    en: "To report rain, press 7.",
-  },
-  rain_where: {
-    fr: "Dans quelle région a-t-il plu ? Pour Kairouan, tapez 1. Pour une autre région, tapez 2.",
-    ar: "في أي ولاية نزل المطر؟ للقيروان، اضغط واحد. لولاية أخرى، اضغط اثنين.",
-    en: "In which region did it rain? For Kairouan, press 1. For another region, press 2.",
-  },
-  rain_ask: {
-    fr: "Combien a-t-il plu aujourd'hui ? Pas de pluie, tapez 1. Quelques gouttes, 2. Pluie légère, 3. Beaucoup de pluie, 4. Énormément, 5.",
-    ar: "كم نزل من المطر اليوم؟ لا مطر: اضغط واحد. قطرات: اثنان. مطر خفيف: ثلاثة. مطر غزير: أربعة. غزير جدا: خمسة.",
-    en: "How much did it rain today? No rain: press 1. A few drops: 2. Light rain: 3. A lot of rain: 4. A huge amount: 5.",
-  },
-  rain_thanks: {
-    fr: "Merci, votre signalement est enregistré.",
-    ar: "شكرا، تم تسجيل تبليغكم.",
-    en: "Thank you, your report is saved.",
-  },
-  rain_fail: {
-    fr: "Je n'ai pas pu enregistrer votre signalement pour le moment.",
-    ar: "لم أستطع تسجيل تبليغكم في الوقت الحالي.",
-    en: "I could not save your report right now.",
   },
   // Même phrase que la ligne `unsure` de src/lib/messages.ts (scripts/ivr-check.ts le vérifie).
   unsure: {

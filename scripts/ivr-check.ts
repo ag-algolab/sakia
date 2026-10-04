@@ -12,11 +12,10 @@ import { REGIONS } from "../src/lib/regions";
 import { ask, KEYS, parseState, startCall, step } from "../src/lib/ivr/flow";
 import type { CallState, Key, Say } from "../src/lib/ivr/flow";
 import { AGO_CHOICES, GROUPS, MAX_CALL_MS, OTHER_REGIONS, PLAN_TARGET_SECONDS } from "../src/lib/ivr/menu";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { DemoItem, Manifest } from "../src/lib/ivr/demo";
 import { allRecordings, promptText, PROMPT_IDS, textHash } from "../src/lib/ivr/prompts";
-import { MIN_REPORTERS, RAIN_LEVELS, rainCountText } from "../src/lib/ivr/rain";
 import { ivrDetailLines, ivrDetailText, ivrPlanLines, ivrPlanText, MAX_PLAN_CHARS } from "../src/lib/ivr/script";
 
 let problems = 0;
@@ -43,8 +42,7 @@ function press(keys: (Key | "silence" | "played" | { tick: number })[], from = s
   }
   return { state, say, end };
 }
-const ids = (say: Say[]) =>
-  say.map((s) => (s.kind === "prompt" ? `${s.id}:${s.lang}` : s.kind === "rain" ? `rain:${s.regionId}:${s.level}` : `${s.detail ? "detail" : "plan"}:${s.cropId}:${s.ago}`)).join(" ");
+const ids = (say: Say[]) => say.map((s) => (s.kind === "prompt" ? `${s.id}:${s.lang}` : `${s.detail ? "detail" : "plan"}:${s.cropId}:${s.ago}`)).join(" ");
 
 // ---------- 1. arbre de dialogue ----------
 function flowChecks() {
@@ -56,7 +54,7 @@ function flowChecks() {
   ok(r.state.node === "plan" && r.state.cropId === "olivier" && r.state.regionId === "kairouan" && r.state.ago === 2, `parcours fr : ${JSON.stringify(r.state)}`);
   ok(ids(r.say) === "plan:olivier:2", `plan olivier : ${ids(r.say)}`);
   r = press(["played"], r);
-  ok(r.state.node === "again" && ids(r.say) === "again:fr rain_hint:fr", `après le plan : ${ids(r.say)}`);
+  ok(r.state.node === "again" && ids(r.say) === "again:fr", `après le plan : ${ids(r.say)}`);
   r = press(["2"], r);
   ok(r.end && r.state.node === "ended" && ids(r.say) === "bye:fr", `au revoir : ${ids(r.say)}`);
 
@@ -64,45 +62,17 @@ function flowChecks() {
   r = press(["1", "1", "3", "1", "2", "played", "3"]);
   ok(r.state.node === "detail" && ids(r.say) === "detail:olivier:2", `détail : ${ids(r.say)} / ${r.state.node}`);
   r = press(["played"], r);
-  ok(r.state.node === "again" && ids(r.say) === "again:fr rain_hint:fr", `après le détail : ${ids(r.say)}`);
+  ok(r.state.node === "again" && ids(r.say) === "again:fr", `après le détail : ${ids(r.say)}`);
   r = press(["3", "5"], r); // un appui coupe le détail
   ok(r.state.node === "again", "appui pendant le détail → menu de fin");
   r = press(["3", "*"], r);
   ok(r.state.node === "again", "* depuis le détail → menu de fin");
 
-  // signaler de la pluie : touche 7 au choix de la région, puis la région, puis cinq degrés de pluie (1 à 5), enregistrement, menu de fin
+  // la touche 7 n'ouvre aucun menu caché : au choix de la région comme au menu de fin, ce choix n'existe pas
   r = press(["1", "7"]);
-  ok(r.state.intent === "rain" && r.state.node === "region" && ids(r.say) === "rain_where:fr", `7 au choix de la région : ${ids(r.say)}`);
-  r = press(["1"], r);
-  ok(r.state.node === "rain_level" && r.state.regionId === "kairouan" && ids(r.say) === "rain_ask:fr", `région Kairouan : ${ids(r.say)}`);
-  r = press(["3"], r);
-  ok(r.state.node === "rain_done" && ids(r.say) === "rain:kairouan:light", `degré 3 = pluie légère : ${ids(r.say)}`);
-  r = press(["played"], r);
-  ok(r.state.node === "again" && r.state.intent === "advice" && r.state.rainLevel === null && ids(r.say) === "again:fr rain_hint:fr", `après le signalement : ${ids(r.say)}`);
-  // une autre région : Sidi Bouzid est la 1re de la liste (2 puis 1)
-  r = press(["2", "7", "2", "1", "5"]);
-  ok(r.state.node === "rain_done" && ids(r.say) === "rain:sidi-bouzid:very_heavy", `autre région, énormément : ${ids(r.say)}`);
-  // chaque touche 1 à 5 donne le bon degré ; 6 à 9 et # sont refusées
-  RAIN_LEVELS.forEach((lvl, k) => {
-    const x = press(["1", "7", "1", String(k + 1) as Key]);
-    ok(ids(x.say) === `rain:kairouan:${lvl}`, `touche ${k + 1} → ${lvl} : ${ids(x.say)}`);
-  });
-  r = press(["1", "7", "1", "6"]);
-  ok(r.state.node === "rain_level" && ids(r.say).startsWith("invalid:fr rain_ask:fr"), "6 n'est pas un degré de pluie");
-  // depuis le menu de fin (après un plan), la touche 7 garde la région de l'appel ; * revient au menu de fin
-  r = press(["1", "2", "1", "2", "2", "2", "played", "7"]);
-  ok(r.state.node === "rain_level" && r.state.regionId === "sidi-bouzid" && ids(r.say) === "rain_ask:fr", `7 au menu de fin : ${ids(r.say)}`);
-  ok(press(["*"], r).state.node === "again", "* depuis les degrés (après un plan) → menu de fin");
-  // 7 en premier : * revient au choix de la région, puis à la langue
-  r = press(["1", "7", "1"]);
-  ok(press(["*"], r).state.node === "region", "* depuis les degrés (sans plan) → région");
-  ok(press(["*", "*", "*"], r).state.node === "lang", "retour jusqu'à la langue");
-  // un appui pendant la confirmation passe au menu de fin ; la répétition (0) refait l'enregistrement du même degré
-  r = press(["1", "7", "1", "2", "4"]);
-  ok(r.state.node === "again", "appui pendant la confirmation → menu de fin");
-  // arabe
-  r = press(["2", "7", "1", "4"]);
-  ok(ids(r.say) === "rain:kairouan:heavy" && r.state.lang === "ar", `signalement en arabe : ${ids(r.say)}`);
+  ok(r.state.node === "region" && ids(r.say) === "invalid:fr region:fr", `7 au choix de la région : ${ids(r.say)}`);
+  r = press(["1", "1", "3", "1", "2", "played", "7"]);
+  ok(r.state.node === "again" && ids(r.say) === "invalid:fr again:fr", `7 au menu de fin : ${ids(r.say)}`);
 
   // arabe, autre région (Sfax = 3e de la liste), légumes, piment, « je ne sais pas » → ago = null
   r = press(["2", "2", "3", "2", "2", "9"]);
@@ -140,7 +110,7 @@ function flowChecks() {
 
   // silences : un silence répète, deux silences de suite raccrochent ; une touche remet le compteur à zéro
   r = press(["1", "silence"]);
-  ok(ids(r.say) === "region:fr rain_hint:fr" && !r.end, `un silence répète : ${ids(r.say)}`);
+  ok(ids(r.say) === "region:fr" && !r.end, `un silence répète : ${ids(r.say)}`);
   r = press(["silence"], r);
   ok(r.end && ids(r.say) === "bye:fr", `deux silences raccrochent : ${ids(r.say)}`);
   r = press(["1", "silence", "1", "silence"]);
@@ -190,29 +160,13 @@ function flowChecks() {
   };
   explore(startCall().state, 7);
   // « wait » (attente du plan) et « unsure » (échec du calcul) sont dites par la page, pas par l'arbre ; « timeout » par le temps écoulé.
-  for (const id of PROMPT_IDS) if (!["timeout", "wait", "unsure", "rain_thanks", "rain_fail"].includes(id)) ok(seen.has(id), `phrase jamais dite par l'arbre : ${id}`);
-  // « rain_thanks » et « rain_fail » sont dites par la page après l'enregistrement du signalement, comme « wait » et « unsure ».
+  for (const id of PROMPT_IDS) if (!["timeout", "wait", "unsure"].includes(id)) ok(seen.has(id), `phrase jamais dite par l'arbre : ${id}`);
 
   // menus : tout est dans le catalogue, chaque culture est atteignable
   const reachable = new Set(GROUPS.flatMap((g) => g.crops));
   for (const c of CROPS) ok(reachable.has(c.id), `culture inaccessible au téléphone : ${c.id}`);
   for (const id of OTHER_REGIONS) ok(REGIONS.some((r) => r.id === id), `région inconnue : ${id}`);
   ok(AGO_CHOICES.every((c) => c.ago === null || (c.ago >= 0 && c.ago <= 7)), "réponses « dernier arrosage » hors de 0..7");
-}
-
-// ---------- 1 bis. signalements de pluie : degrés et seuil viennent de src/lib/rainLevels.ts (rien n'est recopié) ----------
-function rainChecks() {
-  ok(RAIN_LEVELS.length === 5 && MIN_REPORTERS >= 2, "degrés de pluie ou seuil de personnes absurdes");
-  for (const n of [1, 2, 3, 7, 11, 25]) {
-    for (const lang of ["fr", "ar", "en"] as const) {
-      const t = rainCountText(n, lang);
-      ok(t.length > 10 && !/undefined|NaN/.test(t), `phrase de comptage vide (${lang}, ${n})`);
-      if (lang === "ar") ok(!/[0-9٠-٩]/.test(t), `chiffre dans la phrase arabe de comptage : ${t}`);
-      if (lang !== "ar" && n >= MIN_REPORTERS) ok(t.includes(String(n)), `le nombre ${n} manque : ${t}`);
-    }
-  }
-  ok(rainCountText(1, "fr").includes(`Il en faut ${MIN_REPORTERS}`), "sous le seuil la phrase doit dire combien de personnes il en faut");
-  ok(rainCountText(MIN_REPORTERS, "fr").includes("pris en compte") && !rainCountText(MIN_REPORTERS, "fr").includes("Il en faut"), "au seuil la phrase dit que c'est pris en compte");
 }
 
 // ---------- 2. phrases fixes ----------
@@ -225,7 +179,9 @@ async function promptChecks() {
     ok(!/undefined|NaN|null|\[object/.test(r.text), `valeur absurde dans ${r.id}.${r.lang}`);
     if (r.lang === "ar") ok(/[؀-ۿ]/.test(r.text), `${r.id}.ar n'est pas en arabe`);
     if (r.lang === "fr") ok(!/[؀-ۿ]/.test(r.text), `${r.id}.fr contient de l'arabe`);
+    ok(!/signal|rain report|report rain|تبليغ/i.test(`${r.text} ${r.en}`), `${r.id}.${r.lang} parle d'un signalement`);
   }
+  ok(PROMPT_IDS.every((id) => !id.startsWith("rain_")), "une phrase fixe de signalement de pluie existe encore");
   // la phrase « pas sûr » dite au téléphone est exactement celle du moteur
   const base = await buildPlan({ regionId: "kairouan", cropId: "olivier" }); // dernier arrosage inconnu → pas sûr
   for (const lang of ["fr", "ar", "en"] as const) {
@@ -314,6 +270,11 @@ async function recordingChecks() {
   const root = join(process.cwd(), "public", "audio", "ivr");
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8")) as Manifest;
   let bytes = 0;
+  // rien en trop : chaque entrée du manifeste et chaque fichier audio correspond à une phrase fixe actuelle
+  const known = new Set(allRecordings().map((r) => `${r.id}.${r.lang}`));
+  for (const i of manifest.items) ok(known.has(`${i.id}.${i.lang}`), `enregistrement sans phrase correspondante : ${i.id}.${i.lang}`);
+  const orphans = readdirSync(root).filter((f) => f.endsWith(".mp3") && !known.has(f.replace(/\.mp3$/, "")));
+  ok(orphans.length === 0, `fichiers audio sans phrase correspondante : ${orphans.join(", ")}`);
   for (const r of allRecordings()) {
     const item = manifest.items.find((i) => i.id === r.id && i.lang === r.lang);
     ok(!!item, `phrase non enregistrée : ${r.id}.${r.lang}`);
@@ -340,7 +301,6 @@ async function recordingChecks() {
 (async () => {
   console.log("1. Arbre de dialogue");
   flowChecks();
-  rainChecks();
   console.log("2. Phrases fixes");
   await promptChecks();
   console.log("3. Lecture du plan (météo réelle)");

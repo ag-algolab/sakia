@@ -219,16 +219,6 @@ html[data-lang-pending]::after {
     transform: translateX(1.5px) skewX(-1.2deg);
   }
 }
-@keyframes sk-rainfall {
-  from {
-    transform: translateY(-1px);
-    opacity: 0.55;
-  }
-  to {
-    transform: translateY(1.4px);
-    opacity: 1;
-  }
-}
 @keyframes sk-wind {
   0%,
   100% {
@@ -296,9 +286,6 @@ html[data-lang-pending]::after {
   }
   .sk-haze {
     animation: sk-haze 2.2s ease-in-out infinite;
-  }
-  .sk-rainfall path {
-    animation: sk-rainfall 0.9s ease-in-out infinite alternate;
   }
   .sk-sun-pulse {
     animation: sk-sun-pulse 5s ease-in-out infinite;

@@ -245,7 +245,7 @@ function capturingApi(out: SimMessage[], current: SimInput["current"]): BotApi {
   };
 }
 
-// Rejoue une mise à jour. Api, base, voix et signalements sont toujours factices ; seuls le moteur et la météo sont réels.
+// Rejoue une mise à jour. Api, base et voix sont toujours factices ; seuls le moteur et la météo sont réels.
 export async function runSimulation(input: SimInput): Promise<SimOutput> {
   const messages: SimMessage[] = [];
   const store = memoryStore(input.subscriber);
@@ -258,16 +258,6 @@ export async function runSimulation(input: SimInput): Promise<SimOutput> {
     },
     limiter: new RateLimiter(),
     voiceLimiter: new RateLimiter(10, 3_600_000),
-    reportLimiter: new RateLimiter(20, 3_600_000),
-    reports: {
-      // signalements de pluie : acceptés puis oubliés (rien n'est écrit dans la vraie base ; le bot compte le sien tout seul)
-      async save() {
-        return true;
-      },
-      async load() {
-        return [];
-      },
-    },
     plan: computePlan,
   };
 

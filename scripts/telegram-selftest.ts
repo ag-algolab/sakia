@@ -5,9 +5,8 @@ import { handleUpdate } from "../src/lib/telegram/bot";
 import type { Deps } from "../src/lib/telegram/bot";
 import { computePlan } from "../src/lib/telegram/bot";
 import { RateLimiter } from "../src/lib/telegram/ratelimit";
-import { agoKeyboard, cropKeyboard, langKeyboard, parseAction, planKeyboard, rainKeyboard, regionKeyboard } from "../src/lib/telegram/keyboards";
+import { agoKeyboard, cropKeyboard, langKeyboard, parseAction, planKeyboard, regionKeyboard } from "../src/lib/telegram/keyboards";
 import type { Plan } from "../src/lib/plan";
-import { reporterHash } from "../src/lib/reports";
 import type { Subscriber } from "../src/lib/telegram/store";
 import type { InlineKeyboard } from "../src/lib/telegram/types";
 
@@ -15,10 +14,6 @@ type Sent = { kind: string; text: string; markup?: InlineKeyboard };
 let out: Sent[] = [];
 const rows = new Map<number, Subscriber>();
 
-// faux « rapports de pluie » en mémoire (même empreinte anonyme que le vrai code)
-type FakeRow = { region: string; day: string; mm: number; level: string; token: string };
-const fakeRows: FakeRow[] = [];
-let reportsDown = false;
 let planCalls = 0;
 let withVoice = false;
 let heard = null as { text: string; language?: "fr" | "ar" | "en" } | null;
@@ -49,19 +44,6 @@ const deps: Deps = {
   stt: async () => { if (!heard) throw new Error("panne"); return heard; },
   limiter: new RateLimiter(),
   voiceLimiter: new RateLimiter(10, 3_600_000),
-  reportLimiter: new RateLimiter(20, 3_600_000),
-  reports: {
-    async save(region, day, mm, token, level) {
-      if (reportsDown) return false;
-      const i = fakeRows.findIndex((r) => r.region === region && r.day === day && r.token === token);
-      if (i >= 0) Object.assign(fakeRows[i], { mm, level });
-      else fakeRows.push({ region, day, mm, level: level ?? "", token });
-      return true;
-    },
-    async load(region, since) {
-      return fakeRows.filter((r) => r.region === region && r.day >= since).map((r) => ({ day: r.day, mm: r.mm, reporter_hash: reporterHash(r.token), level: r.level }));
-    },
-  },
   plan: async (sub, f) => {
     planCalls++;
     const p = await computePlan(sub, f);
@@ -85,7 +67,7 @@ const show = (label: string, msgs: Sent[]) => { console.log(`\n--- ${label} ---`
 async function main() {
   // claviers
   const all: InlineKeyboard[] = [langKeyboard("l"), langKeyboard("L"), regionKeyboard("fr"), regionKeyboard("ar"), cropKeyboard("ar", "sidi-bouzid"), agoKeyboard("ar", "sidi-bouzid", "pomme-de-terre"), planKeyboard("en")];
-  all.push(rainKeyboard("fr"), planKeyboard("fr", { regionId: "sidi-bouzid", cropId: "pomme-de-terre" }));
+  all.push(planKeyboard("fr", { regionId: "sidi-bouzid", cropId: "pomme-de-terre" }));
   const buttons = all.flatMap((k) => k.inline_keyboard.flat());
   check(buttons.every((b) => Buffer.byteLength(b.callback_data) <= 64), "données des boutons ≤ 64 octets");
   check(buttons.every((b) => parseAction(b.callback_data) !== null), "toutes les données de boutons sont reconnues");
@@ -109,7 +91,7 @@ async function main() {
   const plan = m.find((x) => x.kind === "send");
   check(!!plan && /indicatif/i.test(plan.text), "le plan affiche « conseil indicatif »");
   check(!!plan && /mises? à jour/i.test(plan.text), "le plan affiche la date de mise à jour");
-  check(plan?.markup?.inline_keyboard.length === 5, "boutons sous le plan (bulletin, mise à jour, arrosé, pluie, changer)");
+  check(plan?.markup?.inline_keyboard.length === 4, "boutons sous le plan (bulletin, mise à jour, arrosé, changer)");
   check(rows.get(chat.id)?.crop_id === "olivier" && rows.get(chat.id)?.last_irrigation != null, "abonné enregistré");
 
   // actions et commandes
@@ -202,55 +184,19 @@ async function main() {
   check(m.length === 1 && !m[0].text.includes("🎙") && /الزيتون|Olivier/.test(m[0].text), "texte libre « zitoun kairouan » → plan");
   withVoice = false;
 
-  // ---- rapports de pluie (mise à jour n°2) : échelle à cinq degrés ----
+  // ---- l'aide et le menu ne parlent que des commandes qui existent ----
   await press("a:fr:kairouan:olivier:0");
   await press("L:fr");
-  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Africa/Tunis" }).format(new Date());
-  check(planKeyboard("fr").inline_keyboard.flat().some((b) => b.callback_data === "act:rain"), "bouton « ☔ Il a plu ici » sous le plan");
-  m = await press("act:rain");
-  show("choix de la pluie", m);
-  const rainBtns = m.find((x) => x.kind === "send")?.markup?.inline_keyboard.flat() ?? [];
-  check(rainBtns.length === 5 && rainBtns.map((b) => b.callback_data).join() === "rain:none,rain:very_light,rain:light,rain:heavy,rain:very_heavy", "5 degrés : pas de pluie, très légère, légère, beaucoup, énormément");
-  check(!rainBtns.some((b) => /mm/.test(b.text)), "aucun millimètre demandé");
+  m = await say("/aide");
+  const help = m[0]?.text ?? "";
+  check(["/plan", "/bulletin", "/langue", "/stop", "/aide", "/start"].every((c) => help.includes(c)), "/aide liste /plan, /bulletin, /langue, /stop, /aide et /start");
+  check(!/pluie|rain|☔/i.test(help), "/aide ne parle d'aucune commande de pluie");
   m = await say("/pluie");
-  check(m.length === 1 && m[0].markup?.inline_keyboard.flat().length === 5, "/pluie");
+  check(m.length === 1 && /\/aide/.test(m[0].text) && !m[0].markup, "/pluie n'est plus une commande : même réponse que pour toute commande inconnue");
+  check(planKeyboard("fr").inline_keyboard.flat().every((b) => !/☔|rain|pluie/i.test(`${b.text} ${b.callback_data}`)), "aucun bouton de pluie sous le plan");
+  check(parseAction("act:rain") === null && parseAction("rain:light") === null, "les anciennes données de boutons de pluie ne sont plus reconnues");
   m = await press("rain:light");
-  let conf = m.find((x) => x.kind === "edit")!;
-  show("signalement (1re personne)", m);
-  check(/Légère/.test(conf.text) && /Kairouan/.test(conf.text) && /première personne/.test(conf.text) && /au moins 3 personnes/.test(conf.text) && /prudente/.test(conf.text), "1er signalement : confirmation + règle des 3 personnes + valeur prudente");
-  check(fakeRows.length === 1 && fakeRows[0].region === "kairouan" && fakeRows[0].mm === 2 && fakeRows[0].level === "light" && fakeRows[0].token === `tg:${chat.id}`, "enregistré : région, journée, bas de la fourchette (2 mm), degré, identifiant anonyme");
-  check(!/tg:|4242/.test(conf.text), "aucun identifiant affiché");
-  fakeRows.push({ region: "kairouan", day: today, mm: 25, level: "very_heavy", token: "tg:999999999" });
-  m = await press("rain:heavy");
-  conf = m.find((x) => x.kind === "edit")!;
-  show("signalement (2e personne)", m);
-  check(/2 agriculteurs ont signalé de la pluie à Kairouan/.test(conf.text) && /niveau retenu : Beaucoup/.test(conf.text) && /au moins 3 personnes/.test(conf.text) && !/✅/.test(conf.text), "2 personnes : « 2 agriculteurs ont signalé… », niveau retenu, PAS encore pris en compte (il en faut 3, comme le plan)");
-  check(fakeRows.filter((r) => r.token === `tg:${chat.id}`).length === 1, "un seul rapport par personne et par jour (le second remplace le premier)");
-  check(!/999999999/.test(conf.text), "l'identifiant d'un autre n'est jamais affiché");
-  m = await press("rain:light");
-  check(/niveau retenu : Légère/.test(m.find((x) => x.kind === "edit")?.text ?? ""), "médiane prudente : 2 mm et 25 mm → 2 mm (Légère)");
-  fakeRows.push({ region: "kairouan", day: today, mm: 8, level: "heavy", token: "tg:888888888" });
-  m = await press("rain:very_light");
-  const third = m.find((x) => x.kind === "edit")?.text ?? "";
-  check(/3 agriculteurs ont signalé/.test(third) && /✅ Pris en compte dans votre plan/.test(third), "3 personnes : seuil atteint, « Pris en compte dans votre plan » (même seuil que le plan)");
-  await press("L:ar");
-  m = await press("rain:none");
-  show("signalement (arabe)", m);
-  check(/القيروان/.test(m.find((x) => x.kind === "edit")?.text ?? "") && fakeRows.find((r) => r.token === `tg:${chat.id}`)?.mm === 0, "signalement en arabe, « pas de pluie » = 0 mm");
-  await press("L:fr");
-  reportsDown = true;
-  m = await press("rain:light");
-  check(/pas pu enregistrer/.test(m.find((x) => x.kind === "edit")?.text ?? "") && !/Error|panne/.test(JSON.stringify(m)), "enregistrement impossible → message poli");
-  reportsDown = false;
-  deps.reportLimiter = new RateLimiter(20, 3_600_000);
-  for (let i = 0; i < 20; i++) await press("rain:light");
-  m = await press("rain:light");
-  check(/Trop de signalements/.test(m.find((x) => x.kind === "edit")?.text ?? ""), "plus de 20 signalements par heure refusés");
-  deps.reportLimiter = new RateLimiter(20, 3_600_000);
-  rows.delete(chat.id);
-  m = await press("rain:light");
-  check(m.some((x) => x.kind === "send" && x.markup?.inline_keyboard[0].length === 3), "sans abonnement : on renvoie vers la configuration");
-  await press("a:fr:kairouan:olivier:0");
+  check(m.length === 1 && m[0].kind === "answer" && m[0].text === "", "un ancien bouton de pluie, resté dans un vieux message, ne fait rien : simple accusé de réception, aucun texte");
 
   // suppression
   await press("act:del");
@@ -270,6 +216,16 @@ async function main() {
     replies += out.length;
   }
   check(replies === 20, `limite : ${replies} réponses sur 25 messages (attendu 20)`);
+
+  // base des abonnés en panne ou en pause : les questions en clair et l'aide continuent de marcher (robot joignable 24 h/24)
+  const down: Deps = { ...deps, limiter: new RateLimiter(), store: { ...deps.store, get: async () => { throw new Error("base en pause"); } } };
+  const sayDown = async (text: string) => { out = []; down.limiter = new RateLimiter(); await handleUpdate({ update_id: ++n, message: { message_id: n, chat, text, date: 0 } }, down); return out; };
+  m = await sayDown("olivier kairouan");
+  check(m.length >= 1 && m.some((x) => /Olivier · Kairouan/.test(x.text)) && !m.some((x) => /réessayer|problème|erreur/i.test(x.text)), "base en panne : « olivier kairouan » reçoit quand même son plan");
+  m = await sayDown("/aide");
+  check(m.length === 1 && ["/plan", "/aide"].every((c) => m[0].text.includes(c)), "base en panne : /aide répond");
+  m = await sayDown("/plan");
+  check(m.length === 1 && !/base en pause|Error/.test(m[0].text), "base en panne : /plan (qui a besoin de la mémoire) → message poli, sans trace");
 
   // erreur de base : message poli, sans trace
   const broken: Deps = { ...deps, limiter: new RateLimiter(), store: { ...deps.store, get: async () => { throw new Error("secret interne"); } } };

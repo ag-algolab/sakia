@@ -9,7 +9,7 @@ import { CROP_KO, REGION_KO } from "@/lib/voice/ko";
 
 export const metadata: Metadata = {
   title: "Sakia · Bulletin",
-  description: "Today's irrigation bulletin, read aloud in Tunisian Arabic (Darija), French, standard Arabic, English or Korean by a drawn presenter, with subtitles. Pick your region and crop; recorded bulletins also play offline.",
+  description: "Today's irrigation bulletin, read aloud in Tunisian Arabic, French, standard Arabic, English or Korean by a drawn presenter, with subtitles. Pick your region and crop; recorded bulletins also play offline.",
 };
 
 async function loadDemos(): Promise<DemoMeta[]> {

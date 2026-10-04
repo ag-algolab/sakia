@@ -15,8 +15,7 @@
 //    bouton « son » coupe la voix ET la musique ;
 //  - la voix est en darija par défaut ; le reste (langue de la voix, région et culture, son, sous-titres, bulletins
 //    enregistrés) est dans le volet replié « Options ».
-// Une fois le bulletin lu, ce qu'il faut savoir apparaît (pas sûr, pluie signalée, provenance) : ce sont des résultats,
-// pas des réglages.
+// Une fois le bulletin lu, ce qu'il faut savoir apparaît (pas sûr, provenance) : ce sont des résultats, pas des réglages.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -30,12 +29,11 @@ import type { VoiceLang } from "@/lib/voice/langs";
 import Backdrop from "./Backdrop";
 import Presenter from "./Presenter";
 import { createPose, findParts } from "./presenterPose";
-import RainReportButton from "./RainReportButton";
 import { LOCALES, STRINGS } from "./strings";
 import type { UiLang } from "./strings";
 
 type Opt = { id: string; fr: string; ar: string; ko?: string; en?: string };
-export type DemoMeta = { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string; fictionalReports?: boolean };
+export type DemoMeta = { id: string; title: string; lang: VoiceLang; region: string; crop: string; replayOf?: string; recordedAt: string };
 type Loaded = BulletinPayload & { blobUrl: string; sizeKb: number; title?: string };
 type Fallback = "offline" | "budget" | "error" | null;
 
@@ -291,11 +289,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   );
 
   const pickDemo = useCallback(() => {
-    return (
-      demos.find((d) => d.region === region && d.crop === crop && d.lang === lang && !d.replayOf && !d.fictionalReports) ??
-      demos.find((d) => d.lang === lang && !d.fictionalReports) ??
-      demos[0]
-    );
+    return demos.find((d) => d.region === region && d.crop === crop && d.lang === lang && !d.replayOf) ?? demos.find((d) => d.lang === lang) ?? demos[0];
   }, [demos, region, crop, lang]);
 
   const start = useCallback(
@@ -632,7 +626,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           </div>
         )}
 
-        {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, pluie signalée, provenance */}
+        {/* ce qu'il faut savoir une fois le bulletin lu : pas sûr, provenance */}
         {loaded && askAPerson && (
           <div role="alert" className="mt-5 rounded-2xl border-2 border-[#ffb454] bg-[#5a2d08] px-5 py-4 text-[#fff1d6]">
             <p className="flex items-center gap-2 text-xl font-bold">
@@ -659,34 +653,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
           </div>
         )}
 
-        {loaded && band?.localReports && band.localReports.length > 0 && (
-          <div className="mt-5 rounded-2xl border-2 border-[#7fd0e0] bg-[#0b3a44] px-5 py-4 text-base text-[#f2fcff]">
-            <p className="flex items-center gap-2 text-lg font-bold">
-              <span aria-hidden>🌧</span>
-              {t.reportsTitle}
-            </p>
-            <ul className="mt-2 list-disc space-y-1 ps-6">
-              {[...band.localReports]
-                .sort((a, b) => (a.date < b.date ? 1 : -1))
-                .map((r) => {
-                  const back = Math.min(3, Math.max(0, Math.round((Date.parse(`${band.date}T00:00:00Z`) - Date.parse(`${r.date}T00:00:00Z`)) / 86400000)));
-                  const lv = r.level ?? (r.medianMm >= 25 ? "very_heavy" : r.medianMm >= 8 ? "heavy" : r.medianMm >= 2 ? "light" : r.medianMm >= 1 ? "very_light" : "none");
-                  return (
-                    <li key={r.date}>
-                      {t.reportsRow
-                        .replace("{rel}", t.relDays[back])
-                        .replace("{n}", String(r.n))
-                        .replace("{level}", t.rainLevels[lv])
-                        .replace("{model}", r.modelMm.toFixed(1))}
-                    </li>
-                  );
-                })}
-            </ul>
-            <p className="mt-3 font-semibold">{t.reportsNote}</p>
-            {loaded.reportsFictional && <p className="mt-2 font-bold text-[#fff3c4]">{t.reportsFictional}</p>}
-          </div>
-        )}
-
         {loaded && (
           <div className="mt-5 space-y-3">
             {notes.map((n, i) => (
@@ -705,9 +671,6 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
             ))}
           </div>
         )}
-
-        {/* « Il a plu » : proposé une fois que la personne a entendu la pluie du bulletin (et dit où elle est : le signalement part pour sa région) */}
-        {loaded && region && <RainReportButton regionId={region} regionName={nameById(regions, region)} voiceLang={lang} muted={muted} t={t} />}
 
         {/* OPTIONS : tout le reste, replié */}
         <details className="group mt-6 rounded-2xl border-2 border-[#4b7a62] bg-[#12281d]">
@@ -827,9 +790,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               <p className="text-[#e9e2cd]">{t.inclusion}</p>
               <h2 className="pt-2 text-lg font-bold">{t.whyTitle}</h2>
               <p className="text-[#e9e2cd]">{t.why}</p>
-              {loaded?.voiceName && (
-                <p className="text-[#e9e2cd]">{loaded.voiceValidated ? `${t.voiceOf}: ${loaded.voiceName}` : t.voiceNote.replace("{name}", loaded.voiceName)}</p>
-              )}
+              {loaded?.voiceName && <p className="text-[#e9e2cd]">{`${t.voiceOf}: ${loaded.voiceName}`}</p>}
               <p className="text-[#e9e2cd]">{t.indicative}</p>
             </div>
           </div>
