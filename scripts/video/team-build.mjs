@@ -10,6 +10,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 // --profile=local : le passage « localiser l'IA » de la vidéo Banque mondiale (la méthode en six temps et le résultat
 // Kairouan → Maroc / Sahel), prises dans videos/build/takes/local.json.
@@ -18,6 +19,9 @@ const LOCAL = PROFILE === "local";
 const [video] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 if (!video) throw new Error("usage : node scripts/video/team-build.mjs <vidéo face caméra> [--profile=local]");
 const takes = JSON.parse(readFileSync(`videos/build/takes/${PROFILE}.json`, "utf8"));
+// vidéo d'équipe du 4 oct. : où il pointe du doigt, et le son nettoyé du vent (scripts/video/specs/team-recorded.mjs)
+const REC = !LOCAL && existsSync("scripts/video/specs/team-recorded.mjs") ? await import(pathToFileURL(path.resolve("scripts/video/specs/team-recorded.mjs")).href) : {};
+const VOICE = REC.VOICE && existsSync(REC.VOICE) ? REC.VOICE : null;
 const MAX = LOCAL ? 50 : 59.5;
 const ASSETS = path.resolve("videos/assets/team");
 const AI_DIR = "C:/Users/antho/Videos/sakia-film/images";
@@ -123,11 +127,17 @@ if (!LOCAL) {
       ["logo-jawekbehi.png", "Jawek Behi", "Outings around Greater Tunis"],
     ];
     const step = Math.min(0.42, Math.max(0.24, (end - tSaas - 1.2) / items.length));
-    const popAt = (i) => (thisAt.length >= items.length ? thisAt[i] : tSaas + i * step) - start;
-    const cards = items
-      .map(([f, name, tag, wide], i) => `<div class="saas" data-at="${popAt(i).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 9 : -9}"><span class="ico${wide ? " wide" : ""}"><img src="${A(f)}"></span><span class="txt"><b>${name}</b><i>${tag}</i></span></div>`)
-      .join("");
-    html(start, end, `<div class="agbadge" data-at="0" data-fx="pop"><img src="${A("logo-agalgolab-icon.png")}"><b>AG Algo Lab</b></div><div class="saascol">${cards}</div>`);
+    const card = ([f, name, tag, wide], dt, i, cls = "") => `<div class="saas${cls}" data-at="${dt.toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 9 : -9}"><span class="ico${wide ? " wide" : ""}"><img src="${A(f)}"></span><span class="txt"><b>${name}</b><i>${tag}</i></span></div>`;
+    if (REC.POINTS?.length === items.length) {
+      // chaque projet surgit là où il pointe du doigt, au moment où il le montre ; le badge AG Algo Lab passe en haut au centre
+      const tSrc = (src) => s1.at + (src - s1.from) / rate;
+      const cards = items.map((it, i) => card(it, tSrc(REC.POINTS[i].t) - start, i, ` at-${REC.POINTS[i].pos}`)).join("");
+      html(start, end, `<div class="agbadge top" data-at="0" data-fx="pop"><img src="${A("logo-agalgolab-icon.png")}"><b>AG Algo Lab</b></div>${cards}`);
+    } else {
+      const popAt = (i) => (thisAt.length >= items.length ? thisAt[i] : tSaas + i * step) - start;
+      const cards = items.map((it, i) => card(it, popAt(i), i)).join("");
+      html(start, end, `<div class="agbadge" data-at="0" data-fx="pop"><img src="${A("logo-agalgolab-icon.png")}"><b>AG Algo Lab</b></div><div class="saascol">${cards}</div>`);
+    }
   }
   // 3. étudiant à Dauphine (la Tunisie, en haut à gauche), puis ambassadeur (le vrai post LinkedIn, à droite)
   if (s2) {
@@ -138,6 +148,9 @@ if (!LOCAL) {
   // 3 bis. joueur d'échecs : des ressources limitées ; ici, la ressource limitée, c'est l'eau ; d'où Sakia
   if (sChess) {
     const tChess = at(3, /chess/, 0.1), tWater = at(3, /water/, 0.7), tSakia = at(3, /sakia|sakya|sakiya|saqia/, 0.95);
+    // son diplôme, en grand, à gauche (videos/assets/team/diploma.png, tiré de son PDF)
+    const DIPLOMA = A("diploma.png");
+    if (DIPLOMA) html(tChess - 0.05, sChess.at + sChess.len + 0.5, `<div class="diploma" data-at="0" data-fx="slide" data-rot="-2"><img src="${DIPLOMA}"></div>`);
     html(tChess - 0.15, sChess.at + sChess.len + 0.7, `<div class="chess" data-at="0" data-fx="pop" data-rot="-6"><span class="pc">♞</span><span><b>Chess player</b><i>limited resources: every move counts</i></span></div><div class="drop" data-at="${(tWater - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="5">💧 Here, the limited resource is water</div><div class="sakiabadge" data-at="${(tSakia - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
   }
   // 4. la ferme de l'amie : illustration générée si elle existe (sans zoom), sinon des mots qui surgissent
@@ -151,13 +164,10 @@ if (!LOCAL) {
       html(s3.at + 0.5, s3.at + s3.len + 0.2, `<div class="words"><span data-at="0" data-fx="pop" data-rot="-6">A family farm,</span><span data-at="0.35" data-fx="pop" data-rot="5">stopped.</span><span class="hot" data-at="${Math.max(0.8, tW - s3.at - 0.5).toFixed(2)}" data-fx="pop" data-rot="-4">💧 Too expensive</span></div>`);
     }
   }
-  // 5. l'appel du premier jour, puis « the water is very unfair » : l'État, le puits, la citerne
+  // 5. l'appel du premier jour
   if (s5) {
-    const tCall = at(L_CALL, /^call$/, 0.25), tUnfair = at(L_CALL, /^water$/, 0.85);
-    html(tCall - 0.1, tUnfair - 0.15, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div>`);
-    const card = (k, emoji, title, sub, img) =>
-      `<div class="water" data-at="${(k * 0.4).toFixed(2)}" data-fx="pop" data-rot="${title.length % 2 ? 7 : -7}">${img ? `<span class="ph" style="background-image:url('${img}')"></span>` : `<span class="em">${emoji}</span>`}<span><b>${title}</b><i>${sub}</i></span></div>`;
-    html(tUnfair - 0.05, s5.at + s5.len + 0.9, `<div class="waterrow">${card(0, "🏛️", "The state", "public schemes", AI("12", "canal"))}${card(1, "🪣", "Their own well", "pumped, paid in fuel", AI("06", "puits", "well"))}${card(2, "🚚", "Tank by tank", "bought water", AI("11", "citerne", "tanker"))}</div>`);
+    const tCall = at(L_CALL, /^call$/, 0.25);
+    html(tCall - 0.1, s5.at + s5.len + 0.5, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div>`);
   }
   // 6. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
 }
@@ -200,6 +210,14 @@ const spec = {
     .saas .ico{width:84px;height:84px;border-radius:20px;overflow:hidden;flex:none;background:#fff;display:flex;align-items:center;justify-content:center}
     .saas .ico img{width:100%;height:100%;object-fit:cover}
     .saas .ico.wide img{object-fit:contain}
+    .saas[class*=" at-"]{position:absolute;width:520px;box-sizing:border-box}
+    .saas.at-tr{right:70px;top:150px;transform-origin:right top}.saas.at-br{right:70px;top:640px;transform-origin:right bottom}
+    .saas.at-bl{left:70px;top:640px;transform-origin:left bottom}.saas.at-tl{left:70px;top:150px;transform-origin:left top}
+    .saas.at-c{left:50%;top:760px;margin-left:-260px;transform-origin:center bottom}
+    .agbadge.top{right:auto;left:50%;top:36px;margin-left:-140px;transform-origin:center}
+    .diploma{position:absolute;left:60px;top:80px;width:700px;padding:12px;border-radius:18px;background:#fff;box-shadow:0 26px 60px rgba(0,0,0,.5);transform-origin:left center}
+    .diploma img{display:block;width:100%;border-radius:8px}
+    .diploma em{display:block;margin-top:10px;font:700 22px Geist,sans-serif;font-style:normal;color:#14231a;text-align:center}
     .saas .txt b{display:block;font:800 32px/1.1 Geist,sans-serif;color:#14231a}
     .saas .txt i{display:block;font:600 21px/1.3 Geist,sans-serif;font-style:normal;color:#4b5d50;margin-top:4px}
     .post{position:absolute;right:90px;top:70px;width:430px;padding:14px;border-radius:26px;background:#fff;box-shadow:0 22px 50px rgba(0,0,0,.45)}
@@ -260,7 +278,8 @@ const spec = {
   ],
   // musique composée par ElevenLabs pour cette vidéo (guitare, piano, oud, montée finale), à −12 LUFS : bien sous la voix
   music: { file: ["videos/build/music-team.mp3", "videos/build/music-emotion.mp3", "videos/build/music-23.wav"].find((f) => existsSync(f)), gain: -16, duckGain: -8, fadeIn: 1.0, fadeOut: 2.0, duck: segs.map((s) => ({ from: s.at - 0.1, to: s.at + s.len + 0.1 })) },
-  audio: segs.map((s) => ({ file: "media:face", at: s.at, from: s.from, to: s.to, gain: 0, fadeIn: 0.03, fadeOut: 0.06, rate: rate !== 1 ? rate : undefined, filter: "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" })),
+  // la voix nettoyée du vent (ElevenLabs) si elle existe, sinon le son de la vidéo avec une réduction de bruit
+  audio: segs.map((s) => ({ file: VOICE ?? "media:face", at: s.at, from: s.from, to: s.to, gain: 0, fadeIn: 0.03, fadeOut: 0.06, rate: rate !== 1 ? rate : undefined, filter: VOICE ? "highpass=f=80,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=120" : "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" })),
 };
 mkdirSync("videos/build/specs", { recursive: true });
 writeFileSync(`videos/build/specs/${PROFILE}.mjs`, `// généré par scripts/video/team-build.mjs — ne pas modifier à la main\nexport default ${JSON.stringify(spec, null, 1)};\n`);
