@@ -433,6 +433,10 @@ export default function AboutPage() {
                 crop and a few settings. Our database stores no name, phone number, precise location or IP address. Raw IP
                 addresses are held in server memory for rate limits and appear in the hosting provider&apos;s logs.
               </li>
+              <li>
+                Visits to this website are counted with Vercel Web Analytics: no cookie, no personal identifier, only totals
+                (pages, countries, devices, where visitors came from).
+              </li>
             </ul>
             <Table label="When the tool says “not sure” or adds a note" head={["When the tool says…", "What the user sees"]} rows={REASONS} />
             <p className="text-sm text-sakia-brown">

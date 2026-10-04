@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo, Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { LangProvider } from "@/components/ui/LangProvider";
 import Header from "@/components/ui/Header";
@@ -80,6 +81,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <Footer />
         </LangProvider>
+        {/* Visites comptées par Vercel Web Analytics (tableau de bord Vercel) : sans cookie ni identifiant personnel, seulement sur
+            le site déployé ; hors connexion, rien n'est envoyé. */}
+        <Analytics />
       </body>
     </html>
   );
