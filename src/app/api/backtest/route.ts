@@ -27,7 +27,9 @@ export async function GET(request: Request) {
       system: system && SYSTEMS.includes(system) ? (system as IrrigationSystem) : undefined,
       fixedEveryDays: Number.isFinite(every) && every >= 2 && every <= 21 ? every : 7,
     });
-    return Response.json(result);
+    // Onze saisons passées : le même calcul sert tout le monde 12 h depuis le CDN de Vercel, puis se refait en arrière-plan
+    // (chaque calcul demande l'archive, que le quota gratuit d'Open-Meteo compte pour environ 150 appels).
+    return Response.json(result, { headers: { "Cache-Control": "public, s-maxage=43200, stale-while-revalidate=86400" } });
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 502 });
   }
