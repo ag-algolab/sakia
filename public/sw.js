@@ -32,7 +32,10 @@ const MAX_AUDIO = 40;
 const MAX_STATIC = 400;
 const MAX_SHELL = 40;
 
-const PRECACHE_PAGES = ["/", "/phone", "/offline", "/bulletin", "/backtest", "/about"]; // une page absente (404) est simplement ignorée
+// Le bulletin (/bulletin) n'est plus préchargé, ni ses enregistrements de démonstration (1,6 Mo) : il a quitté le menu (décision
+// d'Anthony, 4 oct.) et ce téléchargement en arrière-plan pesait quatre fois la première visite (383 Ko) d'un agriculteur mal connecté.
+// La page reste gardée si on la visite (règle des pages, plus bas).
+const PRECACHE_PAGES = ["/", "/phone", "/offline", "/backtest", "/about"]; // une page absente (404) est simplement ignorée
 const PRECACHE_FILES = ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon.svg"];
 const ASSET_PREFIXES = ["/_next/static/", "/__nextjs_font/", "/icons/", "/audio/"];
 
@@ -116,27 +119,10 @@ async function cachePage(path) {
   await Promise.allSettled(assets.map(cacheAsset));
 }
 
-// Bulletins de démonstration (public/audio/demo-*) : listés par demo-index.json, gardés dès l'installation pour être lus sans internet.
-async function cacheDemoAudio() {
-  const res = await fetch("/audio/demo-index.json");
-  if (!isCacheable(res)) return;
-  const index = await res.clone().json();
-  const cache = await caches.open(AUDIO);
-  await putQuietly(cache, "/audio/demo-index.json", await stamp(res));
-  const files = (Array.isArray(index) ? index : []).flatMap((e) => (e && /^[\w-]+$/.test(e.id) ? [`/audio/demo-${e.id}.mp3`, `/audio/demo-${e.id}.json`] : []));
-  await Promise.allSettled(
-    files.slice(0, 20).map(async (f) => {
-      if (await cache.match(f)) return;
-      const r = await fetch(f);
-      if (isCacheable(r)) await putQuietly(cache, f, await stamp(r));
-    }),
-  );
-}
-
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
-      await Promise.allSettled([...PRECACHE_PAGES.map(cachePage), ...PRECACHE_FILES.map(cacheAsset), cacheDemoAudio()]);
+      await Promise.allSettled([...PRECACHE_PAGES.map(cachePage), ...PRECACHE_FILES.map(cacheAsset)]);
       await self.skipWaiting();
     })(),
   );
@@ -146,6 +132,9 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       for (const name of await caches.keys()) if (name.startsWith("sakia-") && !KEEP.includes(name)) await caches.delete(name);
+      // ménage des appareils déjà installés : les bulletins de démonstration autrefois téléchargés à l'installation (1,6 Mo)
+      const audio = await caches.open(AUDIO);
+      for (const req of await audio.keys()) if (new URL(req.url).pathname.startsWith("/audio/demo-")) await audio.delete(req);
       await self.clients.claim();
     })(),
   );

@@ -189,8 +189,9 @@ async function doFetch(url, { method = "GET", mode = "cors", headers = {} } = {}
   // 5b. cas relevés par la relecture
   online = true;
   const dstore = await caches.open("sakia-audio-v1");
-  check("installation : bulletins de démonstration gardés", !!(await dstore.match("/audio/demo-kairouan-olivier-fr.mp3")) && !!(await dstore.match("/audio/demo-index.json")));
-  check("installation : /bulletin, /backtest gardées", !!(await shell.match("/bulletin")) && !!(await shell.match("/backtest")));
+  // le bulletin a quitté le menu (4 oct.) : ses enregistrements de démonstration (1,6 Mo) ne sont plus téléchargés à l'installation
+  check("installation : aucun bulletin de démonstration téléchargé", !(await dstore.match("/audio/demo-kairouan-olivier-fr.mp3")) && !(await dstore.match("/audio/demo-index.json")));
+  check("installation : /backtest et /about gardées", !!(await shell.match("/backtest")) && !!(await shell.match("/about")));
   const audioKey = new URL("/audio/bulletin-fr.mp3", ORIGIN).href;
   const old = await dstore.match(audioKey);
   await dstore.put(audioKey, withAge(old, 3 * 3600e3));
