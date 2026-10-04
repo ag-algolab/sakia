@@ -245,6 +245,11 @@
         const k = E.out(clamp((t - L.start) / (L.enter ?? 0.6)));
         const fx = L.fx ?? "up";
         n.style.transform = fx === "up" ? `translateY(${(1 - k) * 40}px)` : fx === "zoom" ? `scale(${0.92 + 0.08 * k})` : "none";
+        // fond qui dérive (data-drift="px par seconde") : la grille d'un fond de scène avance doucement, l'image ne se fige jamais
+        n.querySelectorAll("[data-drift]").forEach((c) => {
+          const v = Number(c.dataset.drift) * t;
+          c.style.backgroundPosition = `${v.toFixed(1)}px ${(v * 0.6).toFixed(1)}px, ${v.toFixed(1)}px ${(v * 0.6).toFixed(1)}px, 0 0`;
+        });
         // éléments internes animés : data-at="secondes après le début" → apparition décalée ;
         // data-fx="pop" : surgit en rebondissant (petit, penché, puis à sa place) ; "slide" : glisse depuis la droite
         n.querySelectorAll("[data-at]").forEach((c) => {
@@ -335,6 +340,20 @@
         img.style.transform = imgB.style.transform = `scale(${z})`;
       };
     },
+  };
+
+  // lumière douce qui dérive lentement sur toute l'image : rien n'est jamais figé, même quand l'animation d'une scène
+  // est finie (décision d'Anthony, 4 oct. : « l'image se bloque », à éviter de A à Z)
+  builders.glow = (L) => {
+    const g = el("div", "glow-layer");
+    return (t) => {
+      const p = presence(L, t);
+      g.style.display = p <= 0 ? "none" : "block";
+      if (p <= 0) return;
+      const x = 50 + 34 * Math.sin(t * 0.32 + 0.6), y = 42 + 24 * Math.sin(t * 0.26 + 1.9);
+      g.style.opacity = p * (L.opacity ?? 0.08);
+      g.style.background = `radial-gradient(1000px 700px at ${x.toFixed(2)}% ${y.toFixed(2)}%, rgba(255,236,190,1), rgba(255,236,190,0) 70%)`;
+    };
   };
 
   let renderers = [];

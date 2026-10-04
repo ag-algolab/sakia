@@ -176,17 +176,17 @@ export default {
     // ------------------------------------------------ petit : comparaison mesurée avec les sites qui existent (page /speed)
     {
       type: "html", start: SMALL.at, end: SMALL.at + SMALL.len + 0.1, fadeIn: 0.3, fadeOut: 0.3, fx: "none",
-      html: `<div class="bg-tech"></div><div class="lab-kicker">FIRST VISIT, THROTTLED 3G · MEASURED 4 OCTOBER 2026</div><div class="cmp-title" data-at="0.1">Small enough for a weak connection</div><div class="cmp-rows">${SITES.map(([id, name], i) => { const kb = pf(id, "3G").cold.kb; const w = Math.max(8, Math.round((kb / MAXKB) * 1150)); return `<div class="cmp-row${id === "sakia" ? " me" : id === "meteotn" ? " bad" : ""}"><span class="n">${name}</span><span class="barwrap"><span class="bar" data-at="${(0.5 + i * 0.35).toFixed(2)}" data-fx="grow" style="width:${w}px"></span><span class="kb" data-at="${(0.9 + i * 0.35).toFixed(2)}">${kb.toLocaleString("en-GB")} KB</span></span></div>`; }).join("")}</div><div class="cmp-chips"><span data-at="2.4" data-fx="pop" data-rot="-4"><b>${ratio}× lighter</b> than the national weather site</span><span class="bad" data-at="3.6" data-fx="pop" data-rot="3">On 2G: Sakia opens in <b>${Math.round(pf("sakia", "2G").cold.loadSeconds)} s</b>, the national site <b>never opened</b> (150 s)</span><span data-at="4.8" data-fx="pop" data-rot="-3">No network at all: <b>only Sakia still works</b></span></div><div class="cmp-note">One run per site, real browser, processor slowed 4×. Method and raw results: sakia-opal.vercel.app/speed</div>`,
+      html: `<div class="bg-tech" data-drift="14"></div><div class="lab-kicker">FIRST VISIT, THROTTLED 3G · MEASURED 4 OCTOBER 2026</div><div class="cmp-title" data-at="0.1">Small enough for a weak connection</div><div class="cmp-rows">${SITES.map(([id, name], i) => { const kb = pf(id, "3G").cold.kb; const w = Math.max(8, Math.round((kb / MAXKB) * 1150)); return `<div class="cmp-row${id === "sakia" ? " me" : id === "meteotn" ? " bad" : ""}"><span class="n">${name}</span><span class="barwrap"><span class="bar" data-at="${(0.5 + i * 0.35).toFixed(2)}" data-fx="grow" style="width:${w}px"></span><span class="kb" data-at="${(0.9 + i * 0.35).toFixed(2)}">${kb.toLocaleString("en-GB")} KB</span></span></div>`; }).join("")}</div><div class="cmp-chips"><span data-at="2.4" data-fx="pop" data-rot="-4"><b>${ratio}× lighter</b> than the national weather site</span><span class="bad" data-at="3.6" data-fx="pop" data-rot="3">On 2G: Sakia opens in <b>${Math.round(pf("sakia", "2G").cold.loadSeconds)} s</b>, the national site <b>never opened</b> (150 s)</span><span data-at="4.8" data-fx="pop" data-rot="-3">No network at all: <b>only Sakia still works</b></span></div><div class="cmp-note">One run per site, real browser, processor slowed 4×. Method and raw results: sakia-opal.vercel.app/speed</div>`,
     },
 
     // ------------------------------------------------ données vérifiées sur le terrain, et passage à l'échelle (chiffres : page /about, section D)
     {
       type: "html", start: GR.at, end: GR.at + GR.len + 0.1, fadeIn: 0.3, fadeOut: 0.3, fx: "none",
-      html: `<div class="bg-tech"></div><div class="lab-kicker">OPEN DATA · CHECKED AGAINST TUNISIAN STATIONS</div><div class="cmp-title" data-at="0.1">Grounded, and ready to scale</div><div class="gr-cards"><div class="gr-card" data-at="${grAt(0.12)}" data-fx="pop" data-rot="-4"><b>within 5 %</b><span>evapotranspiration, against two Tunisian stations</span></div><div class="gr-card" data-at="${grAt(0.3)}" data-fx="pop" data-rot="3"><b>0.6 °C</b><span>temperature bias at Kairouan, over 1,664 days</span></div></div><div class="gr-scale"><span data-at="${grAt(0.66)}" data-fx="pop" data-rot="-5">🗺️ 24 governorates</span><span data-at="${grAt(0.84)}" data-fx="pop" data-rot="4">🌱 18 crops</span></div><div class="cmp-note">Our own analysis, 3 October 2026: Open-Meteo against DGACTA and NOAA stations. Details: sakia-opal.vercel.app/about</div>`,
+      html: `<div class="bg-tech" data-drift="14"></div><div class="lab-kicker">OPEN DATA · CHECKED AGAINST TUNISIAN STATIONS</div><div class="cmp-title" data-at="0.1">Grounded, and ready to scale</div><div class="gr-cards"><div class="gr-card" data-at="${grAt(0.12)}" data-fx="pop" data-rot="-4"><b>within 5 %</b><span>evapotranspiration, against two Tunisian stations</span></div><div class="gr-card" data-at="${grAt(0.3)}" data-fx="pop" data-rot="3"><b>0.6 °C</b><span>temperature bias at Kairouan, over 1,664 days</span></div></div><div class="gr-scale"><span data-at="${grAt(0.66)}" data-fx="pop" data-rot="-5">🗺️ 24 governorates</span><span data-at="${grAt(0.84)}" data-fx="pop" data-rot="4">🌱 18 crops</span></div><div class="cmp-note">Our own analysis, 3 October 2026: Open-Meteo against DGACTA and NOAA stations. Details: sakia-opal.vercel.app/about</div>`,
     },
 
     // ------------------------------------------------ la page Lab, filmée sur le vrai site
-    { type: "html", start: LAB.at, end: LAB.at + LAB.len + 0.2, fadeIn: 0.25, fadeOut: 0.25, fx: "none", html: `<div class="bg-tech"></div><div class="lab-kicker">RESEARCH · SHADOW MODE · DOES NOT CHANGE THE ADVICE</div>` },
+    { type: "html", start: LAB.at, end: LAB.at + LAB.len + 0.2, fadeIn: 0.25, fadeOut: 0.25, fx: "none", html: `<div class="bg-tech" data-drift="14"></div><div class="lab-kicker">RESEARCH · SHADOW MODE · DOES NOT CHANGE THE ADVICE</div>` },
     { type: "caption", start: LAB.at + 0.15, end: LAB.at + LAB.len * 0.5, x: 96, y: 100, w: 1700, size: 54, text: "A __43 KB machine-learning model__ (CatBoost), trained on free satellite data, runs in your browser.", stagger: 0.05 },
     { type: "caption", start: LAB.at + LAB.len * 0.5 + 0.1, end: LAB.at + LAB.len, x: 96, y: 100, w: 1700, size: 54, text: "A modest gain over a calendar. A __failure in the Sahel.__ Both published.", stagger: 0.05 },
     { type: "html", start: LAB.at + 0.1, end: LAB.at + LAB.len, fadeIn: 0.3, fx: "none", html: `<div class="browser-bar"><i></i><i></i><i></i><span>sakia-opal.vercel.app/lab</span></div>` },
@@ -194,23 +194,28 @@ export default {
       type: "phone", desktop: true, start: LAB.at + 0.1, end: LAB.at + LAB.len, fadeIn: 0.3, fadeOut: 0.2, x: 960, y: 650, scale: 0.94, taps: false,
       segments: [
         { at: LAB.at + 0.1, clip: "lab", from: 3.6, to: 3.6 + LAB.len * 0.5 },
-        { at: LAB.at + LAB.len * 0.5 + 0.1, clip: "lab", from: 15.0, to: 15.0 + LAB.len * 0.5, xfade: 0.3 },
+        // (jusqu'à la fin de la prise, sans image tenue : la prise /lab dure 19,2 s)
+        { at: LAB.at + LAB.len * 0.5 + 0.1, clip: "lab", from: 19.1 - LAB.len * 0.5, to: 19.1, xfade: 0.3 },
       ],
     },
 
     // ------------------------------------------------ les garde-fous : une personne reste aux commandes
     {
       type: "html", start: SAFE.at, end: SAFE.at + SAFE.len + 0.1, fadeIn: 0.3, fadeOut: 0.3, fx: "none",
-      html: `<div class="bg-tech"></div><div class="lab-kicker">RESPONSIBLE BY DESIGN</div><div class="cmp-title" data-at="0.1">Built so a person stays in charge</div><div class="sf-cards">${SAFE_CARDS.map(([ic, title, text], i) => `<div class="sf-card" data-at="${(0.5 + i * 0.45).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 3 : -3}"><svg viewBox="0 0 24 24">${ICON[ic]}</svg><b>${title}</b><span>${text}</span></div>`).join("")}</div>`,
+      html: `<div class="bg-tech" data-drift="14"></div><div class="lab-kicker">RESPONSIBLE BY DESIGN</div><div class="cmp-title" data-at="0.1">Built so a person stays in charge</div><div class="sf-cards">${SAFE_CARDS.map(([ic, title, text], i) => `<div class="sf-card" data-at="${(0.5 + i * 0.45).toFixed(2)}" data-fx="pop" data-rot="${i % 2 ? 3 : -3}"><svg viewBox="0 0 24 24">${ICON[ic]}</svg><b>${title}</b><span>${text}</span></div>`).join("")}</div>`,
     },
 
     // ------------------------------------------------ fait pendant le hackathon : les outils, avec leurs logos
     {
       type: "html", start: CRED.at, end: L.total + 0.2, fadeIn: 0.3, fadeOut: 0.01, fx: "none",
       // Anthony et Claude Code dans la même couleur (décision d'Anthony : Claude Code seul en couleur, « ça fait genre je fais rien »)
-      html: `<div class="bg-tech"></div><div class="cr-wrap"><div class="cr-wheel" data-at="0">{{WHEEL}}</div><div class="cr-title" data-at="0.15">Built during the hackathon by <em>Anthony</em>,<br>with <em>Claude Code</em></div><div class="cr-logos">${TOOLS.map(([id, color, name, role], i) => `<span data-at="${(0.8 + i * 0.28).toFixed(2)}" data-fx="pop" data-rot="-4">${id ? logo(id, color) : "<i>⛅</i>"}<b>${name}</b><small>${role}</small></span>`).join("")}</div><div class="cr-url" data-at="2.6">sakia-opal.vercel.app · github.com/ag-algolab/sakia</div></div>`,
+      html: `<div class="bg-tech" data-drift="14"></div><div class="cr-wrap"><div class="cr-wheel" data-at="0">{{WHEEL}}</div><div class="cr-title" data-at="0.15">Built during the hackathon by <em>Anthony</em>,<br>with <em>Claude Code</em></div><div class="cr-logos">${TOOLS.map(([id, color, name, role], i) => `<span data-at="${(0.8 + i * 0.28).toFixed(2)}" data-fx="pop" data-rot="-4">${id ? logo(id, color) : "<i>⛅</i>"}<b>${name}</b><small>${role}</small></span>`).join("")}</div><div class="cr-url" data-at="2.6">sakia-opal.vercel.app · github.com/ag-algolab/sakia</div></div>`,
     },
     ...(vo?.synthetic ? [{ type: "note", start: CRED.at + 0.5, end: L.total + 0.2, x: 96, y: 1030, w: 1700, text: "Narration: synthetic voice (ElevenLabs)." }] : []),
+    // une lumière douce qui dérive sur toute la vidéo : aucune image n'est jamais figée, même entre deux animations
+    { type: "glow", start: 0, end: L.total + 0.2, fadeIn: 0.6, fadeOut: 0.01, opacity: 0.1 },
+    // (un peu plus sur le film des étapes, qui a ses propres pauses entre deux cartes)
+    { type: "glow", start: 0, end: SMALL.at + 0.4, fadeIn: 0.6, fadeOut: 0.4, opacity: 0.07 },
   ],
   // musique d'ElevenLabs (darbouka, oud) à −13 LUFS, voix off à −20 : audible sous la voix, ≈ 13 dB dessous
   music: { file: ["videos/build/music-tunis.mp3", "videos/build/music-cine-5.wav"].find(existsSync), gain: vo ? -14 : -12, duckGain: -7, fadeIn: 1.0, fadeOut: 2.5, duck: vo ? VO_AT.map((at, i) => ({ from: at - 0.1, to: at + voDur[i] / tempo + 0.1 })) : [] },

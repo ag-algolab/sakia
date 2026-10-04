@@ -87,7 +87,10 @@ const subLayers = segs.map((s) => {
 const pops = [];
 const html = (start, end, body, extra = {}) => pops.push({ type: "html", start, end, fx: "none", fadeIn: 0.15, fadeOut: 0.25, html: body, ...extra });
 if (!LOCAL) {
-  const s0 = seg(0), s1 = seg(1), s2 = seg(2), s3 = seg(3), s4 = seg(4), s5 = seg(5), s6 = seg(6), s7 = seg(7);
+  // phrases (team-lines.json) : 0 nom, 1 entrepreneur, 2 Dauphine, 3 échecs, 4 la ferme de l'amie, 5 l'eau inégale, 6 l'appel,
+  // 7 l'équipe, 8 le grand-père
+  const s0 = seg(0), s1 = seg(1), s2 = seg(2), sChess = seg(3), s3 = seg(4), s4 = seg(5), s5 = seg(6), s6 = seg(7);
+  const L_FARM = 4, L_WATER = 5, L_CALL = 6;
   // 1. nom et titres
   if (s0) html(s0.at + 0.2, s1 ? Math.max(s1.at + 0.6, at(1, /algo|company/, 0.35) + 0.15) : s0.at + s0.len + 1.2, `<div class="lower" data-at="0" data-fx="slide"><b>Anthony Gocmen</b><span>Founder, AG Algo Lab · Ambassador, Université Paris Dauphine – PSL</span></div>`);
   // 2. AG Algo Lab, puis ses projets qui surgissent un par un
@@ -117,20 +120,25 @@ if (!LOCAL) {
     const tTun = at(2, /tunisia/, 0.7);
     html(Math.max(tAmb - 0.2, s2.at + 0.6), s2.at + s2.len + 0.15, `<div class="post" data-at="0" data-fx="slide" data-rot="-2"><img src="${A("linkedin-dauphine.jpg")}"><em>Université Dauphine Tunis, on LinkedIn</em></div><div class="pin" data-at="${Math.max(0.6, tTun - Math.max(tAmb - 0.2, s2.at + 0.6)).toFixed(2)}" data-fx="pop">📍 Tunis, Tunisia · master's at the Dauphine campus</div>`);
   }
-  // 4. la ferme de l'amie : illustration générée si elle existe, sinon des mots qui surgissent
+  // 3 bis. joueur d'échecs : des ressources limitées, chaque coup compte ; ici, chaque goutte
+  if (sChess) {
+    const tChess = at(3, /chess/, 0.25), tDrop = at(3, /drop/, 0.8);
+    html(tChess - 0.15, sChess.at + sChess.len + 0.3, `<div class="chess" data-at="0" data-fx="pop" data-rot="-6"><span class="pc">♞</span><span><b>Chess player</b><i>limited resources: every move counts</i></span></div><div class="drop" data-at="${(tDrop - tChess + 0.15).toFixed(2)}" data-fx="pop" data-rot="5">💧 Here, every drop counts</div>`);
+  }
+  // 4. la ferme de l'amie : illustration générée si elle existe (sans zoom), sinon des mots qui surgissent
   if (s3) {
     const img = AI("09", "arret", "abandon");
     if (img) {
-      pops.push({ type: "image", start: s3.at + 0.3, end: s3.at + s3.len + 0.1, fadeIn: 0.25, fadeOut: 0.25, src: img, kenburns: { from: [1.04, 0.5, 0.5], to: [1.14, 0.48, 0.45] } });
+      pops.push({ type: "image", start: s3.at + 0.3, end: s3.at + s3.len + 0.1, fadeIn: 0.25, fadeOut: 0.25, src: img, kenburns: { from: [1, 0.5, 0.5], to: [1, 0.5, 0.5] } });
       pops.push({ type: "note", start: s3.at + 0.4, end: s3.at + s3.len, x: 1620, y: 40, cls: "ai-tag", text: "AI illustration" });
     } else {
-      const tW = at(3, /water/, 0.6);
+      const tW = at(L_FARM, /water/, 0.6);
       html(s3.at + 0.4, s3.at + s3.len + 0.1, `<div class="words"><span data-at="0" data-fx="pop" data-rot="-6">A family farm,</span><span data-at="0.35" data-fx="pop" data-rot="5">stopped.</span><span class="hot" data-at="${(tW - s3.at - 0.4).toFixed(2)}" data-fx="pop" data-rot="-4">💧 Too expensive</span></div>`);
     }
   }
   // 5. l'eau inégale : l'État, le puits, la citerne, au mot prononcé
   if (s4) {
-    const t1 = at(4, /state/, 0.35), t2 = at(4, /well/, 0.6), t3 = at(4, /tank/, 0.85);
+    const t1 = at(L_WATER, /state/, 0.35), t2 = at(L_WATER, /well/, 0.6), t3 = at(L_WATER, /tank/, 0.85);
     const start = Math.min(t1, s4.at + 0.6) - 0.1;
     const card = (t0, emoji, title, sub, img) =>
       `<div class="water" data-at="${(t0 - start).toFixed(2)}" data-fx="pop" data-rot="${title.length % 2 ? 7 : -7}">${img ? `<span class="ph" style="background-image:url('${img}')"></span>` : `<span class="em">${emoji}</span>`}<span><b>${title}</b><i>${sub}</i></span></div>`;
@@ -138,7 +146,7 @@ if (!LOCAL) {
   }
   // 6. l'appel du premier jour, puis Sakia
   if (s5) {
-    const tCall = at(5, /called/, 0.3), tSakia = at(5, /sakia|sakiya|saqia/, 0.65);
+    const tCall = at(L_CALL, /called/, 0.3), tSakia = at(L_CALL, /sakia|sakiya|saqia/, 0.65);
     html(tCall - 0.1, s5.at + s5.len + 0.3, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="sakiabadge" data-at="${(tSakia - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
   }
   // 7. l'équipe
@@ -205,6 +213,11 @@ const spec = {
     .sakiabadge{position:absolute;right:120px;top:380px;display:flex;align-items:center;gap:18px;padding:18px 34px 18px 18px;border-radius:999px;background:#12301f;border:3px solid #f2b33d;box-shadow:0 18px 40px rgba(0,0,0,.45)}
     .sakiabadge .w{width:84px;height:84px;color:#f4efe6;display:block}.sakiabadge .w svg{width:100%;height:100%}
     .sakiabadge b{font:900 64px Fraunces,serif;color:#fff}
+    .chess{position:absolute;right:80px;top:120px;display:flex;align-items:center;gap:20px;padding:18px 28px 18px 18px;border-radius:26px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.4);transform-origin:right center}
+    .chess .pc{display:flex;align-items:center;justify-content:center;width:96px;height:96px;border-radius:20px;background:#12301f;color:#f4efe6;font-size:72px;line-height:1}
+    .chess b{display:block;font:900 42px/1.1 Fraunces,serif;color:#14231a}
+    .chess i{display:block;font:600 24px Geist,sans-serif;font-style:normal;color:#4b5d50;margin-top:6px}
+    .drop{position:absolute;right:80px;top:290px;padding:16px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 44px Fraunces,serif;box-shadow:0 14px 34px rgba(0,0,0,.35);transform-origin:right center}
     .teamchip{position:absolute;right:80px;top:90px;padding:18px 30px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:800 30px Geist,sans-serif;letter-spacing:.06em;box-shadow:0 12px 30px rgba(0,0,0,.35)}
     .gp img:not(.vid-back){filter:sepia(.25) saturate(.9) contrast(1.05)}
     .gplabel{position:absolute;left:80px;bottom:200px;padding:14px 24px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font:600 28px Geist,sans-serif}
@@ -233,7 +246,7 @@ const spec = {
     ...pops,
     ...localLayers,
     ...subLayers,
-    ...(LOCAL ? [] : [{ type: "html", start: END_AT - 0.1, end: DURATION, fadeIn: 0.4, fadeOut: 0.01, fx: "zoom", html: `<div class="endcard"><div class="logo" data-at="0">{{WHEEL}}</div><b data-at="0.15">Sakia</b><i data-at="0.35">One decision a day.</i><div class="chips" data-at="0.7"><span class="r">● REAL: web, app, Telegram</span><span class="s">● SIMULATED: call, SMS</span></div><small data-at="1.1">sakia-opal.vercel.app · github.com/ag-algolab/sakia</small></div>` }]),
+    ...(LOCAL ? [] : [{ type: "html", start: END_AT - 0.1, end: DURATION, fadeIn: 0.4, fadeOut: 0.01, fx: "none", html: `<div class="endcard"><div class="logo" data-at="0">{{WHEEL}}</div><b data-at="0.15">Sakia</b><i data-at="0.35">One decision a day.</i><div class="chips" data-at="0.7"><span class="r">● REAL: web, app, Telegram</span><span class="s">● SIMULATED: call, SMS</span></div><small data-at="1.1">sakia-opal.vercel.app · github.com/ag-algolab/sakia</small></div>` }]),
   ],
   music: { file: "videos/build/music-23.wav", gain: -26, duckGain: -8, fadeIn: 1.0, fadeOut: 2.0, duck: segs.map((s) => ({ from: s.at - 0.1, to: s.at + s.len + 0.1 })) },
   audio: segs.map((s) => ({ file: "media:face", at: s.at, from: s.from, to: s.to, gain: 0, fadeIn: 0.03, fadeOut: 0.06, rate: rate !== 1 ? rate : undefined, filter: "highpass=f=85,afftdn=nf=-28,acompressor=threshold=-20dB:ratio=3:attack=8:release=120" })),

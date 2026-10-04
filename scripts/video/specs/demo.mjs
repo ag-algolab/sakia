@@ -53,6 +53,7 @@ const meta = (clip) => {
   const rel = (t) => (t - f0) / 1000;
   return {
     capturedAt: m.capturedAt,
+    end: rel(m.frames.at(-1).t),
     marks: Object.fromEntries(Object.entries(m.marks).map(([k, t]) => [k, rel(t)])),
     taps: m.taps.map((tp) => rel(tp.t)),
     audio: m.audio.map((a) => ({ ...a, t: rel(a.t), size: statSync(`videos/build/capture/${clip}/${a.file}`).size })),
@@ -176,20 +177,31 @@ const GRID_LABELS = [
   ["call", "📞", "Phone call", "SIMULATED"],
   ["sms", "💬", "SMS", "SIMULATED"],
 ];
-// Telegram : le dernier arrosage choisi, le plan, « Voice bulletin », le message vocal qui arrive et se lit (accéléré, sans saute)
-const TG_LEN = G_END - A("telegram");
+// Telegram : le dernier arrosage choisi, le plan, « Voice bulletin », le message vocal qui arrive et se lit (accéléré, sans saute,
+// et jusqu'au bout de son temps à l'écran, fondu de sortie compris)
+const span = (id) => G_END + 0.3 - A(id); // temps à l'écran d'un téléphone de la rangée
 const TG_V0 = 2.9, TG_W = 1.6; // message vocal (25,5 → 29,5 s à ×1,4) ; attente « sending audio » (19 → 25,5 s à ×4)
+const TG_A = Math.max(1.5, span("telegram") - TG_V0 - TG_W);
 const tgSegs = [
-  { at: A("telegram"), media: "tg", from: 11.5, to: 19.0, rate: 7.5 / Math.max(1.5, TG_LEN - TG_V0 - TG_W) },
-  { at: A("telegram") + Math.max(1.5, TG_LEN - TG_V0 - TG_W), media: "tg", from: 19.0, to: 25.5, rate: 6.5 / TG_W, xfade: 0.01 },
-  { at: A("telegram") + Math.max(1.5, TG_LEN - TG_V0 - TG_W) + TG_W, media: "tg", from: 25.5, to: 29.5, rate: 4.0 / TG_V0, xfade: 0.01 },
+  { at: A("telegram"), media: "tg", from: 11.5, to: 19.0, rate: 7.5 / TG_A },
+  { at: A("telegram") + TG_A, media: "tg", from: 19.0, to: 25.5, rate: 6.5 / TG_W, xfade: 0.01 },
+  { at: A("telegram") + TG_A + TG_W, media: "tg", from: 25.5, to: 29.5, rate: 4.0 / TG_V0, xfade: 0.01 },
 ];
 
-// un chapitre du film en plein écran, joué jusqu'à son image clé puis tenu (moins de texte à lire)
-const filmLayer = (media, start, end, from, hold) => ({
+// un chapitre du film en plein écran, joué du début à la fin de la couche sans JAMAIS s'arrêter (une image tenue fige le
+// soleil et la roue : interdit) ; ralenti s'il le faut, pour finir pile sur `to` (moins de texte à l'écran)
+const filmLayer = (media, start, end, from, to) => ({
   type: "video", start, end, fadeIn: 0.35, fadeOut: 0.01, x: 0, y: 0, w: 1920, h: 1080,
-  segments: [{ at: start, media, from, to: hold }],
+  segments: [{ at: start, media, from, to, rate: (to - from) / (end - start) }],
 });
+// un téléphone qui joue sa séquence filmée jusqu'au bout de son temps à l'écran (aucune image tenue)
+const fill = (from, to, span) => ({ from, to, rate: (to - from) / span });
+
+// 27,9 % : le film va de 0,3 s à READ_TO ; le 4e personnage devient jaune à 2,53 s (film), au moment où la voix dit « Noor »
+const READ_SPAN = E("read") + 0.4 - (A("read") - 0.15);
+const READ_RATE = (2.53 - 0.3) / Math.min(READ_SPAN - 0.8, VO_AT[1] + 0.65 * v[1] - (A("read") - 0.15));
+const READ_TO = 0.3 + READ_SPAN * READ_RATE;
+const READ_YELLOW = A("read") - 0.15 + (2.53 - 0.3) / READ_RATE;
 
 const voEvents = vo
   ? vo.takes
@@ -237,12 +249,14 @@ export default {
     // ---------------------------------------------------------------- 1. le problème : chapitres du film, tenus sur leur image clé
     // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage devenu jaune ; « 230 % » ; « Irrigate today… or wait? »,
     // pris après la disparition du bloc « Meet Noor » pour qu'il ne repasse pas pendant le fondu)
-    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 4.95),
-    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.6),
-    // le personnage en jaune, c'est Noor : son nom surgit dessous quand la voix le dit
-    { type: "html", start: A("read", 2.2), end: E("read") + 0.3, fx: "none", fadeIn: 0.01, fadeOut: 0.3, html: `<div class="noor-tag" data-at="0" data-fx="pop" data-rot="-6">Noor</div>` },
-    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 3.7),
-    { ...filmLayer("noor", A("question") - 0.15, E("question"), 8.1, 9.6), fadeOut: 0.35 },
+    // (ralentis : « Meet Noor. » puis ses deux premières lignes ; 27,9 % jusqu'au bulletin barré ; 230 % avant la phrase suivante ;
+    // la question jusqu'à la fin du chapitre)
+    filmLayer("noor", 0, E("noor") + 0.4, 2.85, 5.45),
+    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, READ_TO),
+    // le personnage devenu jaune, c'est Noor : son nom surgit dessous à ce moment-là
+    { type: "html", start: READ_YELLOW, end: E("read") + 0.3, fx: "none", fadeIn: 0.01, fadeOut: 0.3, html: `<div class="noor-tag" data-at="0" data-fx="pop" data-rot="-6">Noor</div>` },
+    filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 4.05),
+    { ...filmLayer("noor", A("question") - 0.15, E("question"), 8.1, 10.95), fadeOut: 0.35 },
 
     // ---------------------------------------------------------------- 2. la solution, sur le vrai site (un seul plan continu)
     { type: "chip", start: A("web", 0.3), end: E("web") - 0.2, x: X, y: 240, text: "REAL · WORKS END TO END", tone: "real" },
@@ -263,21 +277,25 @@ export default {
       type: "html", start: A(id), end: G_END + 0.3, fx: "none", fadeIn: 0.2, fadeOut: 0.3,
       html: `<div class="glabel" style="left:${GRID.xs[i]}px" data-at="0.1" data-fx="pop" data-rot="-4"><i>${ic}</i>${name}<em class="${tag === "REAL" ? "r" : "s"}">${tag}</em></div>`,
     })),
-    gridPhone(0, "app", { offline: true, segments: [{ at: A("app"), clip: "offline", from: OFF.marks.reopened + 0.4, to: OFF.marks.reopened + 3.9 }] }),
+    // (l'appli : rouverte sans réseau, puis la voix lancée hors ligne, jusqu'à la fin de la prise)
+    gridPhone(0, "app", { offline: true, segments: [{ at: A("app"), clip: "offline", ...fill(OFF.marks.reopened + 0.3, OFF.end, span("app")) }] }),
     ...(TG ? [gridPhone(1, "telegram", { statusBar: false, taps: false, segments: tgSegs })] : []),
-    gridPhone(2, "call", { segments: [{ at: A("call"), clip: "call", from: CALL_KEY - 1.5, to: CALL_KEY + 3.6 }] }),
-    gridPhone(3, "sms", { segments: [{ at: A("sms"), clip: "sms", from: SMS.marks.phone - 0.2, to: SMS.marks.read + 0.3 }] }),
+    gridPhone(2, "call", { segments: [{ at: A("call"), clip: "call", ...fill(CALL_KEY - 1.5, CALL_KEY - 1.5 + span("call"), span("call")) }] }),
+    gridPhone(3, "sms", { segments: [{ at: A("sms"), clip: "sms", ...fill(SMS.end - span("sms"), SMS.end, span("sms")) }] }),
 
     // ---------------------------------------------------------------- 4. le garde-fou (éliminatoire dans le barème)
     { type: "chip", start: A("unsure", 0.1), end: E("unsure") - 0.1, x: X, y: 240, text: "SAFEGUARD", tone: "info" },
     { type: "caption", start: VO_AT[12], end: E("unsure") - 0.1, x: X, y: 320, w: W, text: "Not sure? Sakia __says so__, and asks a person to check.", stagger: 0.07 },
-    { type: "phone", start: A("unsure"), end: E("unsure") + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", ...PHONE, segments: [{ at: A("unsure"), clip: "notsure", from: UNSURE.marks.notsure - 0.3, to: UNSURE.marks.notsure + 1.0 }] },
+    { type: "phone", start: A("unsure"), end: E("unsure") + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", ...PHONE, segments: [{ at: A("unsure"), clip: "notsure", ...fill(UNSURE.end - (E("unsure") + 0.3 - A("unsure")), UNSURE.end, E("unsure") + 0.3 - A("unsure")) }] },
 
     // ---------------------------------------------------------------- 5. la preuve : un seul chiffre
     {
       type: "html", start: A("proof"), end: E("proof"), fadeIn: 0.35, fadeOut: 0.3, fx: "none",
       html: `<div class="pr-wrap"><div class="pr-tag" data-at="0.15">SIMULATION · 11 SEASONS OF OBSERVED WEATHER · KAIROUAN</div><div class="pr-big" data-at="${(0.15 + 0.38 * v[13]).toFixed(2)}" data-fx="pop" data-rot="-3">3 to 27 %</div><div class="pr-sub" data-at="${(0.15 + 0.62 * v[13]).toFixed(2)}">less water pumped, depending on the crop</div></div>`,
     },
+
+    // une lumière douce qui dérive sur toute la vidéo : aucune image n'est jamais figée (même pendant une pause du film)
+    { type: "glow", start: 0, end: E("end"), fadeIn: 0.01, fadeOut: 0.01, opacity: 0.07 },
 
     // ---------------------------------------------------------------- 6. fin
     {

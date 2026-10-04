@@ -88,6 +88,7 @@ html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#0b1b14
 .bg-sand .bg-wheel{color:#275233;opacity:.07}
 .bg-wheel svg{width:100%;height:100%;display:block}
 .bg-lines{position:absolute;left:0;right:0;bottom:-10px;height:300px;opacity:.13}
+.glow-layer{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen}
 .bg-line{position:absolute;left:-600px;width:3200px;height:60px;background:url("${WAVE}") repeat-x;background-size:240px 60px}
 .bg-line:nth-child(1){bottom:20px}.bg-line:nth-child(2){bottom:70px;opacity:.8}.bg-line:nth-child(3){bottom:120px;opacity:.6}.bg-line:nth-child(4){bottom:170px;opacity:.4}.bg-line:nth-child(5){bottom:220px;opacity:.25}
 .phone-wrap{position:absolute;left:0;top:0;will-change:transform}
