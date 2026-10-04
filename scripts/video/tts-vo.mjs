@@ -18,7 +18,9 @@ const specPath = path.resolve(`scripts/video/specs/${which}.mjs`);
 const { VO_LINES } = await import(pathToFileURL(specPath).href);
 const dir = path.resolve("videos/build/vo", `${which}-${voice}`);
 mkdirSync(dir, { recursive: true });
-const SETTINGS = { stability: 0.45, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
+// v3 / v4 : réglages réduits (pas de « style »), et pas de phrase d'avant / d'après (non prise en charge)
+const NEW_MODEL = /eleven_v[34]/.test(model);
+const SETTINGS = NEW_MODEL ? { stability: 0.5, similarity_boost: 0.8 } : { stability: 0.45, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
 
 let spent = 0;
 const parts = [];
@@ -26,7 +28,7 @@ for (const [i, text] of VO_LINES.entries()) {
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}/with-timestamps?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": key, "content-type": "application/json" },
-    body: JSON.stringify({ text, model_id: model, voice_settings: SETTINGS, previous_text: VO_LINES[i - 1] ?? undefined, next_text: VO_LINES[i + 1] ?? undefined }),
+    body: JSON.stringify({ text, model_id: model, voice_settings: SETTINGS, ...(NEW_MODEL ? {} : { previous_text: VO_LINES[i - 1] ?? undefined, next_text: VO_LINES[i + 1] ?? undefined }) }),
     signal: AbortSignal.timeout(90000),
   });
   if (!res.ok) throw new Error(`ElevenLabs HTTP ${res.status} ${(await res.text()).slice(0, 200)}`);

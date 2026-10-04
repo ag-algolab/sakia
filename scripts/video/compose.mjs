@@ -120,7 +120,7 @@ html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#0b1b14
 .img-layer,.vid-layer{position:absolute;overflow:hidden}
 .img-layer img,.vid-layer img{width:100%;height:100%;object-fit:cover;display:block}
 .vid-layer.rounded{border-radius:36px;box-shadow:0 40px 90px rgba(0,0,0,.5)}
-.vid-layer .vid-back{position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(38px) brightness(.55)}
+.vid-layer .vid-back,.img-layer .vid-back{position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(38px) brightness(.55)}
 .vid-layer img:not(.vid-back){position:relative}
 .ai-label{position:absolute;right:28px;bottom:22px;font:600 20px Geist,sans-serif;color:rgba(255,255,255,.75);background:rgba(0,0,0,.35);padding:6px 12px;border-radius:8px}
 ${spec.css ?? ""}

@@ -242,19 +242,38 @@
         const k = E.out(clamp((t - L.start) / (L.enter ?? 0.6)));
         const fx = L.fx ?? "up";
         n.style.transform = fx === "up" ? `translateY(${(1 - k) * 40}px)` : fx === "zoom" ? `scale(${0.92 + 0.08 * k})` : "none";
-        // éléments internes animés : data-at="secondes après le début" → apparition décalée
+        // éléments internes animés : data-at="secondes après le début" → apparition décalée ;
+        // data-fx="pop" : surgit en rebondissant (petit, penché, puis à sa place) ; "slide" : glisse depuis la droite
         n.querySelectorAll("[data-at]").forEach((c) => {
-          const kk = E.back(clamp((t - L.start - Number(c.dataset.at)) / 0.5));
-          c.style.opacity = clamp((t - L.start - Number(c.dataset.at)) / 0.3);
-          c.style.transform = `translateY(${(1 - kk) * 24}px) scale(${0.9 + 0.1 * kk})`;
+          const dt = t - L.start - Number(c.dataset.at);
+          const fx = c.dataset.fx;
+          if (fx === "pop") {
+            const kk = E.back(clamp(dt / 0.42));
+            c.style.opacity = clamp(dt / 0.12);
+            c.style.transform = `scale(${0.25 + 0.75 * kk}) rotate(${(1 - kk) * (Number(c.dataset.rot ?? -10))}deg)`;
+          } else if (fx === "slide") {
+            const kk = E.out(clamp(dt / 0.6));
+            c.style.opacity = clamp(dt / 0.25);
+            c.style.transform = `translateX(${(1 - kk) * 160}px) rotate(${Number(c.dataset.rot ?? 0) * kk}deg)`;
+          } else {
+            const kk = E.back(clamp(dt / 0.5));
+            c.style.opacity = clamp(dt / 0.3);
+            c.style.transform = `translateY(${(1 - kk) * 24}px) scale(${0.9 + 0.1 * kk})`;
+          }
         });
       };
     },
 
     image(L) {
       const box = el("div", "img-layer " + (L.cls ?? ""));
+      // photo verticale (fit: "contain") : montrée entière, sur un fond flou fait d'elle-même
+      if (L.fit === "contain") {
+        const back = el("img", "vid-back", box);
+        back.src = L.src;
+      }
       const img = el("img", null, box);
       img.src = L.src;
+      if (L.fit === "contain") Object.assign(img.style, { objectFit: "contain", position: "relative" });
       Object.assign(box.style, { left: (L.x ?? 0) + "px", top: (L.y ?? 0) + "px", width: (L.w ?? 1920) + "px", height: (L.h ?? 1080) + "px" });
       return (t) => {
         const p = presence(L, t);
