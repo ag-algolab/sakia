@@ -9,11 +9,10 @@
 // la demande, seul un message déjà préparé est servi ; toute fabrication passe par un plafond par adresse (compteur « tts_ip »,
 // adresse salée et hachée, jamais stockée) PUIS par le plafond commun du jour (usage.ts, atomique).
 
-import { createHash } from "node:crypto";
 import { ClipError, REPLAY_DATE, clipFor, planForQuery } from "@/lib/advice/clip";
 import { getCrop } from "@/lib/crops";
 import { getRegion } from "@/lib/regions";
-import { chargeUsage, LIMITS } from "@/lib/usage";
+import { chargeUsage, LIMITS, visitorKey } from "@/lib/usage";
 import type { IrrigationSystem, SoilName } from "@/lib/waterBalance";
 import { isVoiceLang } from "@/lib/voice/langs";
 
@@ -24,12 +23,6 @@ const SOILS = ["sableux", "limoneux", "argileux"];
 const SYSTEMS = ["goutte", "aspersion", "gravitaire"];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const NO_STORE = { "cache-control": "no-store" };
-
-// Adresse du visiteur, hachée avec un sel : sert seulement de clé de compteur journalier.
-function visitorKey(request: Request): string {
-  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "inconnue";
-  return createHash("sha256").update(`${process.env.CRON_SECRET ?? "sakia"}|${ip}`).digest("hex").slice(0, 16);
-}
 
 const validDate = (s: string | null): string | undefined => {
   if (!s || !DATE.test(s)) return undefined;

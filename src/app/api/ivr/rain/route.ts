@@ -14,6 +14,7 @@ import { BudgetError, rainCountClip } from "@/lib/ivr/clip";
 import { DEFAULT_REGION, OTHER_REGIONS } from "@/lib/ivr/menu";
 import { rainCountText } from "@/lib/ivr/rain";
 import { clientIp } from "@/lib/ivr/request";
+import { chargeLiveVoice } from "@/lib/usage";
 import { LEVEL_MM, MIN_REPORTERS, ipAllowed, isRainLevel, saveReport, summarize, verifyReporterToken } from "@/lib/reports";
 import type { ReportRow } from "@/lib/reports";
 import { todayInTunisia } from "@/lib/weather";
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
     countEn: rainCountText(n, "en"),
   };
   try {
-    const clip = await rainCountClip(n, lang);
+    const clip = await rainCountClip(n, lang, (chars) => chargeLiveVoice(request, chars));
     return Response.json({ ...body, lines: clip.lines, audioBase64: clip.audio.toString("base64"), mime: clip.mime });
   } catch (e) {
     // voix indisponible (plafond de caractères atteint, service injoignable) : le signalement est enregistré quand même
