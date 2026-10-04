@@ -106,8 +106,8 @@ const smoothOk = () => !window.matchMedia("(prefers-reduced-motion: reduce)").ma
 // Langue d'un message du bot (arabe, français ou anglais), pour que le lecteur d'écran prenne la bonne voix même quand
 // la page est dans une autre langue. Repère simple : les messages du bot sont des modèles fixes.
 function langOf(text: string): "ar" | "fr" | "en" {
-  const arabic = (text.match(/[؀-ۿ]/g) ?? []).length;
-  const latin = (text.match(/[A-Za-zÀ-ÿ]/g) ?? []).length;
+  const arabic = (text.match(/\p{Script=Arabic}/gu) ?? []).length;
+  const latin = (text.match(/\p{Script=Latin}/gu) ?? []).length;
   if (arabic > latin) return "ar";
   return /[àâçéèêëîïôùûü]|\b(le|la|les|des|une?|vous|votre|dans|pour|avec|quelle?|il|elle|je|ne|pas|de|du|et|ou|aujourd|mettre|changer)\b/i.test(text) ? "fr" : "en";
 }
@@ -138,7 +138,7 @@ function Keyboard({
               onClick={(e) => {
                 if (!locked) onPress(id, btn.callback_data, e.detail === 0);
               }}
-              className={`sk-press relative flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-lg px-2 py-1.5 text-center text-[15px] font-semibold leading-tight shadow-sm ring-1 ring-black/10 aria-disabled:cursor-wait ${
+              className={`sk-press relative flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-lg px-2 py-1.5 text-center text-[1rem] font-semibold leading-tight shadow-sm ring-1 ring-black/10 aria-disabled:cursor-wait ${
                 pending === btn.callback_data ? "bg-sakia-green text-white" : "bg-white text-sakia-green-deep hover:bg-sakia-green-light aria-disabled:opacity-60"
               }`}
             >
@@ -373,7 +373,9 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
     setBubbles([{ id: 1, who: "bot", text: welcome.text, markup: welcome.markup }]);
   }, [commitSub, welcome]);
 
-  const bubbleBase = "w-fit max-w-full rounded-2xl px-3 py-2 text-[15px] leading-snug shadow-sm";
+  // Tailles en rem et non en text-sm/text-base : la page est dans l'échelle de texte agrandie (sk-type), mais la fenêtre du chat
+  // garde ses proportions de téléphone (rien sous 14 px).
+  const bubbleBase = "w-fit max-w-full rounded-2xl px-3 py-2 text-[1rem] leading-snug shadow-sm";
   const noticeText = notice ? { busy: s.errBusy, tooMany: s.errTooMany, offline: s.errOffline, timeout: s.errTimeout }[notice.kind] : "";
   const canSend = !busy && draft.trim().length > 0;
 
@@ -383,18 +385,20 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
       aria-labelledby={labelledBy}
       className="mx-auto w-full max-w-[22rem] rounded-[1.9rem] bg-[#0a2a1e] p-1.5 shadow-2xl ring-1 ring-white/25"
     >
-      <div className="flex h-[min(38rem,calc(100svh-4rem))] flex-col overflow-hidden rounded-[1.5rem] bg-[#e1ecd8] lg:h-[33rem]">
+      {/* hauteur fixe, plafonnée par la hauteur de l'écran (svh : stable quand la barre d'adresse se replie ; un navigateur qui ne connaît
+          pas svh ignore le plafond et garde la hauteur fixe) */}
+      <div className="flex h-[38rem] max-h-[calc(100svh-4rem)] min-h-[26rem] flex-col overflow-hidden rounded-[1.5rem] bg-[#e1ecd8] lg:h-[36rem] lg:max-h-[calc(100svh-11rem)]">
         {/* en-tête de conversation */}
         <div className="flex items-center gap-3 bg-sakia-green-deep px-3 py-2 text-white">
           <div aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15">
             <SakiaLogo size={30} spin={false} className="text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-bold leading-tight">Sakia · bot</p>
-            <p className="truncate text-[13px] leading-tight text-white/80">{s.chatSub}</p>
+            <p className="truncate text-[1rem] font-bold leading-tight">Sakia · bot</p>
+            <p className="truncate text-[0.875rem] leading-tight text-white/80">{s.chatSub}</p>
           </div>
         </div>
-        <p className="bg-sakia-sun/25 px-3 py-1.5 text-center text-sm font-bold leading-snug text-sakia-brown">{s.banner}</p>
+        <p className="bg-sakia-sun/25 px-3 py-1.5 text-center text-[0.875rem] font-bold leading-snug text-sakia-brown">{s.banner}</p>
 
         {/* conversation : sens physique fixe (bot à gauche, vous à droite) ; chaque ligne règle son propre sens d'écriture */}
         <div className="relative min-h-0 flex-1">
@@ -434,7 +438,7 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
               </div>
             )}
             {notice && (
-              <div dir={pageDir} className="self-center rounded-xl bg-sakia-alert-light px-3 py-2 text-center text-sm font-semibold leading-snug text-sakia-alert">
+              <div dir={pageDir} className="self-center rounded-xl bg-sakia-alert-light px-3 py-2 text-center text-[0.9375rem] font-semibold leading-snug text-sakia-alert">
                 <p>{noticeText}</p>
                 <button type="button" onClick={() => run(notice.req)} className="mt-1 min-h-11 rounded-lg px-4 font-bold underline">
                   {s.retry}
@@ -443,7 +447,7 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
             )}
           </div>
           <div role="status" dir="auto" className="pointer-events-none absolute inset-x-3 top-2 z-10 flex justify-center">
-            {toast && <p className="rounded-full bg-black/80 px-3 py-1.5 text-center text-sm font-semibold leading-snug text-white shadow-lg">{toast}</p>}
+            {toast && <p className="rounded-full bg-black/80 px-3 py-1.5 text-center text-[0.9375rem] font-semibold leading-snug text-white shadow-lg">{toast}</p>}
           </div>
           {away && (
             <button
@@ -476,14 +480,14 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
               aria-label={s.startLabel}
               aria-disabled={busy || undefined}
               dir="ltr"
-              className="sk-press min-h-11 rounded-full border-2 border-sakia-green/30 bg-sakia-green-light px-4 font-mono text-sm font-bold text-sakia-green-deep hover:border-sakia-green aria-disabled:opacity-60"
+              className="sk-press min-h-11 rounded-full border-2 border-sakia-green/30 bg-sakia-green-light px-4 font-mono text-[0.9375rem] font-bold text-sakia-green-deep hover:border-sakia-green aria-disabled:opacity-60"
             >
               /start
             </button>
             <button
               type="button"
               onClick={restart}
-              className="sk-press inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-sakia-sand-dark bg-white px-4 text-sm font-semibold text-sakia-ink hover:border-sakia-green"
+              className="sk-press inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-sakia-sand-dark bg-white px-4 text-[0.9375rem] font-semibold text-sakia-ink hover:border-sakia-green"
             >
               <RetryIcon className="h-4 w-4" />
               {s.restart}
@@ -506,7 +510,7 @@ export default function TelegramChat({ welcome, labelledBy }: { welcome: Welcome
               enterKeyHint="send"
               dir={draft ? "auto" : pageDir}
               placeholder={s.placeholder}
-              className="min-h-11 min-w-0 flex-1 rounded-full border-2 border-sakia-sand-dark bg-white px-4 text-base text-sakia-ink placeholder:text-neutral-500 focus:border-sakia-green"
+              className="min-h-11 min-w-0 flex-1 rounded-full border-2 border-sakia-sand-dark bg-white px-4 text-[1rem] leading-normal text-sakia-ink placeholder:text-neutral-500 focus:border-sakia-green"
             />
             <button
               type="submit"

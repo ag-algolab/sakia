@@ -12,8 +12,9 @@ export const metadata: Metadata = {
 export default function TelegramPage() {
   // Premier message du chat de démonstration : exactement celui que le bot envoie pour /start (même texte, mêmes boutons),
   // fabriqué ici côté serveur pour que la page ne soit jamais vide, même avant le premier appel.
+  // sk-type : échelle de texte agrandie du site (le public lit peu et lit sur de petits écrans), comme Conseil, Preuve et À propos.
   return (
-    <main className="flex flex-1 flex-col">
+    <main className="sk-type flex flex-1 flex-col">
       <TelegramView welcome={{ text: WELCOME, markup: langKeyboard("l") }} />
     </main>
   );
