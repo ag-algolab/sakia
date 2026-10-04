@@ -5,8 +5,8 @@
 // FLUIDITÉ : décor immobile = un seul SVG ; ce qui bouge (roue, rayons, nuages, arbres, canal) = petites couches animées par
 // la carte graphique (voir SceneKit.tsx). Mesuré avant : 44 animations dans un SVG = ~26 images/s avec des saccades.
 
-import { CALM, FarmerLayers, RainClouds, RainLayer } from "./Farmer";
-import type { DayMood } from "./Farmer";
+import { RainClouds, RainLayer } from "./DaySky";
+import type { DaySky } from "./DaySky";
 import { Drop, GLOW_STOPS, Legs, Mosque, Rays, StaticOlive, WATER_STOPS, WheelArt } from "./HeroScene";
 import { Layer, Scene, StaticLayer } from "./SceneKit";
 import type { Box } from "./SceneKit";
@@ -15,8 +15,8 @@ const SCENE: Box = { x: 0, y: 0, w: 1200, h: 300 };
 const VP = { x: 600, y: 246 }; // point de fuite des rangées d'oliviers
 const b = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export default function HeroPanorama({ className, mood = CALM }: { className?: string; mood?: DayMood }) {
-  const rain = mood.sky === "rain";
+export default function HeroPanorama({ className, sky = "dawn" }: { className?: string; sky?: DaySky }) {
+  const rain = sky === "rain";
   const rowsX = [-200, 40, 280, 520, 760, 1000, 1240, 1480];
   // oliviers : plus ils sont près de l'horizon, plus ils sont petits (4 profondeurs par rangée)
   const trees = rowsX.flatMap((rx) =>
@@ -32,7 +32,7 @@ export default function HeroPanorama({ className, mood = CALM }: { className?: s
 
   return (
     <Scene box={SCENE} className={className}>
-      <div className={`absolute inset-0 ${mood.sky === "heat" ? "sk-l sk-l-haze" : ""}`}>
+      <div className={`absolute inset-0 ${sky === "heat" ? "sk-l sk-l-haze" : ""}`}>
         {/* nuages et oiseaux */}
         <Layer scene={SCENE} box={b(90, 60, 200, 40)} className="sk-l-drift">
           <g opacity=".16" fill="#fff">
@@ -137,9 +137,6 @@ export default function HeroPanorama({ className, mood = CALM }: { className?: s
           <Drop x={994} y={262} delay={1} />
           <Drop x={1018} y={258} delay={1.5} />
         </Layer>
-
-        {/* l'agriculteur, sur la berge d'en face, à droite de la roue (au-dessus du canal animé : rien ne se croise) */}
-        <FarmerLayers scene={SCENE} x={1104} y={273} s={1.1} pose={mood.pose} />
         {rain && <RainLayer scene={SCENE} box={b(0, 0, 1200, 250)} id="pk-rain" />}
       </div>
     </Scene>

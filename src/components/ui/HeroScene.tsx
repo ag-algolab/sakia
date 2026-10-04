@@ -5,8 +5,8 @@
 // (voir SceneKit.tsx). Les collines dépassent du cadre : sur grand écran le paysage se prolonge jusqu'aux bords.
 // Les morceaux de dessin (arbre, roue, mosquée…) sont exportés pour la version panoramique (HeroPanorama.tsx).
 
-import { CALM, FarmerLayers, RainClouds, RainLayer } from "./Farmer";
-import type { DayMood } from "./Farmer";
+import { RainClouds, RainLayer } from "./DaySky";
+import type { DaySky } from "./DaySky";
 import { Layer, Scene, StaticLayer } from "./SceneKit";
 import type { Box } from "./SceneKit";
 
@@ -128,12 +128,12 @@ export const WATER_STOPS = (
 const SCENE: Box = { x: 0, y: 58, w: 400, h: 202 };
 const b = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export default function HeroScene({ className, mood = CALM }: { className?: string; mood?: DayMood }) {
-  const rain = mood.sky === "rain";
+export default function HeroScene({ className, sky = "dawn" }: { className?: string; sky?: DaySky }) {
+  const rain = sky === "rain";
   return (
     <Scene box={SCENE} className={className}>
       {/* chaleur (jour chaud, rejeu de la canicule) : toute la scène ondule légèrement, en une seule couche */}
-      <div className={`absolute inset-0 ${mood.sky === "heat" ? "sk-l sk-l-haze" : ""}`}>
+      <div className={`absolute inset-0 ${sky === "heat" ? "sk-l sk-l-haze" : ""}`}>
         {/* nuages et oiseaux : glissent lentement */}
         <Layer scene={SCENE} box={b(50, 40, 100, 30)} className="sk-l-drift">
           <g opacity=".16" fill="#fff">
@@ -233,9 +233,6 @@ export default function HeroScene({ className, mood = CALM }: { className?: stri
           <Drop x={326} y={206} delay={1} />
           <Drop x={338} y={204} delay={1.5} />
         </Layer>
-
-        {/* l'agriculteur, à droite de la roue (au-dessus de la carte des questions, qui recouvre le bas de la scène) */}
-        <FarmerLayers scene={SCENE} x={373} y={203} s={0.8} pose={mood.pose} />
         {rain && <RainLayer scene={SCENE} box={b(0, 58, 400, 160)} id="cs-rain" />}
       </div>
     </Scene>
