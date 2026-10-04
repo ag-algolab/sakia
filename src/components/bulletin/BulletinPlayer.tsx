@@ -19,6 +19,7 @@
 // pas des réglages.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { startBedMusic } from "@/components/ui/bedMusic";
 import type { BedMusic } from "@/components/ui/bedMusic";
 import { useLang } from "@/components/ui/LangProvider";
@@ -49,6 +50,9 @@ const OUTRO_MS = 1500; // à la fin du bulletin, la musique remonte puis s'étei
 const FETCH_TIMEOUT_MS = 25000; // la voix « en direct » ne répond pas : on renonce et on lit un bulletin enregistré
 const MUSIC_MAX_MS = 120000; // plafond de sécurité : la musique s'arrête toujours
 const VOICE_SUFFIX = / · [^·]*\bvoice(?: \([^)]*\))?$/; // fin des titres de bulletins enregistrés : « · French voice », « · Korean voice (한국어) »
+// Une requête qui ne répond jamais (mauvais réseau) ne doit pas laisser l'écran sur « Préparation… » : au bout de FETCH_TIMEOUT_MS
+// on renonce (message d'erreur, bouton « Écouter » de nouveau actif). Navigateur trop ancien pour AbortSignal.timeout : pas de délai.
+const timeoutSignal = (): AbortSignal | undefined => (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal ? AbortSignal.timeout(FETCH_TIMEOUT_MS) : undefined);
 
 // Profil de l'agriculteur gardé sur l'appareil par l'accueil. Relu à chaque clic sur « Écouter » : toujours à jour.
 function readForm(): { region?: string; crop?: string; soil?: string; system?: string; ago?: string; planting?: string } {
@@ -265,7 +269,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       blob = new Blob([bytes], { type: p.mime });
     } else {
-      const r = await fetch(p.audioUrl!);
+      const r = await fetch(p.audioUrl!, { signal: timeoutSignal() });
       if (!r.ok) throw new Error("audio");
       blob = await r.blob();
     }
@@ -277,7 +281,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
 
   const fetchDemo = useCallback(
     async (id: string, reason: Fallback) => {
-      const r = await fetch(`/audio/demo-${id}.json`);
+      const r = await fetch(`/audio/demo-${id}.json`, { signal: timeoutSignal() });
       if (!r.ok) throw new Error("demo");
       const j = (await r.json()) as BulletinPayload & { title?: string };
       setFallback(reason);
@@ -515,8 +519,12 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
     </div>
   );
 
+  // <main> : anneau de focus doré sur ce thème sombre (le bleu global y est peu visible). Le « ! » final est nécessaire : la règle
+  // globale de globals.css est hors des couches de Tailwind, donc plus prioritaire qu'un simple utilitaire.
+  // L'ombre pleine du même vert prolonge le fond sombre sous la marge du pied de page (sinon une bande crème, couleur du corps de la
+  // page, sépare ce fond sombre du pied de page sombre) ; elle ne change rien à la mise en page et passe sous le pied de page.
   return (
-    <main dir={rtl ? "rtl" : "ltr"} className="flex-1 bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1] [&_*:focus-visible]:outline-[#ffd866]">
+    <main dir={rtl ? "rtl" : "ltr"} className="flex-1 bg-[#0b1d15] text-base leading-relaxed text-[#f7f1e1] shadow-[0_4rem_0_0_#0b1d15] [&_*:focus-visible]:outline-[#ffd866]!">
       <div className="mx-auto w-full max-w-4xl px-4 py-5">
         <h1 className="sr-only">{t.title}</h1>
 
@@ -597,13 +605,25 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
               {nameById(regions, band.regionId)} · {nameById(crops, band.cropId)}
             </p>
             <div className="grid grid-cols-2 gap-px text-base md:grid-cols-4">
-              <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : `${band.rainMm.toFixed(0)} mm`} />
-              <Cell label={t.tmax} value={band.tmaxMax != null ? `${Math.round(band.tmaxMax)} °C` : "—"} />
+              <Cell label={t.rain} value={band.outOfSeason || noAdvice ? "—" : unitText(`${band.rainMm.toFixed(0)} mm`)} />
+              <Cell label={t.tmax} value={band.tmaxMax != null ? unitText(`${Math.round(band.tmaxMax)} °C`) : "—"} />
               <Cell label={t.stress} value={band.outOfSeason || noAdvice ? "—" : t.stressLevels[band.stressRisk]} />
               <Cell
                 label={t.nextIrrigation}
                 alert={noAdvice}
-                value={noAdvice ? t.askCell : band.outOfSeason ? t.outOfSeason : band.next ? `${fmtDay(band.next.date)} · ${doseText(band.next)}` : t.noIrrigation}
+                value={
+                  noAdvice ? (
+                    t.askCell
+                  ) : band.outOfSeason ? (
+                    t.outOfSeason
+                  ) : band.next ? (
+                    <>
+                      {fmtDay(band.next.date)} · {unitText(doseText(band.next))}
+                    </>
+                  ) : (
+                    t.noIrrigation
+                  )
+                }
               />
             </div>
           </div>
@@ -843,7 +863,7 @@ export default function BulletinPlayer({ regions, crops, demos }: { regions: Opt
   );
 }
 
-function Cell({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
+function Cell({ label, value, alert }: { label: string; value: ReactNode; alert?: boolean }) {
   return (
     <div className="bg-[#12281d] px-4 py-3">
       <div className="text-sm font-bold uppercase tracking-wide text-[#e3dcc6]">{label}</div>
@@ -854,3 +874,11 @@ function Cell({ label, value, alert }: { label: string; value: string; alert?: b
     </div>
   );
 }
+
+// Un nombre suivi d'une unité (« 35 °C », « 391 m³/ha ») : isolé de gauche à droite et insécable, sinon l'écran en arabe l'inverse
+// (« C° 35 ») ou coupe l'unité en deux lignes.
+const unitText = (s: string) => (
+  <bdi dir="ltr" className="whitespace-nowrap">
+    {s}
+  </bdi>
+);
