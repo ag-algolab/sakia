@@ -32,10 +32,13 @@ Required and scored by the challenge (section 7.2 of the concept note): for ever
 | Soil water capacity | Water reserve | FAO-56 table 19 (indicative values: 90, 150, 170 mm/m) | FAO | 3 classes | **No real soil map**; the default is loamy soil |
 | Voice synthesis | Spoken bulletin, voice line | ElevenLabs (voice "Rima M", Tunisian accent) | ElevenLabs terms (Creator plan) | about **4 KB per second** of audio (measured) | The model reads Arabic; **Tunisian dialect is not guaranteed and was not validated by a native speaker** |
 | Speech recognition and voice agent | A farmer speaks the crop and region | ElevenLabs (Scribe, and a conversational agent running a language model, claude-sonnet-4-5) | ElevenLabs terms | — | Published accuracy: French excellent, Arabic average, **Tunisian dialect not evaluated by the provider**; our own measurement on real recordings is **not done yet** |
+| Satellite evapotranspiration (research model only) | Label of Sakia-ML | NASA MODIS MOD16A2GF, 500 m, 8-day, gap-filled, via the NASA ORNL DAAC subset service | NASA open data | about 320 eight-day periods × 92 Kairouan cropland pixels (plus 100 pixels in three transfer regions) | A model product with its own error; 500 m pixels mix fields; **no irrigated pixel in the Kairouan sample**; not a measurement of any field |
+| Satellite vegetation index (research model only) | NDVI feature (variants only) | NASA MODIS MOD13Q1, 250 m, 16-day, same service | NASA open data | same pixels | shares its sensor with the label's inputs: partly circular, not deployable |
+| Land cover (research model only) | Picks cropland pixels | ESA WorldCover 2021, class cropland | CC BY 4.0 | random 500 m cells with ≥ 70 % cropland | cropland is mostly rainfed; says nothing about irrigation |
 | Chat and settings | Telegram bot subscribers | Telegram chat identifier, language, region, crop, soil, system, last irrigation date | Our database (Supabase) | a few rows | Nothing else is stored; no name, no phone number, no location |
 | **Farmers' rain reports** | Correct the model's rain (3+ different people agree) | Collected by Sakia through the web app, Telegram, SMS and voice line | Anonymous, produced for this project | **demo reports only: fictitious and labelled so** | No real reports yet; a scale of five levels, not millimetres; at most 3 days back |
 
-We do **not** use any trained model of our own: no training data, no synthetic data set.
+**The irrigation advice uses no trained model.** One research model (Sakia-ML, CatBoost, 43 KB) is trained and evaluated in shadow mode on the data below; it changes no advice. Protocol, amendment log and all results: `ml/README.md`, `ml/results/metrics.json`.
 
 ## C. What the data does NOT cover (scored)
 
@@ -83,3 +86,4 @@ Bias = Open-Meteo minus station. Sources: NOAA GHCN-D station of Kairouan (TSE00
 | Understanding of typed phrases (French, Arabic, Arabizi) | Done on **phrases written by us, not by farmers** — not an accuracy claim |
 | **Speech recognition on real recordings (Tunisian dialect, French)** | **Not done yet** — to be measured and published as it is |
 | Voice agent against adversarial requests | **Not done yet** |
+| **Sakia-ML (research, shadow mode):** CatBoost vs monthly calendar and a FAO-56-style water balance, held-out years 2024–2025, cell-and-year hold-out, transfer to three regions | **Done**, protocol first, failures published: error about 9 % below the calendar in Kairouan (interval excludes zero, 14 cells); no gain in spring; "not sure" rule **not met**; fails in the Sahel. See `ml/README.md` |
