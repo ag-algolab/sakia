@@ -142,7 +142,7 @@ if (!LOCAL) {
     html(tCall - 0.1, s5.at + s5.len + 0.3, `<div class="call" data-at="0" data-fx="pop">📞 <b>Day 1 of the hackathon</b><i>one phone call</i></div><div class="sakiabadge" data-at="${(tSakia - tCall + 0.1).toFixed(2)}" data-fx="pop" data-rot="8"><span class="w">{{WHEEL}}</span><b>Sakia</b></div>`);
   }
   // 7. l'équipe
-  if (s6) html(s6.at + 0.2, s6.at + s6.len + 0.6, `<div class="teamchip" data-at="0" data-fx="pop" data-rot="4">TEAM: 1 HUMAN + 1 AI CODING ASSISTANT</div>`);
+  if (s6) html(s6.at + 0.2, s6.at + s6.len + 0.6, `<div class="teamchip" data-at="0" data-fx="pop" data-rot="4">TEAM: 1 HUMAN + CLAUDE CODE (AI)</div>`);
   // 8. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
 }
 

@@ -24,7 +24,8 @@ export const VO_LINES = [
   "Three taps, with pictures.",
   "Then the answer, spoken in Tunisian Arabic.",
   "Irrigate today: 214 cubic metres per hectare.",
-  "The same answer in the app, even offline.",
+  // hors ligne APRÈS installation (l'appli a besoin du réseau une première fois) : rien qui ressemble à de la publicité mensongère
+  "Once installed, the app gives the same answer, even offline.",
   "On Telegram.",
   "With a simple phone call.",
   "Or by text message.",
@@ -170,7 +171,7 @@ const GRID = { y: 600, scale: 0.84, xs: [255, 725, 1195, 1665] };
 const G_END = E("sms"); // tous restent jusqu'à la fin de la scène
 const gridPhone = (i, id, extra) => ({ type: "phone", start: A(id), end: G_END + 0.3, fadeIn: 0.2, fadeOut: 0.3, enterFrom: "bottom", x: GRID.xs[i], y: GRID.y, scale: GRID.scale, ...extra });
 const GRID_LABELS = [
-  ["app", "📲", "App, no network", "REAL"],
+  ["app", "📲", "Installed app, offline", "REAL"],
   ["telegram", "✈️", "Telegram", "REAL"],
   ["call", "📞", "Phone call", "SIMULATED"],
   ["sms", "💬", "SMS", "SIMULATED"],
@@ -218,6 +219,7 @@ export default {
     .glabel i{font-style:normal;font-size:26px}
     .glabel em{font-style:normal;font:800 15px Geist,sans-serif;letter-spacing:.08em;padding:5px 10px;border-radius:999px}
     .glabel em.r{background:#2f9a5a;color:#fff}.glabel em.s{background:#f2b33d;color:#2a1d05}
+    .noor-tag{position:absolute;left:1740px;top:418px;transform:translateX(-50%);padding:10px 26px;border-radius:999px;background:#f2b33d;color:#2a1d05;font:900 40px Fraunces,serif;box-shadow:0 12px 30px rgba(0,0,0,.4)}
     .pr-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
     .pr-tag{font:800 26px Geist,sans-serif;letter-spacing:.12em;color:#2a1d05;background:#f2b33d;padding:10px 22px;border-radius:999px}
     .pr-big{font:900 230px/1 Fraunces,serif;color:#f2b33d;margin-top:34px;letter-spacing:-.02em}
@@ -233,11 +235,14 @@ export default {
     { type: "bg", style: "green" },
 
     // ---------------------------------------------------------------- 1. le problème : chapitres du film, tenus sur leur image clé
-    // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage en jaune ; « 230 % » ; « Irrigate today… or wait? »)
+    // (« Meet Noor. 38 years old. » ; « 27.9 % », le 4e personnage devenu jaune ; « 230 % » ; « Irrigate today… or wait? »,
+    // pris après la disparition du bloc « Meet Noor » pour qu'il ne repasse pas pendant le fondu)
     filmLayer("noor", 0, E("noor") + 0.4, 2.85, 4.95),
-    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.5),
+    filmLayer("read", A("read") - 0.15, E("read") + 0.4, 0.3, 2.6),
+    // le personnage en jaune, c'est Noor : son nom surgit dessous quand la voix le dit
+    { type: "html", start: A("read", 2.2), end: E("read") + 0.3, fx: "none", fadeIn: 0.01, fadeOut: 0.3, html: `<div class="noor-tag" data-at="0" data-fx="pop" data-rot="-6">Noor</div>` },
     filmLayer("aquifer", A("aquifer") - 0.15, E("aquifer") + 0.4, 0.3, 3.7),
-    { ...filmLayer("noor", A("question") - 0.15, E("question"), 7.7, 9.6), fadeOut: 0.35 },
+    { ...filmLayer("noor", A("question") - 0.15, E("question"), 8.1, 9.6), fadeOut: 0.35 },
 
     // ---------------------------------------------------------------- 2. la solution, sur le vrai site (un seul plan continu)
     { type: "chip", start: A("web", 0.3), end: E("web") - 0.2, x: X, y: 240, text: "REAL · WORKS END TO END", tone: "real" },
