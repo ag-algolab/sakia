@@ -34,7 +34,12 @@ function hintsFor(state: CallState | null, ui: UiLang): { key: string; label: st
   if (!state || state.node === "ended") return [];
   switch (state.node) {
     case "lang":
-      return [{ key: "2", label: t("hint_lang_ar") }, { key: "1", label: t("hint_lang_fr") }]; // même ordre que l'accueil parlé : l'arabe d'abord
+      // anglais d'abord (le jury est anglophone, décision d'Anthony du 4 oct.) : 1 anglais, 2 français, 3 arabe, comme l'accueil parlé
+      return [
+        { key: "1", label: t("hint_lang_en") },
+        { key: "2", label: t("hint_lang_fr") },
+        { key: "3", label: t("hint_lang_ar") },
+      ];
     case "region":
       return [
         { key: "1", label: regionLabel("kairouan", ui) },
@@ -207,15 +212,12 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
 
   return (
     <main dir={ui === "ar" ? "rtl" : "ltr"} className="mx-auto w-full max-w-5xl px-4 py-6">
-      <h1 className="text-2xl font-bold text-sakia-green">{t("title")}</h1>
+      {/* Presque pas de texte (demande d'Anthony, 4 oct.) : un titre, l'étiquette d'honnêteté « simulé », une phrase. Le téléphone parle de lui-même. */}
+      <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold text-sakia-green">
+        {t("title")}
+        <span className="rounded-md bg-sakia-sun/90 px-2 py-0.5 text-sm font-extrabold uppercase tracking-wide text-sakia-ink">{t("simBadge")}</span>
+      </h1>
       <p className="mt-2 max-w-3xl text-lg">{t("intro")}</p>
-      <p className="mt-2 max-w-3xl text-base text-sakia-brown">{t("stat")}</p>
-      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-green bg-sakia-green-light px-3 py-2 text-base text-sakia-ink">
-        <strong className="block">{t("langOrderTitle")}</strong> {t("langOrder")}
-      </p>
-      <p role="note" className="mt-3 max-w-3xl rounded-lg border border-sakia-alert bg-sakia-alert-light px-3 py-2 text-base font-semibold text-sakia-alert">
-        {t("simulated")}
-      </p>
 
       <div className="mt-6 grid items-start gap-6 md:grid-cols-[22rem_1fr]">
         {/* ---------- le téléphone ---------- */}
@@ -238,9 +240,12 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                     <p className="text-xl font-semibold leading-snug" lang="en" dir="ltr">
                       {c.now.en}
                     </p>
-                    <p className="mt-2 border-t border-sakia-green/20 pt-2 text-lg text-sakia-brown" lang={c.now.lang} dir={c.now.lang === "ar" ? "rtl" : "ltr"}>
-                      {c.now.text}
-                    </p>
+                    {/* la phrase dite, si elle n'est pas déjà l'anglais affiché au-dessus */}
+                    {c.now.text !== c.now.en && (
+                      <p className="mt-2 border-t border-sakia-green/20 pt-2 text-lg text-sakia-brown" lang={c.now.lang} dir={c.now.lang === "ar" ? "rtl" : "ltr"}>
+                        {c.now.text}
+                      </p>
+                    )}
                   </div>
                 )}
                 {c.phase === "ended" && <p className="mt-2 text-base font-semibold" dir={ui === "ar" ? "rtl" : "ltr"}>{t("duration")} {mmss(c.call?.elapsedMs ?? 0)}</p>}
@@ -292,12 +297,16 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             </div>
           </div>
           <p className="mt-2 text-center text-sm text-sakia-brown" dir={ui === "ar" ? "rtl" : "ltr"}>
-            {t("maxCall")} {t("alwaysKeys")}
+            {t("alwaysKeys")}
           </p>
+          {/* parler au lieu de taper : l'agent vocal comprend la culture, la région, le dernier arrosage, et répond avec la voix */}
           {agentReady && (
             <p className="mt-3 text-center">
-              <Link href="/call/talk" className="inline-flex min-h-11 items-center rounded-lg border border-sakia-green px-4 text-base font-semibold text-sakia-green hover:bg-sakia-green-light">
-                🎙 {t("talkLink")}
+              <Link
+                href="/call/talk"
+                className="sk-press inline-flex min-h-12 items-center gap-2 rounded-full bg-sakia-water-deep px-5 text-base font-bold text-white shadow-sm"
+              >
+                <span aria-hidden>🎙</span> {t("talkLink")}
               </Link>
             </p>
           )}
@@ -319,45 +328,20 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             </div>
           )}
 
-          <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-            <h2 id="call-source-title" className="text-base font-bold text-sakia-green">{t("sourceTitle")}</h2>
-            {/* le vrai bouton radio couvre toute la ligne (transparent) : la zone à toucher fait au moins 44 px, le rond dessiné n'est que visuel */}
-            <fieldset aria-labelledby="call-source-title" className="mt-2 space-y-1">
-              {(
-                [
-                  ["auto", "sourceAuto"],
-                  ["recorded", "sourceRec"],
-                ] as const
-              ).map(([value, label]) => (
-                <label key={value} className="relative flex min-h-11 cursor-pointer items-start gap-3 py-1.5 text-base">
-                  <input
-                    type="radio"
-                    name="mode"
-                    className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                    checked={mode === value}
-                    onChange={() => setMode(value)}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-sakia-green bg-white peer-checked:bg-sakia-green peer-checked:shadow-[inset_0_0_0_3px_#fff] peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sakia-water-deep"
-                  />
-                  <span>{t(label)}</span>
-                </label>
-              ))}
-            </fieldset>
-            <p className={`mt-1 text-sm font-semibold ${c.online ? "text-sakia-green" : "text-sakia-alert"}`}>{c.online ? t("online") : t("offline")}</p>
-            {mode === "recorded" && <p className="mt-1 text-sm text-sakia-brown">{t("bannerRecChoices", { list: recordedChoices(demos, ui) })}</p>}
-          </div>
-
-          <div className="space-y-2">
-            {c.banner && <BannerView banner={c.banner} ui={ui} demos={demos} />}
-            <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-              <h2 className="text-base font-bold text-sakia-green">{t("guardTitle")}</h2>
-              <div className="mt-2">
-                <GuardView guard={c.guard} ui={ui} />
-              </div>
+          {/* l'état de la voix et le garde-fou n'apparaissent qu'une fois un conseil lu : avant, rien à lire */}
+          {(c.banner || c.guard) && (
+            <div className="space-y-2">
+              {c.banner && <BannerView banner={c.banner} ui={ui} demos={demos} />}
+              {c.guard && (
+                <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
+                  <h2 className="text-base font-bold text-sakia-green">{t("guardTitle")}</h2>
+                  <div className="mt-2">
+                    <GuardView guard={c.guard} ui={ui} />
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {lastPlan && (
             <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
@@ -365,14 +349,17 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                 {lastPlan.lines.map((l, i) => (
                   <li key={l.id} className={`rounded-lg px-2 py-1 ${i === lastPlan.active ? "bg-sakia-green-light" : ""} ${l.id === "unsure" ? "border-l-4 border-sakia-alert bg-sakia-alert-light" : ""}`}>
                     <p className="text-lg" lang="en" dir="ltr">{l.en}</p>
-                    <p className="text-base text-sakia-brown" lang={lastPlan.lang} dir={lastPlan.lang === "ar" ? "rtl" : "ltr"}>{l.text}</p>
+                    {l.text !== l.en && (
+                      <p className="text-base text-sakia-brown" lang={lastPlan.lang} dir={lastPlan.lang === "ar" ? "rtl" : "ltr"}>{l.text}</p>
+                    )}
                   </li>
                 ))}
               </ol>
             </div>
           )}
 
-          <details className="rounded-xl border border-sakia-sand-dark bg-white p-3" open={c.log.length > 0}>
+          {/* transcription repliée : la personne écoute, elle n'a pas à lire */}
+          <details className="rounded-xl border border-sakia-sand-dark bg-white p-3">
             <summary className="flex min-h-11 cursor-pointer items-center text-base font-bold text-sakia-green">{t("transcript")}</summary>
             <ol tabIndex={0} aria-label={t("transcript")} className="mt-2 max-h-72 space-y-2 overflow-y-auto">
               {c.log.map((e) => (
@@ -382,13 +369,15 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                   {e.kind === "prompt" && (
                     <>
                       <span lang="en" dir="ltr" className="block">☸ {e.en}</span>
-                      <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.text}</span>
+                      {e.text !== e.en && <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.text}</span>}
                     </>
                   )}
                   {e.kind === "plan" && (
                     <>
                       <span lang="en" dir="ltr" className="block">☸ {e.lines.map((l) => l.en).join(" ")}</span>
-                      <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.lines.map((l) => l.text).join(" ")}</span>
+                      {e.lines.some((l) => l.text !== l.en) && (
+                        <span lang={e.lang} dir={e.lang === "ar" ? "rtl" : "ltr"} className="block text-sm text-sakia-brown">{e.lines.map((l) => l.text).join(" ")}</span>
+                      )}
                     </>
                   )}
                 </li>
@@ -398,11 +387,46 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
         </section>
       </div>
 
-      {/* ---------- hors connexion, branchement réel, ce qui est réel ---------- */}
+      {/* ---------- hors connexion, branchement réel, ce qui est réel : tout est replié derrière son titre ---------- */}
       <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <section className="rounded-xl border border-sakia-sand-dark bg-white p-4">
-          <h2 className="text-lg font-bold text-sakia-green">{t("prepTitle")}</h2>
-          <p className="mt-1 text-base">{t("prepText", { n: offlineUrls.length, size: megabytes(offlineKb, ui) })}</p>
+        <details className="group self-start rounded-xl border border-sakia-sand-dark bg-white p-4">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="text-lg font-bold text-sakia-green">{t("prepTitle")}</h2>
+            <span aria-hidden className="text-2xl leading-none text-sakia-green transition-transform group-open:rotate-45">
+              +
+            </span>
+          </summary>
+          {/* d'où vient la voix : en direct, ou seulement les enregistrements (comme sans internet) */}
+          <fieldset aria-labelledby="call-source-title" className="mt-2 space-y-1">
+            <legend id="call-source-title" className="text-base font-bold text-sakia-green">
+              {t("sourceTitle")}
+            </legend>
+            {(
+              [
+                ["auto", "sourceAuto"],
+                ["recorded", "sourceRec"],
+              ] as const
+            ).map(([value, label]) => (
+              // le vrai bouton radio couvre toute la ligne (transparent) : la zone à toucher fait au moins 44 px, le rond dessiné n'est que visuel
+              <label key={value} className="relative flex min-h-11 cursor-pointer items-start gap-3 py-1.5 text-base">
+                <input
+                  type="radio"
+                  name="mode"
+                  className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  checked={mode === value}
+                  onChange={() => setMode(value)}
+                />
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-sakia-green bg-white peer-checked:bg-sakia-green peer-checked:shadow-[inset_0_0_0_3px_#fff] peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sakia-water-deep"
+                />
+                <span>{t(label)}</span>
+              </label>
+            ))}
+          </fieldset>
+          <p className={`mt-1 text-sm font-semibold ${c.online ? "text-sakia-green" : "text-sakia-alert"}`}>{c.online ? t("online") : t("offline")}</p>
+          {mode === "recorded" && <p className="mt-1 text-sm text-sakia-brown">{t("bannerRecChoices", { list: recordedChoices(demos, ui) })}</p>}
+          <p className="mt-3 text-base">{t("prepText", { n: offlineUrls.length, size: megabytes(offlineKb, ui) })}</p>
           <button
             type="button"
             onClick={runPrep}
@@ -417,7 +441,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
             {prep.state === "partial" && t("prepPartial", { n: prep.kept, total: offlineUrls.length })}
           </p>
           <p className="mt-2 text-sm text-sakia-brown">{t("sizes", { n: stats.promptCount, kb: stats.promptKb, planKb: stats.planKb })}</p>
-        </section>
+        </details>
 
         {/* le détail technique est replié : le jury lit le titre, le curieux ouvre (rien n'est retiré) */}
         <details className="group self-start rounded-xl border border-sakia-sand-dark bg-white p-4">

@@ -20,10 +20,12 @@ export function regionName(id: string, lang: Lang): string {
 }
 
 export const R = {
+  // Sur un téléphone à touches, on ne tape pas « olivier kairouan hier » : pour changer de culture ou de région, on APPELLE Sakia
+  // et on le dit (l'agent vocal comprend et répond avec la voix). Décision d'Anthony, 4 oct. Les messages écrits restent compris.
   help: {
-    fr: "Sakia : envoyez culture + région + hier ou 3j si arrosé, ex. olivier kairouan hier. PLAN = dernier plan, LANGUE, STOP = effacer. *123# = menu.",
-    en: "Sakia: send crop + region + yesterday or 3d if irrigated, e.g. olive kairouan yesterday. PLAN = last plan, LANGUAGE, STOP = erase. *123# = menu.",
-    ar: "ساقية: أرسل المحصول والولاية وآخر سقي، مثال: زيتون القيروان البارح. خطة، لغة، ايقاف = مسح. *123# قائمة",
+    fr: "Sakia : pour changer de culture ou de région, appelez Sakia et dites-le. PLAN = dernier plan, LANGUE, STOP = effacer. *123# = menu.",
+    en: "Sakia: to change your crop or region, call Sakia and just say it. PLAN = last plan, LANGUAGE, STOP = erase. *123# = menu.",
+    ar: "ساقية: لتغيير المحصول أو الولاية، اتصل بساقية وقلها. خطة، لغة، ايقاف = مسح. *123# قائمة",
   } as T,
   // Réponse à la question « dernier arrosage ? » quand le chiffre n'est pas l'un de ceux proposés.
   askAgo: AGO_ASK as T,

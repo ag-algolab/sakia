@@ -78,6 +78,8 @@ export type Strings = {
   seeSmsNote: string;
   simCall: string;
   simCallNote: string;
+  talkSakia: string; // parler à l'agent vocal (changer de culture ou de région en le disant)
+  moreTitle: string; // pli « comment marche cette simulation »
   simulatedDetail: string;
   // écran du téléphone (LCD)
   lcdPickChoice: string;
@@ -134,7 +136,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     offline: "Hors connexion",
     lastPlan: "dernier plan mis à jour",
     noPlan: "aucun plan enregistré sur cet appareil",
-    phoneTitle: "Téléphone à touches : le SMS du matin (simulation)",
+    phoneTitle: "Téléphone à touches : le SMS du matin",
     phoneIntro: "Le plan des 7 jours arrive chaque matin en un SMS. On répond avec les touches.",
     simulated: "SIMULATION : aucun vrai SMS, aucun vrai appel, aucun vrai numéro.",
     placeholder: "Écrire un message…",
@@ -199,6 +201,8 @@ export const STRINGS: Record<UiLang, Strings> = {
     seeSmsNote: "Calculé maintenant, avec la météo du jour.",
     simCall: "Simuler un appel",
     simCallNote: "On écoute le conseil, on choisit avec les touches.",
+    talkSakia: "Parler à Sakia",
+    moreTitle: "Comment marche cette simulation",
     simulatedDetail:
       "Calculé maintenant avec la météo du jour par le vrai moteur. Aucun opérateur branché : c'est le serveur qui répond.",
     lcdPickChoice: "Choisissez région et culture au-dessus",
@@ -250,7 +254,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     offline: "بدون اتصال",
     lastPlan: "آخر تحديث للخطة",
     noPlan: "لا توجد خطة محفوظة على هذا الجهاز",
-    phoneTitle: "هاتف بأزرار: رسالة الصباح (محاكاة)",
+    phoneTitle: "هاتف بأزرار: رسالة الصباح",
     phoneIntro: "تصل خطة 7 أيام كل صباح في رسالة SMS واحدة. الرد يكون بالأزرار.",
     simulated: "محاكاة: لا رسالة حقيقية، ولا مكالمة حقيقية، ولا رقم حقيقي.",
     placeholder: "اكتب رسالة…",
@@ -315,6 +319,8 @@ export const STRINGS: Record<UiLang, Strings> = {
     seeSmsNote: "محسوبة الآن بطقس اليوم.",
     simCall: "محاكاة مكالمة",
     simCallNote: "تستمع إلى النصيحة وتختار بالأزرار.",
+    talkSakia: "تحدّث مع ساقية",
+    moreTitle: "كيف تعمل هذه المحاكاة",
     simulatedDetail:
       "تُحسب رسالة الصباح الآن بطقس اليوم، بنفس المحرك الذي تستعمله خدمة الرسائل؛ ولا يوجد أي مشغّل متصل: الخادم هو الذي يجيب.",
     lcdPickChoice: "اختر الولاية والمحصول فوق",
@@ -366,7 +372,7 @@ export const STRINGS: Record<UiLang, Strings> = {
     offline: "Offline",
     lastPlan: "last plan updated",
     noPlan: "no plan saved on this device",
-    phoneTitle: "Keypad phone: the morning SMS (simulation)",
+    phoneTitle: "Keypad phone: the morning SMS",
     phoneIntro: "The 7-day plan arrives every morning as one SMS. Reply with the keys.",
     simulated: "SIMULATION: no real SMS, no real call, no real phone number.",
     placeholder: "Write a message…",
@@ -431,6 +437,8 @@ export const STRINGS: Record<UiLang, Strings> = {
     seeSmsNote: "Worked out now, with today's weather.",
     simCall: "Simulate a call",
     simCallNote: "Listen to the advice, choose with the keys.",
+    talkSakia: "Talk to Sakia",
+    moreTitle: "How this simulation works",
     simulatedDetail:
       "Worked out now with today's weather by the real engine. No operator is connected: the server answers.",
     lcdPickChoice: "Choose region and crop above",
