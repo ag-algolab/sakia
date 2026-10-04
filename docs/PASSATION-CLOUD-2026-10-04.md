@@ -15,8 +15,9 @@ cloud n'a jamais vu) : ajoutez-y une ligne qui renvoie ici.
 
 - Branche : `claude/poste-ui-cloud-migration-6d8wjy`, repartie de `origin/main` (la PR n°2 étant fusionnée, on ne la réutilise pas).
   L'historique détaillé (agents, fusions) n'est pas gardé : il a été aplati en un commit pour ne résoudre qu'une fois les conflits avec `main`.
-- Passé sur l'arbre final : `tsc` ; `eslint src scripts` (0 erreur, 1 avertissement d'origine dans `scripts/narration.mjs`, pas de nous) ;
-  `next build` ; `npx tsx src/lib/sms/check.ts` (214 contrôles) ; contrôle automatique complet dans un vrai navigateur : **44 vues**
+- Passé sur l'arbre final : `tsc` ; `eslint src scripts docs` (0 erreur, 1 avertissement d'origine dans `scripts/narration.mjs`, pas de nous).
+- Passé sur l'arbre juste avant le petit correctif de la page /call (commit « Suite du 4 octobre… ») : `next build` ; `npx tsx src/lib/sms/check.ts`
+  (214 contrôles) ; contrôle automatique complet dans un vrai navigateur : **44 vues**
   (13 pages × langues × téléphone/ordinateur), 0 violation d'accessibilité (axe), 0 défilement horizontal, seul reproche : 2 petits liens de
   la page À propos (30 px de haut, déjà là avant), plus des avertissements sans gravité (service worker bloqué par Playwright).
 - Passé sur l'arbre juste avant la fusion avec `main` : `telegram-selftest` (58 contrôles, dont 3 nouveaux), `telegram-health-selftest`,
