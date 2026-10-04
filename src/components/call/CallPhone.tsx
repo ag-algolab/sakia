@@ -396,7 +396,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
           )}
 
           <details className="rounded-xl border border-sakia-sand-dark bg-white p-3" open={c.log.length > 0}>
-            <summary className="cursor-pointer text-base font-bold text-sakia-green">{t("transcript")}</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center text-base font-bold text-sakia-green">{t("transcript")}</summary>
             <ol tabIndex={0} aria-label={t("transcript")} className="mt-2 max-h-72 space-y-2 overflow-y-auto">
               {c.log.map((e) => (
                 <li key={e.id} className="text-base">
