@@ -143,11 +143,7 @@ if (!LOCAL) {
   }
   // 7. l'équipe
   if (s6) html(s6.at + 0.2, s6.at + s6.len + 0.6, `<div class="teamchip" data-at="0" data-fx="pop" data-rot="4">TEAM: 1 HUMAN + 1 AI CODING ASSISTANT</div>`);
-  // 8. le grand-père, en plein écran, avec la voix d'Anthony
-  if (s7 && A("grandpere.jpg")) {
-    pops.push({ type: "image", start: s7.at + 0.15, end: END_AT + 0.4, fadeIn: 0.6, fadeOut: 0.4, src: A("grandpere.jpg"), fit: "contain", cls: "gp", kenburns: { from: [1.0, 0.5, 0.4], to: [1.08, 0.5, 0.35] } });
-    html(s7.at + 0.9, END_AT + 0.3, `<div class="gplabel" data-at="0" data-fx="slide">My grandfather · farmer, France</div>`);
-  }
+  // 8. le grand-père : sa phrase reste sur son visage (aucune photo : la seule fournie n'était pas lui)
 }
 
 // « localiser l'IA » : le résultat qui fonde la position (phrase 3), puis la méthode en six temps (phrases 6 à 8)

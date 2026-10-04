@@ -56,12 +56,10 @@
     return lo;
   };
   const sourceIndex = (seg) => (seg.media ? window.MEDIA[seg.media] : window.CLIPS[seg.clip]);
+  // le dernier morceau commencé ; une fois fini, il reste sur sa dernière image jusqu'au suivant
+  // (avant : un trou entre deux morceaux renvoyait au tout premier, d'où une saute d'image)
   const segAt = (segs, t) => {
-    for (let i = segs.length - 1; i >= 0; i--) {
-      const s = segs[i];
-      const len = (s.to - s.from) / (s.rate ?? 1);
-      if (t >= s.at && t < s.at + len + (i === segs.length - 1 ? 1e9 : 0)) return { s, i };
-    }
+    for (let i = segs.length - 1; i >= 0; i--) if (t >= segs[i].at) return { s: segs[i], i };
     return { s: segs[0], i: 0 };
   };
   const localTime = (s, t) => Math.min(s.to, s.from + Math.max(0, t - s.at) * (s.rate ?? 1));
@@ -304,21 +302,35 @@
       const box = el("div", "vid-layer " + (L.cls ?? ""));
       // vidéo filmée à la verticale : on la montre entière, sur un fond flou fait de la même image
       const back = L.fit === "contain" ? el("img", "vid-back", box) : null;
+      // morceau précédent, sous le courant, pendant un fondu enchaîné (segment.xfade, en secondes)
+      const imgB = el("img", null, box);
+      Object.assign(imgB.style, { position: "absolute", left: 0, top: 0, opacity: 0 });
       const img = el("img", null, box);
-      if (back) img.style.objectFit = "contain";
+      if (back) img.style.objectFit = imgB.style.objectFit = "contain";
       Object.assign(box.style, { left: (L.x ?? 0) + "px", top: (L.y ?? 0) + "px", width: (L.w ?? 1920) + "px", height: (L.h ?? 1080) + "px" });
       return (t) => {
         const p = presence(L, t);
         box.style.display = p <= 0 ? "none" : "block";
         if (p <= 0) return;
         box.style.opacity = p;
-        const { s } = segAt(L.segments, t);
+        const { s, i } = segAt(L.segments, t);
         const idx = window.MEDIA[s.media];
         const src = idx.base + idx.n[frameAt(idx, localTime(s, t))];
         setSrc(img, src);
         if (back) setSrc(back, src);
+        const since = t - s.at;
+        if (i > 0 && s.xfade && since < s.xfade) {
+          const prev = L.segments[i - 1];
+          const pidx = window.MEDIA[prev.media];
+          setSrc(imgB, pidx.base + pidx.n[frameAt(pidx, localTime(prev, t))]);
+          imgB.style.opacity = 1;
+          img.style.opacity = E.inOut(clamp(since / s.xfade));
+        } else {
+          imgB.style.opacity = 0;
+          img.style.opacity = 1;
+        }
         const z = kv(L.zoom ?? 1, t);
-        img.style.transform = `scale(${z})`;
+        img.style.transform = imgB.style.transform = `scale(${z})`;
       };
     },
   };

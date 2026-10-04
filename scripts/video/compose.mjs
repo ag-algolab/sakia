@@ -209,11 +209,19 @@ async function mix(videoOnly, from, to) {
   if (spec.music) {
     inputs.push("-i", resolveAudio(spec.music.file));
     const g = Math.pow(10, (spec.music.gain ?? -20) / 20);
-    // la musique baisse quand quelqu'un parle (voix off, voix de l'appli)
-    const duck = (spec.music.duck ?? []).map((d) => `between(t,${(d.from - from).toFixed(2)},${(d.to - from).toFixed(2)})`).join("+");
+    // la musique baisse quand quelqu'un parle (voix off, voix de l'appli), en douceur : rampes de 0,3 s, et elle ne remonte
+    // pas dans les petits silences entre deux phrases (intervalles à moins de 0,8 s fusionnés) — sinon elle « pompe »
+    const R = spec.music.duckRamp ?? 0.3;
+    const iv = [];
+    for (const d of [...(spec.music.duck ?? [])].sort((a, b) => a.from - b.from)) {
+      const last = iv.at(-1);
+      if (last && d.from - last[1] < (spec.music.duckMerge ?? 0.8)) last[1] = Math.max(last[1], d.to);
+      else iv.push([d.from, d.to]);
+    }
+    const duck = iv.map(([a, b]) => `clip(min((t-${(a - from - R).toFixed(2)})/${R},(${(b - from + R).toFixed(2)}-t)/${R}),0,1)`).reduce((acc, x) => `max(${acc},${x})`, "0");
     const dk = Math.pow(10, (spec.music.duckGain ?? -9) / 20);
     filters.push(
-      `[0:a]atrim=start=${(spec.music.offset ?? 0) + from}:duration=${len},asetpts=PTS-STARTPTS,aformat=sample_rates=48000:channel_layouts=stereo,volume='${g}*if(${duck || 0},${dk},1)':eval=frame,afade=t=in:st=0:d=${from > 0 ? 0.01 : spec.music.fadeIn ?? 1.2},afade=t=out:st=${Math.max(0, len - (spec.music.fadeOut ?? 2.5))}:d=${spec.music.fadeOut ?? 2.5}[mus]`,
+      `[0:a]atrim=start=${(spec.music.offset ?? 0) + from}:duration=${len},asetpts=PTS-STARTPTS,aformat=sample_rates=48000:channel_layouts=stereo,volume='${g}*(1-(${duck})*${(1 - dk).toFixed(4)})':eval=frame,afade=t=in:st=0:d=${from > 0 ? 0.01 : spec.music.fadeIn ?? 1.2},afade=t=out:st=${Math.max(0, len - (spec.music.fadeOut ?? 2.5))}:d=${spec.music.fadeOut ?? 2.5}[mus]`,
     );
     labels.push("[mus]");
   }
