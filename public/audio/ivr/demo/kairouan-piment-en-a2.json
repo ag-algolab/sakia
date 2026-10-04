@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Pepper.",
+   "startMs": 0,
+   "endMs": 3840,
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 3920,
+   "endMs": 6560,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare.",
+   "startMs": 6640,
+   "endMs": 16320,
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Next irrigations: Sunday, Tuesday and Thursday.",
+   "startMs": 16440,
+   "endMs": 19920,
+   "en": "Next irrigations: Sunday, Tuesday and Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "startMs": 20160,
+   "endMs": 22160,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Pepper.",
+   "en": "Irrigation advice for Kairouan, crop: Pepper."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare.",
+   "en": "Our advice: irrigate on Friday 17 July, with the equivalent of 19 millimetres of rain, which is 192 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Next irrigations: Sunday, Tuesday and Thursday.",
+   "en": "Next irrigations: Sunday, Tuesday and Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 22160
+}

@@ -1,4 +1,4 @@
-// GET /api/ivr/plan-audio?region=kairouan&crop=olivier&lang=fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ]  →  audio/mpeg
+// GET /api/ivr/plan-audio?region=kairouan&crop=olivier&lang=en|fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ][&detail=1]  →  audio/mpeg
 // Le plan lu à voix haute, seul (sans sous-titres) : ce qu'une passerelle téléphonique jouerait à l'appelant.
 // Même texte, même cache et même budget que /api/ivr/plan. En-têtes : x-ivr-source (live | cache), x-ivr-ask-a-person (true | false).
 

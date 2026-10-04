@@ -1,4 +1,4 @@
-// GET /api/ivr/plan?region=kairouan&crop=olivier&lang=fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ]
+// GET /api/ivr/plan?region=kairouan&crop=olivier&lang=en|fr|ar&ago=0..7|u[&asOf=AAAA-MM-JJ][&detail=1]
 // Le conseil lu au téléphone : sous-titres calés (langue parlée + anglais), audio mp3 en base64, garde-fou « pas sûr ».
 // Les chiffres viennent du moteur (buildPlan). Si la voix est indisponible (budget atteint, pas de réseau vers le service vocal),
 // la réponse contient quand même le texte du conseil et `audioError`, pour que la page ne reste jamais muette sans le dire.

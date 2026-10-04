@@ -1,9 +1,22 @@
-// Menus de la ligne vocale : régions, groupes de cultures, réponses à « quand avez-vous arrosé ? ».
+// Menus de la ligne vocale : langues, régions, groupes de cultures, réponses à « quand avez-vous arrosé ? ».
 // Tout vient du catalogue (crops.ts, regions.ts) : aucun nom de culture ni de région n'est écrit à la main dans les phrases.
 // Pur (sans réseau, sans fichier) : utilisable dans le navigateur, sur le serveur et dans les scripts.
 
-export type IvrLang = "fr" | "ar";
-export const IVR_LANGS: IvrLang[] = ["ar", "fr"]; // ordre d'écoute : l'arabe d'abord ; les touches restent 1 = français, 2 = arabe
+export type IvrLang = "en" | "fr" | "ar";
+
+// Choix de la langue (décision d'Anthony, 4 octobre 2026 : le jury est anglophone) : 1 = anglais, 2 = français, 3 = arabe.
+// C'est aussi l'ordre d'écoute de l'accueil, et chaque phrase d'accueil dit sa propre touche, prise ici.
+export type LangKey = "1" | "2" | "3";
+export const LANG_CHOICES: { key: LangKey; lang: IvrLang }[] = [
+  { key: "1", lang: "en" },
+  { key: "2", lang: "fr" },
+  { key: "3", lang: "ar" },
+];
+export const IVR_LANGS: IvrLang[] = LANG_CHOICES.map((c) => c.lang);
+export const langKey = (lang: IvrLang): LangKey => LANG_CHOICES.find((c) => c.lang === lang)!.key;
+// Langue employée tant que l'appelant n'a pas choisi (et par défaut des routes /api/ivr/plan*).
+export const DEFAULT_LANG: IvrLang = "en";
+export const isIvrLang = (x: unknown): x is IvrLang => typeof x === "string" && (IVR_LANGS as string[]).includes(x);
 
 export const DEFAULT_REGION = "kairouan";
 // Gouvernorats agricoles proposés après « une autre région » (touches 1 à 7).

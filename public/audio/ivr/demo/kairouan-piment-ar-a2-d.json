@@ -5,74 +5,74 @@
    "text": "تفاصيل الأسبوع، الفلفل.",
    "startMs": 0,
    "endMs": 2080,
-   "en": "Week details, Pepper."
+   "en": "This week in detail, Pepper."
   },
   {
    "id": "irr1",
    "text": "يوم الجمعة سبعة عشر جويلية: تسعة عشر ميليمتر.",
    "startMs": 2560,
    "endMs": 6960,
-   "en": "On Friday 17 July: 19 millimetres."
+   "en": "Friday 17 July: 19 millimetres."
   },
   {
    "id": "irr2",
    "text": "يوم الأحد تسعة عشر جويلية: ثمانية عشر ميليمتر.",
    "startMs": 7040,
    "endMs": 11440,
-   "en": "On Sunday 19 July: 18 millimetres."
+   "en": "Sunday 19 July: 18 millimetres."
   },
   {
    "id": "irr3",
    "text": "يوم الثلاثاء واحد وعشرون جويلية: ثمانية عشر ميليمتر.",
    "startMs": 11520,
    "endMs": 16400,
-   "en": "On Tuesday 21 July: 18 millimetres."
+   "en": "Tuesday 21 July: 18 millimetres."
   },
   {
    "id": "irr4",
    "text": "يوم الخميس ثلاثة وعشرون جويلية: تسعة عشر ميليمتر.",
    "startMs": 16520,
    "endMs": 21120,
-   "en": "On Thursday 23 July: 19 millimetres."
+   "en": "Thursday 23 July: 19 millimetres."
   },
   {
    "id": "total",
    "text": "مجموع الأسبوع: ما يعادل مطرا من أربعة وسبعون ميليمتر، أي سبعمائة وثلاثة وأربعون متر مكعب للهكتار.",
    "startMs": 21320,
    "endMs": 30320,
-   "en": "Week total: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
+   "en": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
   }
  ],
  "subtitles": [
   {
    "id": "dhead",
    "text": "تفاصيل الأسبوع، الفلفل.",
-   "en": "Week details, Pepper."
+   "en": "This week in detail, Pepper."
   },
   {
    "id": "irr1",
    "text": "يوم الجمعة سبعة عشر جويلية: تسعة عشر ميليمتر.",
-   "en": "On Friday 17 July: 19 millimetres."
+   "en": "Friday 17 July: 19 millimetres."
   },
   {
    "id": "irr2",
    "text": "يوم الأحد تسعة عشر جويلية: ثمانية عشر ميليمتر.",
-   "en": "On Sunday 19 July: 18 millimetres."
+   "en": "Sunday 19 July: 18 millimetres."
   },
   {
    "id": "irr3",
    "text": "يوم الثلاثاء واحد وعشرون جويلية: ثمانية عشر ميليمتر.",
-   "en": "On Tuesday 21 July: 18 millimetres."
+   "en": "Tuesday 21 July: 18 millimetres."
   },
   {
    "id": "irr4",
    "text": "يوم الخميس ثلاثة وعشرون جويلية: تسعة عشر ميليمتر.",
-   "en": "On Thursday 23 July: 19 millimetres."
+   "en": "Thursday 23 July: 19 millimetres."
   },
   {
    "id": "total",
    "text": "مجموع الأسبوع: ما يعادل مطرا من أربعة وسبعون ميليمتر، أي سبعمائة وثلاثة وأربعون متر مكعب للهكتار.",
-   "en": "Week total: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
+   "en": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
   }
  ],
  "durationMs": 30320

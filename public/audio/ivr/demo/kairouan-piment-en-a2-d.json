@@ -2,78 +2,78 @@
  "lines": [
   {
    "id": "dhead",
-   "text": "Détail de la semaine, Piment ou poivron.",
+   "text": "This week in detail, Pepper.",
    "startMs": 0,
-   "endMs": 2880,
+   "endMs": 2040,
    "en": "This week in detail, Pepper."
   },
   {
    "id": "irr1",
-   "text": "Le vendredi 17 juillet : 19 millimètres.",
-   "startMs": 3120,
-   "endMs": 6560,
+   "text": "Friday 17 July: 19 millimetres.",
+   "startMs": 2320,
+   "endMs": 5680,
    "en": "Friday 17 July: 19 millimetres."
   },
   {
    "id": "irr2",
-   "text": "Le dimanche 19 juillet : 18 millimètres.",
-   "startMs": 6640,
-   "endMs": 9680,
+   "text": "Sunday 19 July: 18 millimetres.",
+   "startMs": 6160,
+   "endMs": 9360,
    "en": "Sunday 19 July: 18 millimetres."
   },
   {
    "id": "irr3",
-   "text": "Le mardi 21 juillet : 18 millimètres.",
-   "startMs": 9720,
-   "endMs": 12880,
+   "text": "Tuesday 21 July: 18 millimetres.",
+   "startMs": 9760,
+   "endMs": 13320,
    "en": "Tuesday 21 July: 18 millimetres."
   },
   {
    "id": "irr4",
-   "text": "Le jeudi 23 juillet : 19 millimètres.",
-   "startMs": 12960,
-   "endMs": 16160,
+   "text": "Thursday 23 July: 19 millimetres.",
+   "startMs": 13520,
+   "endMs": 17160,
    "en": "Thursday 23 July: 19 millimetres."
   },
   {
    "id": "total",
-   "text": "Total de la semaine : l'équivalent d'une pluie de 74 millimètres, soit 743 mètres cubes par hectare.",
-   "startMs": 16320,
-   "endMs": 23200,
+   "text": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare.",
+   "startMs": 17360,
+   "endMs": 25440,
    "en": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
   }
  ],
  "subtitles": [
   {
    "id": "dhead",
-   "text": "Détail de la semaine, Piment ou poivron.",
+   "text": "This week in detail, Pepper.",
    "en": "This week in detail, Pepper."
   },
   {
    "id": "irr1",
-   "text": "Le vendredi 17 juillet : 19 millimètres.",
+   "text": "Friday 17 July: 19 millimetres.",
    "en": "Friday 17 July: 19 millimetres."
   },
   {
    "id": "irr2",
-   "text": "Le dimanche 19 juillet : 18 millimètres.",
+   "text": "Sunday 19 July: 18 millimetres.",
    "en": "Sunday 19 July: 18 millimetres."
   },
   {
    "id": "irr3",
-   "text": "Le mardi 21 juillet : 18 millimètres.",
+   "text": "Tuesday 21 July: 18 millimetres.",
    "en": "Tuesday 21 July: 18 millimetres."
   },
   {
    "id": "irr4",
-   "text": "Le jeudi 23 juillet : 19 millimètres.",
+   "text": "Thursday 23 July: 19 millimetres.",
    "en": "Thursday 23 July: 19 millimetres."
   },
   {
    "id": "total",
-   "text": "Total de la semaine : l'équivalent d'une pluie de 74 millimètres, soit 743 mètres cubes par hectare.",
+   "text": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare.",
    "en": "Total for the week: the equivalent of 74 millimetres of rain, which is 743 cubic metres per hectare."
   }
  ],
- "durationMs": 23200
+ "durationMs": 25440
 }

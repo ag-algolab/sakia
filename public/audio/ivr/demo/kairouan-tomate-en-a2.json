@@ -1,0 +1,67 @@
+{
+ "lines": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Tomato.",
+   "startMs": 0,
+   "endMs": 3600,
+   "en": "Irrigation advice for Kairouan, crop: Tomato."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "startMs": 4080,
+   "endMs": 6720,
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Sunday 19 July, with the equivalent of 41 millimetres of rain, which is 411 cubic metres per hectare.",
+   "startMs": 6800,
+   "endMs": 16400,
+   "en": "Our advice: irrigate on Sunday 19 July, with the equivalent of 41 millimetres of rain, which is 411 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Next irrigations: Thursday.",
+   "startMs": 16480,
+   "endMs": 18560,
+   "en": "Next irrigations: Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "startMs": 18800,
+   "endMs": 20800,
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "subtitles": [
+  {
+   "id": "where",
+   "text": "Irrigation advice for Kairouan, crop: Tomato.",
+   "en": "Irrigation advice for Kairouan, crop: Tomato."
+  },
+  {
+   "id": "rain",
+   "text": "No useful rain is expected this week.",
+   "en": "No useful rain is expected this week."
+  },
+  {
+   "id": "advice",
+   "text": "Our advice: irrigate on Sunday 19 July, with the equivalent of 41 millimetres of rain, which is 411 cubic metres per hectare.",
+   "en": "Our advice: irrigate on Sunday 19 July, with the equivalent of 41 millimetres of rain, which is 411 cubic metres per hectare."
+  },
+  {
+   "id": "next",
+   "text": "Next irrigations: Thursday.",
+   "en": "Next irrigations: Thursday."
+  },
+  {
+   "id": "stress",
+   "text": "Water-stress risk: low.",
+   "en": "Water-stress risk: low."
+  }
+ ],
+ "durationMs": 20800
+}
