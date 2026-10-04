@@ -12,12 +12,12 @@ const model = process.argv[3] && !process.argv[3].startsWith("--") ? process.arg
 const dry = process.argv.includes("--dry");
 if (!file) throw new Error("usage : node --env-file=.env.local scripts/narration.mjs <script.json> [modèle] [--dry]");
 const VOICE = process.env.NARRATOR_VOICE_ID ?? "Ee3tezieCxDocqtnH0ih"; // voix clonée d'Anthony (créée par lui dans son compte)
-const SETTINGS = { stability: 0.5, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
+const SETTINGS = process.env.NARRATOR_SETTINGS ? JSON.parse(process.env.NARRATOR_SETTINGS) : { stability: 0.5, similarity_boost: 0.8, style: 0.2, use_speaker_boost: true };
 const GAP = 0.7; // pause entre deux segments quand le script ne donne pas d'instant `at`
 
 const script = JSON.parse(readFileSync(file, "utf8"));
 const slug = path.basename(file, ".json");
-const out = path.join("videos", "voiceover", slug, model);
+const out = path.join("videos", "voiceover", slug, process.env.NARRATOR_LABEL ? `${process.env.NARRATOR_LABEL}-${model}` : model);
 mkdirSync(out, { recursive: true });
 const key = process.env.KEY_ELEVENLABS;
 if (!key && !dry) throw new Error("KEY_ELEVENLABS absente (lancer avec --env-file=.env.local)");
