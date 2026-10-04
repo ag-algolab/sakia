@@ -65,6 +65,24 @@ The trade-off we accept: fewer questions means less precision. Sakia uses defaul
 - **Local evidence:** the problem statement relies on Tunisian figures (literacy, aquifer, the SMS pilot) and the weather source was checked against Tunisian stations.
 - **Humans in the loop:** farmers correct the weather through rain reports, and a technician is always the fallback.
 
+## Weak connection, measured (4 October 2026)
+
+First visit to the home page in a real browser (Microsoft Edge, headless), phone-sized screen, processor slowed 4× (entry-level phone), network throttled to the WebPageTest 3G and 2G profiles, cache cold. Same conditions for every site, from Tunis. **One run per site; the other sites do other things (maps, radar), so this compares *the first page a farmer would open for a forecast*, not features.** Script and raw results: [`scripts/perf-compare.mjs`](scripts/perf-compare.mjs), [`scripts/perf-results-2026-10-04.json`](scripts/perf-results-2026-10-04.json).
+
+| Site | 3G: downloaded | 3G: loaded after | 2G: loaded after | Second visit | Works with no connection |
+|---|---|---|---|---|---|
+| **Sakia** | **383 KB** | **3.7 s** | **12.9 s** | **0 KB** | **Yes** (the plan is recomputed on the phone) |
+| yr.no (a lean reference) | 790 KB | 6.0 s | 25.7 s | 1–31 KB | No |
+| timeanddate.com | 661 KB | 6.9 s | 24.3 s | 11 KB | No |
+| FAO WaPOR portal | 770 KB | 5.3 s | 24.7 s | 0–4 KB | No |
+| meteoblue | 1,307 KB | 9.3 s | 45.9 s | 216 KB | No |
+| meteo.tn (national weather institute) | 7,948 KB | 43 s | **did not finish in 150 s** | 3,140–4,766 KB | No |
+
+What this shows, and does not:
+- On a first visit Sakia downloads **about half** of what the leanest sites do and loads **about twice as fast on 2G**, is **3× lighter than meteoblue** and **20× lighter than the national weather site**. For reference, the median mobile page weighs about 2.56 MB (HTTP Archive Web Almanac 2025).
+- The real difference is the **second visit and the lack of a connection**: after the first load Sakia opens with 0 KB, and **it is the only one of these sites that still works with no connection at all**. A day's advice then costs about 1 KB of plan data, plus about 76 KB if the farmer plays the spoken advice.
+- It is **not** ten times lighter than every lean site, and the lean sites are also quick on a second visit. WaPOR painted no text content before the load event (it is a map application), so its time is not a time to useful content.
+
 ## What it costs to run
 
 The spoken advice is made once per region, crop and day, then shared: a scheduled job prepares the common cases each morning (about 7,500–13,000 characters, roughly 900–1,600 voice credits a day for Kairouan and six other regions, whatever the number of farmers), and any other case is made on first request and then kept. Daily spending limits (per day and per visitor) cap what the public can trigger. The engine, the plan and the offline app cost nothing per user. Weather, hosting and database ran on entry-level plans during the hackathon.
