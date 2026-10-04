@@ -71,3 +71,5 @@ ml/results/metrics_prev.json
 ml/results/m1_expected.json
 ml/pip*.log
 docs/PASSATION-UI.md
+videos/
+docs/narration/

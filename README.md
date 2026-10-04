@@ -67,7 +67,7 @@ The trade-off we accept: fewer questions means less precision. Sakia uses defaul
 
 ## Weak connection, measured (4 October 2026)
 
-First visit to the home page in a real browser (Microsoft Edge, headless), phone-sized screen, processor slowed 4× (entry-level phone), network throttled to the WebPageTest 3G and 2G profiles, cache cold. Same conditions for every site, from Tunis. **One run per site; the other sites do other things (maps, radar), so this compares *the first page a farmer would open for a forecast*, not features.** Script and raw results: [`scripts/perf-compare.mjs`](scripts/perf-compare.mjs), [`scripts/perf-results-2026-10-04.json`](scripts/perf-results-2026-10-04.json).
+First visit to the home page in a real browser (Microsoft Edge, headless), phone-sized screen, processor slowed 4× (entry-level phone), network throttled to the WebPageTest 3G and 2G profiles, cache cold. Same conditions for every site, from Tunis. **One run per site; the other sites do other things (maps, radar), so this compares *the first page a farmer would open for a forecast*, not features.** Script and raw results: [`scripts/perf-compare.mjs`](scripts/perf-compare.mjs), [`scripts/perf-results-2026-10-04.json`](scripts/perf-results-2026-10-04.json); the same comparison with charts is on the **/speed** page.
 
 | Site | 3G: downloaded | 3G: loaded after | 2G: loaded after | Second visit | Works with no connection |
 |---|---|---|---|---|---|

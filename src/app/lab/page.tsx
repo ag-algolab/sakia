@@ -150,7 +150,7 @@ export default function LabPage() {
         <p className="text-sakia-brown">
           Protocol, amendment log, every number and the code are public:{" "}
           <a className="font-semibold text-sakia-water underline underline-offset-2" href="https://github.com/ag-algolab/sakia/tree/main/ml">github.com/ag-algolab/sakia/tree/main/ml</a>. The satellite label is itself a model product, so we only ever
-          say “closer to the satellite”, never “more accurate”. <Link className="font-semibold text-sakia-water underline underline-offset-2" href="/about">What the AI does elsewhere in Sakia</Link>.
+          say “closer to the satellite”, never “more accurate”. <Link className="font-semibold text-sakia-water underline underline-offset-2" href="/about">What the AI does elsewhere in Sakia</Link>. Also measured: <Link className="font-semibold text-sakia-water underline underline-offset-2" href="/speed">Sakia on a weak connection, against five other sites</Link>.
         </p>
       </section>
     </main>
