@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
-import PhoneSimulator from "@/components/phone/PhoneSimulator";
-import OfflinePlan from "@/components/phone/OfflinePlan";
+import CuriousDetails from "@/components/phone/CuriousDetails";
 import LanguageCoverage from "@/components/phone/LanguageCoverage";
+import OfflinePlan from "@/components/phone/OfflinePlan";
+import PhoneSimulator from "@/components/phone/PhoneSimulator";
+import { PhoneProfileProvider } from "@/components/phone/phoneProfile";
 import ServiceWorkerRegister from "@/components/phone/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
-  title: "Sakia · Téléphone SMS",
-  description: "Un téléphone à touches simulé : on envoie « olivier kairouan » par SMS et le plan d'irrigation des 7 jours revient.",
+  title: "Sakia · Keypad phone (simulated)",
+  description:
+    "A simulated keypad phone: the 7-day irrigation plan arrives by SMS each morning, nothing to type, and you reply with the keys. No real SMS or call is made.",
 };
 
 export default function PhonePage() {
   return (
-    <main className="flex-1 bg-[#f4efe6] text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
-      <PhoneSimulator />
-      <OfflinePlan />
-      <LanguageCoverage />
+    <main className="flex-1">
+      <PhoneProfileProvider>
+        <PhoneSimulator />
+        <OfflinePlan />
+        <LanguageCoverage />
+        <CuriousDetails />
+      </PhoneProfileProvider>
       <ServiceWorkerRegister />
     </main>
   );

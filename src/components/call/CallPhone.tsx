@@ -172,6 +172,19 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
   const [mode, setMode] = useState<SourceMode>("auto");
   const c = useIvrCall({ recordings, demos, mode });
 
+  // Arrivée depuis le téléphone à touches de /phone (« Simuler un appel », adresse /call?call=1) : l'appel démarre tout seul.
+  // L'adresse redevient /call, pour qu'un rechargement ne relance pas un appel.
+  const startCall = c.start;
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get("call") !== "1") return;
+      window.history.replaceState(null, "", window.location.pathname);
+      void startCall();
+    } catch {
+      // adresse illisible : l'appel se lance avec le bouton, comme d'habitude
+    }
+  }, [startCall]);
+
   // clavier : 0-9, * et # comme sur un téléphone
   const press = c.press;
   useEffect(() => {
@@ -239,7 +252,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
                 {c.phase === "idle" && <p className="text-base" dir={ui === "ar" ? "rtl" : "ltr"}>{t("idleHint")}</p>}
                 {c.phase === "ringing" && <p className="text-xl font-semibold">☎ {t("ringing")}</p>}
                 {(c.loadingPlan || c.loadingRain) && (
-                  <p className="text-lg font-semibold text-sakia-water" dir={ui === "ar" ? "rtl" : "ltr"}>⏳ {t(c.loadingRain ? "loadingRain" : "loadingPlan")}</p>
+                  <p className="text-lg font-semibold text-sakia-water-deep" dir={ui === "ar" ? "rtl" : "ltr"}>⏳ {t(c.loadingRain ? "loadingRain" : "loadingPlan")}</p>
                 )}
                 {!c.loadingPlan && !c.loadingRain && c.now && c.phase !== "idle" && (
                   <div>
@@ -272,7 +285,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
               )}
             </div>
 
-            <div role="group" aria-label="Keypad" className="mt-3 grid grid-cols-3 gap-2">
+            <div role="group" aria-label={t("keypad")} className="mt-3 grid grid-cols-3 gap-2">
               {(["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"] as Key[]).map((k) => (
                 <button
                   key={k}
@@ -289,7 +302,7 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
 
             <div className="mt-3">
               {c.phase === "idle" || c.phase === "ended" ? (
-                <button type="button" onClick={c.start} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#2e9d4f] text-lg font-bold text-white hover:bg-[#278a45]">
+                <button type="button" onClick={c.start} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#1d7a3b] text-lg font-bold text-white hover:bg-[#17652f]">
                   <span aria-hidden>📞</span> {c.phase === "ended" ? t("callAgain") : t("callBtn")}
                 </button>
               ) : (
@@ -328,16 +341,30 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
           )}
 
           <div className="rounded-xl border border-sakia-sand-dark bg-white p-3">
-            <h2 className="text-base font-bold text-sakia-green">{t("sourceTitle")}</h2>
-            <fieldset className="mt-2 space-y-1">
-              <label className="flex min-h-11 cursor-pointer items-start gap-2 text-base">
-                <input type="radio" name="mode" className="mt-1.5" checked={mode === "auto"} onChange={() => setMode("auto")} />
-                <span>{t("sourceAuto")}</span>
-              </label>
-              <label className="flex min-h-11 cursor-pointer items-start gap-2 text-base">
-                <input type="radio" name="mode" className="mt-1.5" checked={mode === "recorded"} onChange={() => setMode("recorded")} />
-                <span>{t("sourceRec")}</span>
-              </label>
+            <h2 id="call-source-title" className="text-base font-bold text-sakia-green">{t("sourceTitle")}</h2>
+            {/* le vrai bouton radio couvre toute la ligne (transparent) : la zone à toucher fait au moins 44 px, le rond dessiné n'est que visuel */}
+            <fieldset aria-labelledby="call-source-title" className="mt-2 space-y-1">
+              {(
+                [
+                  ["auto", "sourceAuto"],
+                  ["recorded", "sourceRec"],
+                ] as const
+              ).map(([value, label]) => (
+                <label key={value} className="relative flex min-h-11 cursor-pointer items-start gap-3 py-1.5 text-base">
+                  <input
+                    type="radio"
+                    name="mode"
+                    className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    checked={mode === value}
+                    onChange={() => setMode(value)}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-sakia-green bg-white peer-checked:bg-sakia-green peer-checked:shadow-[inset_0_0_0_3px_#fff] peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sakia-water-deep"
+                  />
+                  <span>{t(label)}</span>
+                </label>
+              ))}
             </fieldset>
             <p className={`mt-1 text-sm font-semibold ${c.online ? "text-sakia-green" : "text-sakia-alert"}`}>{c.online ? t("online") : t("offline")}</p>
             {mode === "recorded" && <p className="mt-1 text-sm text-sakia-brown">{t("bannerRecChoices", { list: recordedChoices(demos, ui) })}</p>}
@@ -369,8 +396,8 @@ export default function CallPhone({ recordings, demos, stats, agentReady }: { re
           )}
 
           <details className="rounded-xl border border-sakia-sand-dark bg-white p-3" open={c.log.length > 0}>
-            <summary className="cursor-pointer text-base font-bold text-sakia-green">{t("transcript")}</summary>
-            <ol className="mt-2 max-h-72 space-y-2 overflow-y-auto">
+            <summary className="flex min-h-11 cursor-pointer items-center text-base font-bold text-sakia-green">{t("transcript")}</summary>
+            <ol tabIndex={0} aria-label={t("transcript")} className="mt-2 max-h-72 space-y-2 overflow-y-auto">
               {c.log.map((e) => (
                 <li key={e.id} className="text-base">
                   {e.kind === "key" && <span className="rounded bg-sakia-sand px-2 py-0.5 font-mono">{t("youPressed", { k: e.key })}</span>}

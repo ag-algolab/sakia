@@ -12,13 +12,14 @@ const fr: Dict = {
   title: "Ligne vocale : appeler Sakia",
   langOrderTitle: "Pourquoi l'anglais d'abord ?",
   langOrder:
-    "Les sous-titres sont en anglais en premier, pour le jury international. En réalité, le produit parle d'abord la darija tunisienne, puis le français, puis éventuellement l'anglais : l'anglais est très peu parlé ici. Aujourd'hui la touche 2 lit de l'arabe standard simple avec un accent tunisien ; la darija n'est pas encore enregistrée ni validée par un Tunisien.",
+    "Les sous-titres sont en anglais en premier, pour le jury international. En réalité, le produit est pensé pour parler d'abord la darija tunisienne, puis le français, puis éventuellement l'anglais : l'anglais est très peu parlé ici. Aujourd'hui la touche 2 lit de l'arabe standard simple avec un accent tunisien ; la darija n'est pas encore enregistrée ni validée par un Tunisien.",
   intro:
-    "Pour l'agriculteur qui ne lit pas : il appelle, écoute le conseil dans une voix à accent tunisien et choisit avec les touches. Un téléphone basique et du réseau vocal suffisent : pas d'internet, pas d'application, pas de lecture.",
+    "Pensé pour l'agriculteur qui ne lit pas : il appellerait, écouterait le conseil dans une voix à accent tunisien et choisirait avec les touches. Un téléphone basique et du réseau vocal suffiraient : pas d'internet, pas d'application, pas de lecture. Aujourd'hui, c'est une simulation : aucune vraie ligne n'existe.",
   stat:
-    "À Kairouan, 25,5 à 28,5 % des adultes ne savent pas lire (INS 2024), et un SMS ne sert à rien à qui ne lit pas. Dans le projet pilote ICT2Scale (ICARDA/GIZ), seulement 15 % des agriculteurs recevaient les SMS au bon moment : ils demandaient des appels vocaux.",
+    "À Kairouan, 27,9 % des personnes de 10 ans et plus ne savent pas lire (recensement INS 2024, chiffre relayé par la presse ; 25,5 à 28,5 % dans les cinq gouvernorats les plus touchés), et un SMS ne sert à rien à qui ne lit pas. Dans le projet pilote ICT2Scale (ICARDA/GIZ), environ 15 à 16 % des 421 personnes interrogées disaient que les SMS arrivaient au bon moment (perception déclarée, pas une mesure de livraison).",
   simulated: "SIMULATION : ce téléphone est dessiné. Aucun numéro réel, aucun vrai appel, aucun enregistrement de vos appels.",
   callBtn: "Appeler Sakia",
+  keypad: "Touches du téléphone",
   hangBtn: "Raccrocher",
   callAgain: "Rappeler",
   idleHint: "Appuyez sur « Appeler Sakia », puis sur les touches du téléphone (ou de votre clavier).",
@@ -64,7 +65,7 @@ const fr: Dict = {
   reason_short_horizon: "la prévision ne couvre pas toute la semaine",
   prepTitle: "Écouter sans internet",
   prepText:
-    "Garde dans ce navigateur les {n} enregistrements ({size}) : les phrases du menu et les plans de démonstration. Ensuite la ligne marche en mode avion. La page elle-même doit avoir été ouverte une fois avec internet.",
+    "Garde dans ce navigateur les {n} enregistrements ({size}) : les phrases du menu et les plans de démonstration. Ensuite la ligne marche sans internet (pas encore vérifié en mode avion sur un téléphone). La page elle-même doit avoir été ouverte une fois avec internet.",
   prepBtn: "Préparer le hors-ligne",
   prepRunning: "Téléchargement : {done} / {total}",
   prepDone: "Prêt : {n} fichiers gardés dans ce navigateur.",
@@ -108,20 +109,21 @@ const fr: Dict = {
   rainNotYet: "Pas encore pris en compte : il faut au moins {min} personnes différentes qui signalent la même journée.",
   rainNotSaved: "Pas enregistré : le serveur n'a pas pu garder le signalement pour le moment. L'appel l'a dit.",
   rainNotSavedOffline: "Pas enregistré : un signalement a besoin d'internet pour être gardé. L'appel l'a dit.",
-  rainDemoNote: "Dans la démonstration, les signalements sont fictifs. Ils sont « signalés par des agriculteurs » : ce n'est jamais une mesure. Aucun nom, aucun numéro, aucune adresse n'est gardé.",
+  rainDemoNote: "Dans la démonstration, les signalements sont fictifs. Ils sont « signalés par des agriculteurs » : ce n'est jamais une mesure. Aucun nom, aucun numéro de téléphone et aucune adresse IP ne sont gardés dans notre base : seulement une empreinte salée d'identifiant (pseudonyme, pas anonyme).",
 };
 
 const en: Dict = {
   title: "Voice line: call Sakia",
   langOrderTitle: "Why English first?",
   langOrder:
-    "Subtitles come in English first, for the international jury. In reality the product speaks Tunisian Darija first, then French, then English only if useful: English is little spoken here. Today key 2 reads simple standard Arabic with a Tunisian accent; Darija is not yet recorded nor validated by a Tunisian speaker.",
+    "Subtitles come in English first, for the international jury. In reality the product is designed to speak Tunisian Darija first, then French, then English only if useful: English is little spoken here. Today key 2 reads simple standard Arabic with a Tunisian accent; Darija is not yet recorded nor validated by a Tunisian speaker.",
   intro:
-    "For the farmer who cannot read: they call, listen to the advice in a voice with a Tunisian accent, and choose with the keypad. A basic phone and a voice network are enough: no internet, no app, no reading.",
+    "Designed for the farmer who cannot read: they would call, listen to the advice in a voice with a Tunisian accent, and choose with the keypad. A basic phone and a voice network would be enough: no internet, no app, no reading. Today this is a simulation: no real line exists.",
   stat:
-    "In Kairouan, 25.5 to 28.5% of adults cannot read (INS 2024), and an SMS is useless to someone who cannot read. In the ICT2Scale pilot (ICARDA/GIZ), only 15% of farmers received the SMS at the right time: they asked for voice calls.",
+    "In Kairouan, 27.9% of people aged 10 and over cannot read (INS 2024 census, figure relayed by the press; 25.5 to 28.5% across the five most affected governorates), and an SMS is useless to someone who cannot read. In the ICT2Scale pilot (ICARDA/GIZ), about 15 to 16% of the 421 people surveyed said the SMS arrived at the right time (a survey perception, not a delivery measurement).",
   simulated: "SIMULATION: this phone is drawn. No real number, no real call, and your calls are not recorded.",
   callBtn: "Call Sakia",
+  keypad: "Phone keys",
   hangBtn: "Hang up",
   callAgain: "Call again",
   idleHint: "Press “Call Sakia”, then use the keypad (or your keyboard).",
@@ -167,7 +169,7 @@ const en: Dict = {
   reason_short_horizon: "the forecast does not cover the whole week",
   prepTitle: "Listen without internet",
   prepText:
-    "Keeps the {n} recordings ({size}) in this browser: the menu sentences and the demo plans. After that the line works in airplane mode. The page itself must have been opened once with internet.",
+    "Keeps the {n} recordings ({size}) in this browser: the menu sentences and the demo plans. After that the line works without internet (not yet checked in a phone's airplane mode). The page itself must have been opened once with internet.",
   prepBtn: "Get ready for offline",
   prepRunning: "Downloading: {done} / {total}",
   prepDone: "Ready: {n} files kept in this browser.",
@@ -211,20 +213,21 @@ const en: Dict = {
   rainNotYet: "Not taken into account yet: at least {min} different people must report the same day.",
   rainNotSaved: "Not saved: the server could not keep the report right now. The call said so.",
   rainNotSavedOffline: "Not saved: a report needs internet to be kept. The call said so.",
-  rainDemoNote: "In this demo, reports are fictitious. They are “reported by farmers”, never a measurement. No name, number or address is kept.",
+  rainDemoNote: "In this demo, reports are fictitious. They are “reported by farmers”, never a measurement. No name, no phone number and no IP address are kept in our database: only a salted hash of an identifier (pseudonymous, not anonymous).",
 };
 
 const ar: Dict = {
   title: "الخط الصوتي: اتصلوا بساقية",
   langOrderTitle: "لماذا الإنجليزية أولا؟",
   langOrder:
-    "الترجمة تظهر بالإنجليزية أولا من أجل لجنة التحكيم الدولية. أما في الواقع فالمنتج يتكلم أولا بالدارجة التونسية ثم بالفرنسية ثم بالإنجليزية عند الحاجة، فالإنجليزية قليلة الاستعمال هنا. اليوم يقرأ الزر 2 عربية فصحى بسيطة بلكنة تونسية؛ والدارجة لم تُسجَّل بعد ولم يراجعها متحدث تونسي.",
+    "الترجمة تظهر بالإنجليزية أولا من أجل لجنة التحكيم الدولية. أما في الواقع فقد صُمّم المنتج ليتكلم أولا بالدارجة التونسية ثم بالفرنسية ثم بالإنجليزية عند الحاجة، فالإنجليزية قليلة الاستعمال هنا. اليوم يقرأ الزر 2 عربية فصحى بسيطة بلكنة تونسية؛ والدارجة لم تُسجَّل بعد ولم يراجعها متحدث تونسي.",
   intro:
-    "لمن لا يقرأ: يتصل الفلاح، فيسمع النصيحة بصوت بلكنة تونسية، ويختار بأزرار الهاتف. يكفي هاتف بسيط وشبكة صوتية: لا إنترنت ولا تطبيق ولا قراءة.",
+    "مصمَّم للفلاح الذي لا يقرأ: يتصل فيسمع النصيحة بصوت بلكنة تونسية ويختار بأزرار الهاتف. يكفي هاتف بسيط وشبكة صوتية: لا إنترنت ولا تطبيق ولا قراءة. اليوم هذه محاكاة فقط: لا يوجد أي خط حقيقي.",
   stat:
-    "في القيروان، 25,5 إلى 28,5 % من الكبار لا يقرؤون (المعهد الوطني للإحصاء 2024)، والرسالة النصية لا تنفع من لا يقرأ. في المشروع التجريبي ICT2Scale لم يتلقَّ الرسائل في الوقت المناسب إلا 15 % من الفلاحين، وطلبوا مكالمات صوتية.",
+    "في القيروان، 27,9 % من الأشخاص البالغين 10 سنوات فأكثر لا يقرؤون (المعهد الوطني للإحصاء، تعداد 2024، رقم نقلته الصحافة؛ و25,5 إلى 28,5 % في الولايات الخمس الأكثر تضررا)، والرسالة النصية لا تنفع من لا يقرأ. في المشروع التجريبي ICT2Scale (ICARDA/GIZ)، قال حوالي 15 إلى 16 % من 421 شخصا شملهم الاستجواب إن الرسائل وصلت في الوقت المناسب (انطباع مصرَّح به، وليس قياسا لوصول الرسائل).",
   simulated: "محاكاة: هذا الهاتف مرسوم. لا رقم حقيقي ولا مكالمة حقيقية ولا تسجيل لمكالماتكم.",
   callBtn: "اتصل بساقية",
+  keypad: "أزرار الهاتف",
   hangBtn: "إنهاء المكالمة",
   callAgain: "اتصل من جديد",
   idleHint: "اضغطوا على «اتصل بساقية» ثم على أزرار الهاتف (أو لوحة المفاتيح).",
@@ -270,7 +273,7 @@ const ar: Dict = {
   reason_short_horizon: "التوقعات لا تغطي الأسبوع كله",
   prepTitle: "الاستماع بدون إنترنت",
   prepText:
-    "يحفظ في هذا المتصفح {n} تسجيلا ({size}): جمل القائمة وخطط العرض التجريبية. بعدها يعمل الخط في وضع الطيران. يجب أن تكونوا فتحتم الصفحة مرة واحدة مع الإنترنت.",
+    "يحفظ في هذا المتصفح {n} تسجيلا ({size}): جمل القائمة وخطط العرض التجريبية. بعدها يعمل الخط بدون إنترنت (لم يُتحقق منه بعد في وضع الطيران على هاتف). يجب أن تكونوا فتحتم الصفحة مرة واحدة مع الإنترنت.",
   prepBtn: "التحضير للعمل بدون إنترنت",
   prepRunning: "جارٍ التحميل: {done} / {total}",
   prepDone: "جاهز: {n} ملفا محفوظا في هذا المتصفح.",
@@ -314,7 +317,7 @@ const ar: Dict = {
   rainNotYet: "لم يؤخذ في الحساب بعد: يلزم على الأقل {min} أشخاص مختلفين يبلغون عن اليوم نفسه.",
   rainNotSaved: "لم يُسجَّل: تعذر على الخادم حفظ التبليغ حاليا. قالت المكالمة ذلك.",
   rainNotSavedOffline: "لم يُسجَّل: يحتاج التبليغ إلى الإنترنت ليُحفظ. قالت المكالمة ذلك.",
-  rainDemoNote: "في هذا العرض التبليغات وهمية. هي «تبليغات من فلاحين» وليست قياسا أبدا. لا يُحفظ أي اسم أو رقم أو عنوان.",
+  rainDemoNote: "في هذا العرض التبليغات وهمية. هي «تبليغات من فلاحين» وليست قياسا أبدا. لا يُحفظ في قاعدة بياناتنا أي اسم أو رقم هاتف أو عنوان IP: فقط بصمة رقمية مملّحة لمعرّف (اسم مستعار، وليس مجهولا).",
 };
 
 const DICTS: Record<UiLang, Dict> = { fr, en, ar };
