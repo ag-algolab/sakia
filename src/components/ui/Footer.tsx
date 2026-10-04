@@ -28,7 +28,7 @@ export default function Footer() {
           <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed text-sakia-sun">{t("footerHonest")}</p>
         </div>
         <div className="grid grid-cols-2 gap-4 md:contents">
-          <nav aria-label="Sakia" className="flex flex-col">
+          <nav aria-label={t("footerNavProject")} className="flex flex-col">
             <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className={link}>
               {t("footerBot")}
             </a>
@@ -45,7 +45,7 @@ export default function Footer() {
               Lab (research, English)
             </Link>
           </nav>
-          <nav aria-label="Sakia" className="flex flex-col">
+          <nav aria-label={t("footerNavChannels")} className="flex flex-col">
             <Link href="/bulletin" className={link}>
               {t("navBulletin")}
             </Link>
